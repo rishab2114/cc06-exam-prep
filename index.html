@@ -1,0 +1,2174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CC06 Exam Prep Guide — Full Lecture Notes</title>
+<style>
+  :root {
+    --green: #2e7d32;
+    --green-light: #e8f5e9;
+    --green-mid: #a5d6a7;
+    --blue: #1565c0;
+    --blue-light: #e3f2fd;
+    --orange: #e65100;
+    --orange-light: #fff3e0;
+    --purple: #6a1b9a;
+    --purple-light: #f3e5f5;
+    --teal: #00695c;
+    --teal-light: #e0f2f1;
+    --red: #c62828;
+    --red-light: #ffebee;
+    --yellow: #f57f17;
+    --yellow-light: #fffde7;
+    --grey: #37474f;
+    --grey-light: #eceff1;
+    --indigo: #283593;
+    --indigo-light: #e8eaf6;
+    --amber: #ff6f00;
+    --amber-light: #fff8e1;
+    --card-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    --card-shadow-hover: 0 6px 20px rgba(0,0,0,0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #f0f4f8;
+    color: #263238;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* HERO HEADER */
+  .hero {
+    background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 40%, #00695c 100%);
+    color: white;
+    padding: 48px 32px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(255,255,255,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(255,255,255,0.06) 0%, transparent 50%);
+  }
+  .hero h1 { font-size: 2.4rem; font-weight: 700; letter-spacing: -0.5px; position: relative; }
+  .hero p { font-size: 1.1rem; opacity: 0.88; margin-top: 10px; position: relative; }
+  .hero .badge-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 18px; position: relative; }
+  .hero .badge { background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); padding: 5px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+
+  /* STICKY NAV */
+  .sticky-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: white;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .sticky-nav-inner { display: inline-flex; gap: 2px; padding: 8px 16px; }
+  .sticky-nav a {
+    color: var(--grey);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 7px 12px;
+    border-radius: 6px;
+    transition: background 0.18s, color 0.18s;
+    white-space: nowrap;
+  }
+  .sticky-nav a:hover { background: var(--green-light); color: var(--green); }
+  .sticky-nav a.quiz-link { background: #fff3e0; color: var(--orange); }
+  .sticky-nav a.quiz-link:hover { background: var(--orange); color: white; }
+  .sticky-nav a.cheat-link { background: var(--indigo-light); color: var(--indigo); }
+  .sticky-nav a.cheat-link:hover { background: var(--indigo); color: white; }
+
+  /* MAIN CONTAINER */
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 16px 64px; }
+
+  /* SECTION WRAPPER */
+  .section {
+    background: white;
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 28px;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+
+  /* COVER SLIDES */
+  .cover-slide {
+    padding: 28px 32px 24px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover-slide::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 85% 50%, rgba(255,255,255,0.12) 0%, transparent 55%);
+  }
+  .cover-slide .cs-week-tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.22);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 20px;
+    padding: 3px 14px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .cover-slide h2 {
+    font-size: 1.65rem;
+    font-weight: 800;
+    line-height: 1.25;
+    position: relative;
+    margin-bottom: 8px;
+  }
+  .cover-slide p {
+    font-size: 0.95rem;
+    opacity: 0.88;
+    position: relative;
+    max-width: 680px;
+  }
+  .cover-slide .cs-sdg-tags {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; position: relative;
+  }
+  .cover-slide .cs-sdg-tag {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 12px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+
+  /* Cover slide color variants */
+  .cs-green  { background: linear-gradient(130deg, #1b5e20 0%, #2e7d32 55%, #388e3c 100%); }
+  .cs-blue   { background: linear-gradient(130deg, #0d47a1 0%, #1565c0 55%, #1976d2 100%); }
+  .cs-orange { background: linear-gradient(130deg, #bf360c 0%, #e64a19 55%, #f4511e 100%); }
+  .cs-teal   { background: linear-gradient(130deg, #004d40 0%, #00695c 55%, #00796b 100%); }
+  .cs-amber  { background: linear-gradient(130deg, #e65100 0%, #f57c00 55%, #fb8c00 100%); }
+  .cs-purple { background: linear-gradient(130deg, #4a148c 0%, #6a1b9a 55%, #7b1fa2 100%); }
+  .cs-red    { background: linear-gradient(130deg, #b71c1c 0%, #c62828 55%, #d32f2f 100%); }
+  .cs-grey   { background: linear-gradient(130deg, #263238 0%, #37474f 55%, #455a64 100%); }
+  .cs-indigo { background: linear-gradient(130deg, #1a237e 0%, #283593 55%, #303f9f 100%); }
+
+  /* SECTION BODY */
+  .section-body { padding: 24px 28px 28px; }
+
+  /* ABSTRACT */
+  .abstract {
+    background: var(--grey-light);
+    border-left: 4px solid var(--grey);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 20px;
+    font-size: 0.94rem;
+    line-height: 1.65;
+    color: #37474f;
+  }
+
+  /* SUB-HEADERS */
+  .sub-title {
+    font-size: 1.0rem;
+    font-weight: 700;
+    color: var(--green);
+    margin: 20px 0 10px;
+    padding-left: 10px;
+    border-left: 3px solid var(--green-mid);
+  }
+
+  /* CARDS GRID */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin: 14px 0; }
+  .card {
+    background: var(--green-light);
+    border: 1px solid var(--green-mid);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .card strong { display: block; font-size: 0.88rem; font-weight: 700; color: var(--green); margin-bottom: 5px; }
+  .card p, .card ul { font-size: 0.88rem; color: #37474f; }
+  .card ul { padding-left: 16px; }
+  .card.blue { background: var(--blue-light); border-color: #90caf9; }
+  .card.blue strong { color: var(--blue); }
+  .card.orange { background: var(--orange-light); border-color: #ffcc80; }
+  .card.orange strong { color: var(--orange); }
+  .card.purple { background: var(--purple-light); border-color: #ce93d8; }
+  .card.purple strong { color: var(--purple); }
+  .card.teal { background: var(--teal-light); border-color: #80cbc4; }
+  .card.teal strong { color: var(--teal); }
+  .card.red { background: var(--red-light); border-color: #ef9a9a; }
+  .card.red strong { color: var(--red); }
+  .card.amber { background: var(--amber-light); border-color: #ffe082; }
+  .card.amber strong { color: var(--amber); }
+  .card.grey { background: var(--grey-light); border-color: #b0bec5; }
+  .card.grey strong { color: var(--grey); }
+  .card.indigo { background: var(--indigo-light); border-color: #9fa8da; }
+  .card.indigo strong { color: var(--indigo); }
+
+  /* STAT PILLS */
+  .stat-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .stat-pill {
+    background: white;
+    border: 1.5px solid var(--green-mid);
+    border-radius: 24px;
+    padding: 6px 16px;
+    font-size: 0.85rem;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .stat-pill span { font-weight: 700; color: var(--green); }
+  .stat-pill.blue { border-color: #90caf9; }
+  .stat-pill.blue span { color: var(--blue); }
+  .stat-pill.orange { border-color: #ffcc80; }
+  .stat-pill.orange span { color: var(--orange); }
+  .stat-pill.red { border-color: #ef9a9a; }
+  .stat-pill.red span { color: var(--red); }
+  .stat-pill.purple { border-color: #ce93d8; }
+  .stat-pill.purple span { color: var(--purple); }
+  .stat-pill.teal { border-color: #80cbc4; }
+  .stat-pill.teal span { color: var(--teal); }
+  .new-stat {
+    background: #e8f5e9;
+    border: 1.5px solid #81c784;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    color: #1b5e20;
+    margin: 10px 0;
+  }
+  .new-stat strong { color: #1b5e20; }
+
+  /* MUST-KNOW BOX */
+  .must-know {
+    background: linear-gradient(135deg, #fff8e1 0%, #fff3cd 100%);
+    border: 1.5px solid #ffe082;
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-top: 18px;
+  }
+  .must-know h4 { font-size: 0.9rem; font-weight: 700; color: #e65100; margin-bottom: 8px; }
+  .must-know ul { padding-left: 18px; font-size: 0.88rem; }
+  .must-know li { margin-bottom: 5px; color: #37474f; }
+
+  /* DEF LIST */
+  .def-list { list-style: none; padding: 0; margin: 10px 0; }
+  .def-list li { border-bottom: 1px solid #e0e0e0; padding: 8px 0; font-size: 0.88rem; }
+  .def-list li:last-child { border-bottom: none; }
+  .def-list li strong { color: var(--green); margin-right: 6px; }
+
+  /* STEPS / TIMELINE */
+  .steps { margin: 12px 0; padding: 0; list-style: none; }
+  .steps li {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 10px 0; border-bottom: 1px solid #e8f5e9;
+    font-size: 0.88rem;
+  }
+  .steps li:last-child { border-bottom: none; }
+  .step-num {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--green); color: white;
+    font-size: 0.78rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+
+  /* DATA TABLE */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 0.87rem; margin: 12px 0; }
+  .data-table th { background: var(--green); color: white; padding: 8px 12px; text-align: left; }
+  .data-table td { padding: 8px 12px; border-bottom: 1px solid #e0e0e0; }
+  .data-table tr:nth-child(even) { background: var(--green-light); }
+
+  /* CHEAT SHEET */
+  #cheatsheet .cover-slide { background: linear-gradient(130deg, #263238 0%, #37474f 55%, #455a64 100%); }
+
+  /* PRACTICE QUESTIONS SECTION */
+  .pq-hero {
+    background: linear-gradient(130deg, #bf360c 0%, #e64a19 50%, #ff6d00 100%);
+    color: white;
+    padding: 32px 32px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .pq-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 90% 40%, rgba(255,255,255,0.12) 0%, transparent 55%);
+  }
+  .pq-hero h2 { font-size: 1.8rem; font-weight: 800; position: relative; margin-bottom: 8px; }
+  .pq-hero p { font-size: 1.0rem; opacity: 0.9; position: relative; }
+
+  .quiz-block {
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 20px 0;
+  }
+  .quiz-block-header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 20px;
+    color: white;
+    font-weight: 700;
+    font-size: 1.0rem;
+  }
+  .quiz-week-badge {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    border: 2px solid rgba(255,255,255,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; font-weight: 800; flex-shrink: 0;
+  }
+  .qwb-w1  { background: linear-gradient(130deg, #1b5e20, #2e7d32); }
+  .qwb-w2  { background: linear-gradient(130deg, #0d47a1, #1565c0); }
+  .qwb-w3  { background: linear-gradient(130deg, #bf360c, #e64a19); }
+  .qwb-w4  { background: linear-gradient(130deg, #004d40, #00695c); }
+  .qwb-w5  { background: linear-gradient(130deg, #e65100, #f57c00); }
+  .qwb-w6  { background: linear-gradient(130deg, #4a148c, #6a1b9a); }
+  .qwb-w7  { background: linear-gradient(130deg, #b71c1c, #c62828); }
+  .qwb-w8  { background: linear-gradient(130deg, #263238, #37474f); }
+  .qwb-w9  { background: linear-gradient(130deg, #1a237e, #283593); }
+
+  details.qitem { border-bottom: 1px solid #f0f0f0; }
+  details.qitem:last-child { border-bottom: none; }
+  details.qitem summary {
+    padding: 14px 20px;
+    cursor: pointer;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: #263238;
+    display: flex; align-items: flex-start; gap: 10px;
+    list-style: none;
+    transition: background 0.15s;
+  }
+  details.qitem summary::-webkit-details-marker { display: none; }
+  details.qitem summary:hover { background: #f9f9f9; }
+  details.qitem[open] summary { background: #f5f5f5; }
+  .q-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: #eceff1; color: #455a64;
+    font-size: 0.78rem; font-weight: 700;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .q-text { flex: 1; }
+  .q-toggle-icon {
+    flex-shrink: 0;
+    color: #90a4ae;
+    font-size: 1.1rem;
+    margin-top: 2px;
+    transition: transform 0.2s;
+  }
+  details.qitem[open] .q-toggle-icon { transform: rotate(180deg); }
+  .q-answer {
+    padding: 12px 20px 16px 56px;
+    background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+    border-top: 1px solid #c8e6c9;
+  }
+  .q-answer-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--green);
+    margin-bottom: 4px;
+  }
+  .q-answer p { font-size: 0.9rem; color: #1b5e20; font-weight: 500; }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 1.7rem; }
+    .section-body { padding: 18px 16px; }
+    .cover-slide { padding: 20px 18px; }
+    .cover-slide h2 { font-size: 1.3rem; }
+    .cards { grid-template-columns: 1fr; }
+    .stat-row { gap: 8px; }
+    .pq-hero { padding: 24px 18px; }
+    .q-answer { padding-left: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>CC0006 Exam Prep Guide</h1>
+  <p>Sustainability — Society, Economy &amp; Environment &nbsp;·&nbsp; NTU</p>
+  <div class="badge-row">
+    <span class="badge">📚 Weeks 1–10</span>
+    <span class="badge">🌍 17 SDGs</span>
+    <span class="badge">📝 45 Practice MCQs</span>
+    <span class="badge">🇸🇬 Singapore Focus</span>
+  </div>
+</div>
+
+<!-- STICKY NAV -->
+<nav class="sticky-nav">
+  <div class="sticky-nav-inner">
+    <a href="#w1">W1: Intro</a>
+    <a href="#w2">W2: Poverty</a>
+    <a href="#w3">W3: Food</a>
+    <a href="#w4">W4: Water</a>
+    <a href="#w5">W5: Energy I</a>
+    <a href="#w6">W6: Energy II</a>
+    <a href="#w7">W7: Pollution</a>
+    <a href="#w8">W8: Waste</a>
+    <a href="#w9">W9: Cities</a>
+    <a href="#w10">W10: Biodiversity</a>
+    <a href="#cheatsheet" class="cheat-link">📋 Cheat Sheet</a>
+    <a href="#practiceqs" class="quiz-link">📝 Practice Qs</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- ===== WEEK 1 ===== -->
+<div class="section" id="w1">
+  <div class="cover-slide cs-green">
+    <div class="cs-week-tag">Week 1</div>
+    <h2>Why Everyone Should Know About Sustainability</h2>
+    <p>Introduction to the concept of sustainability, the SDGs, climate change basics, and Singapore's green ambitions.</p>
+    <div class="cs-sdg-tags">
+      <span class="cs-sdg-tag">🌱 SDG 13: Climate Action</span>
+      <span class="cs-sdg-tag">♻️ Circular Economy</span>
+      <span class="cs-sdg-tag">🌳 Natural Climate Solutions</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="abstract">
+      Sustainability means meeting today's needs without compromising future generations. The 17 UN Sustainable Development Goals (SDGs) form the global blueprint. Climate change — driven by greenhouse gas emissions from fossil fuels — is the defining challenge, and countries must balance economic growth with environmental stewardship through circular models and nature-based solutions.
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-pill"><span>1.5°C</span> Paris Agreement target above pre-industrial</div>
+      <div class="stat-pill orange"><span>420 ppm</span> CO₂ in atmosphere today</div>
+      <div class="stat-pill blue"><span>2015</span> Paris Agreement signed</div>
+      <div class="stat-pill red"><span>1 million+</span> trees to be planted in SG</div>
+    </div>
+
+    <div class="new-stat">
+      🌡️ <strong>Earth is warming at ~0.2°C per decade</strong> — the last decade was the warmest on record. At this rate, 1.5°C above pre-industrial levels could be breached within 20 years.
+    </div>
+
+    <div class="sub-title">🌍 What is Sustainability?</div>
+    <div class="cards">
+      <div class="card">
+        <strong>Brundtland Definition (1987)</strong>
+        <p>Meeting the needs of the present without compromising the ability of future generations to meet their own needs.</p>
+      </div>
+      <div class="card blue">
+        <strong>Three Pillars</strong>
+        <p>Environmental integrity, Economic viability, Social equity — the three must be balanced simultaneously.</p>
+      </div>
+      <div class="card orange">
+        <strong>Complex Problems</strong>
+        <p>Sustainability challenges are interdisciplinary, interconnected, and involve trade-offs. Solutions are rarely simple.</p>
+      </div>
+    </div>
+
+    <div class="sub-title">🎯 The 17 Sustainable Development Goals (SDGs)</div>
+    <div class="cards">
+      <div class="card">
+        <strong>People (SDGs 1–5)</strong>
+        <ul>
+          <li>No Poverty, Zero Hunger</li>
+          <li>Good Health, Quality Education</li>
+          <li>Gender Equality</li>
+        </ul>
+      </div>
+      <div class="card blue">
+        <strong>Planet (SDGs 6, 13–15)</strong>
+        <ul>
+          <li>Clean Water &amp; Sanitation</li>
+          <li>Climate Action</li>
+          <li>Life Below Water, Life on Land</li>
+        </ul>
+      </div>
+      <div class="card orange">
+        <strong>Prosperity (SDGs 7–12)</strong>
+        <ul>
+          <li>Affordable Clean Energy</li>
+          <li>Decent Work, Innovation</li>
+          <li>Reduced Inequalities</li>
+        </ul>
+      </div>
+      <div class="card purple">
+        <strong>Peace &amp; Partnerships (16–17)</strong>
+        <ul>
+          <li>Peace, Justice &amp; Strong Institutions</li>
+          <li>Global Partnerships for the Goals</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sub-title">♻️ Circular Economy</div>
+    <div class="cards">
+      <div class="card teal">
+        <strong>What it IS</strong>
+        <ul>
+          <li>Design out waste and pollution</li>
+          <li>Keep products and materials in use longer</li>
+          <li>Regenerate natural systems</li>
+        </ul>
+      </div>
+      <div class="card red">
+        <strong>What it is NOT</strong>
+        <p>Simply offsetting emissions through tree planting or cleaning up pollution <em>after the fact</em>. That is still linear thinking.</p>
+      </div>
+      <div class="card">
+        <strong>SG Circular Ambition</strong>
+        <ul>
+          <li>Zero Waste Masterplan</li>
+          <li>Extended Producer Responsibility</li>
+          <li>Semakau Landfill — SG's only landfill</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sub-title">🌳 Natural Climate Solutions</div>
+    <div class="cards">
+      <div class="card">
+        <strong>Tree Planting (Million Trees)</strong>
+        <p>Trees cool naturally through <strong>shading</strong> and releasing water via <strong>transpiration</strong>. They also sequester CO₂.</p>
+      </div>
+      <div class="card blue">
+        <strong>Carbon Sinks</strong>
+        <p>Forests, mangroves, and wetlands absorb more CO₂ than they release — natural buffers against climate change.</p>
+      </div>
+    </div>
+
+    <div class="must-know">
+      <h4>⭐ Must-Know for Exams</h4>
+      <ul>
+        <li>Paris Agreement signed <strong>2015</strong> — first universal legally binding climate deal</li>
+        <li>Main source of CO₂: <strong>combustion of fossil fuels</strong></li>
+        <li>Circular economy ≠ offset/compensate — it prevents waste at source</li>
+        <li>Trees as natural climate solution: <strong>shading + transpiration</strong></li>
+        <li>Sustainable development problems are <strong>complex</strong> — NOT simple to solve</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===== WEEK 2 ===== -->
+<div class="section" id="w2">
+  <div class="cover-slide cs-blue">
+    <div class="cs-week-tag">Week 2</div>
+    <h2>No Poverty, Social Inclusion &amp; Equality</h2>
+    <p>Examining global poverty trends, inequality drivers, gender disparities, and the digital divide's role in widening gaps.</p>
+    <div class="cs-sdg-tags">
+      <span class="cs-sdg-tag">🏠 SDG 1: No Poverty</span>
+      <span class="cs-sdg-tag">⚖️ SDG 10: Reduced Inequalities</span>
+      <span class="cs-sdg-tag">♀ SDG 5: Gender Equality</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="abstract">
+      Over 700 million people live in extreme poverty (&lt;$2.15/day). Poverty is concentrated in Sub-Saharan Africa and South Asia. Technology and the digital revolution are paradoxically widening the income gap. Social inclusion requires eliminating discrimination, enabling mobility, and ensuring basic needs — the gender gap goes far beyond pay.
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-pill red"><span>&gt;700M</span> people in extreme poverty</div>
+      <div class="stat-pill orange"><span>$2.15/day</span> World Bank poverty line</div>
+      <div class="stat-pill blue"><span>40%</span> of global income to top 10%</div>
+      <div class="stat-pill"><span>SDG 1</span> No Poverty by 2030</div>
+    </div>
+
+    <div class="new-stat">
+      📉 <strong>COVID-19 pushed ~100 million more people into extreme poverty</strong> in 2020, reversing decades of progress. The 2030 SDG poverty target is now off-track without accelerated action.
+    </div>
+
+    <div class="sub-title">🗺️ Where is Poverty?</div>
+    <div class="cards">
+      <div class="card red">
+        <strong>Sub-Saharan Africa</strong>
+        <p>Highest concentration of extreme poverty. Conflict, climate shocks, governance challenges, and debt traps compound the problem.</p>
+      </div>
+      <div class="card orange">
+        <strong>South Asia</strong>
+        <p>Large absolute numbers in poverty despite rapid growth. Inequality within countries is high.</p>
+      </div>
+      <div class="card">
+        <strong>Multidimensional Poverty</strong>
+        <p>Beyond income: also includes lack of education, healthcare, clean water, sanitation, and electricity.</p>
+      </div>
+    </div>
+
+    <div class="sub-title">⚖️ Inequality &amp; Social Inclusion</div>
+    <div class="cards">
+      <div class="card blue">
+        <strong>Social Inclusion Definition</strong>
+        <p>Eliminate discrimination, enable high social mobility, ensure every human can meet basic needs. Focuses on vulnerable groups.</p>
+      </div>
+      <div class="card purple">
+        <strong>Digital Divide</strong>
+        <p>Technology and digital revolution are <strong>widening</strong> the income gap. Those without access fall further behind.</p>
+      </div>
+      <div class="card orange">
+        <strong>Gini Coefficient</strong>
+        <p>Measure of income inequality. 0 = perfect equality, 1 = perfect inequality. Singapore's Gini ~0.37 after taxes/transfers.</p>
+      </div>
+    </div>
+
+    <div class="sub-title">♀ Gender Inequality</div>
+    <div class="cards">
+      <div class="card">
+        <strong>Gender Pay Gap</strong>
+        <p>Women earn less than men for equivalent work globally — but this is only ONE aspect of gender inequality.</p>
+      </div>
+      <div class="card blue">
+        <strong>Other Gender Dimensions</strong>
+        <ul>
+          <li>Political representation</li>
+          <li>Access to education</li>
+          <li>Violence &amp; safety</li>
+          <li>Unpaid care work burden</li>
+        </ul>
+      </div>
+      <div class="card red">
+        <strong>SDG 5: Gender Equality</strong>
+        <p>End all forms of discrimination, eliminate gender-based violence, ensure full participation in all spheres of life.</p>
+      </div>
+    </div>
+
+    <div class="must-know">
+      <h4>⭐ Must-Know for Exams</h4>
+      <ul>
+        <li>Poorest regions: <strong>Sub-Saharan Africa + South Asia</strong></li>
+        <li>Social inclusion: eliminates discrimination, enables mobility, meets basic needs — <strong>True</strong></li>
+        <li>Digital revolution is <strong>widening</strong> the income gap (not narrowing)</li>
+        <li>Gender pay gap is <strong>NOT the only</strong> aspect of gender inequality</li>
+        <li>SDG 1, 2, 10 all fall under poverty/inequality goals</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===== WEEK 3 ===== -->
+<div class="section" id="w3">
+  <div class="cover-slide cs-orange">
+    <div class="cs-week-tag">Week 3</div>
+    <h2>Introduction to Food Security &amp; the Global Food System</h2>
+    <p>From field to fork — understanding hunger, food waste, sustainable agriculture, and Singapore's food resilience strategies.</p>
+    <div class="cs-sdg-tags">
+      <span class="cs-sdg-tag">🌾 SDG 2: Zero Hunger</span>
+      <span class="cs-sdg-tag">🔬 Sustainable Agriculture</span>
+      <span class="cs-sdg-tag">🗑️ Food Waste</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="abstract">
+      Despite enough food being produced globally, nearly 800 million people go hungry. The food system — from extraction to disposal — contributes ~25% of global GHG emissions. A third of all food is lost or wasted. Singapore imports 90% of its food, making diversification and local production critical for food security.
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-pill red"><span>~828M</span> undernourished globally</div>
+      <div class="stat-pill orange"><span>⅓</span> food produced is lost/wasted (FAO 2020)</div>
+      <div class="stat-pill blue"><span>90%</span> Singapore imports its food</div>
+      <div class="stat-pill"><span>27%</span> habitable land for livestock</div>
+      <div class="stat-pill teal"><span>7%</span> habitable land for crops (human)</div>
+    </div>
+
+    <div class="new-stat">
+      🐄 <strong>Livestock uses 27% of habitable land but livestock products provide only ~18% of global calories</strong> — a massive land-use inefficiency. Shifting to plant-based diets could free up enormous land area.
+    </div>
+
+    <div class="sub-title">🌍 Food Security: Four Pillars</div>
+    <div class="cards">
+      <div class="card">
+        <strong>Availability</strong>
+        <p>Sufficient food physically present. Depends on production, imports, reserves.</p>
+      </div>
+      <div class="card blue">
+        <strong>Access</strong>
+        <p>People can afford to buy or obtain food. Income, markets, prices matter.</p>
+      </div>
+      <div class="card orange">
+        <strong>Utilisation</strong>
+        <p>Body can absorb nutrients from food. Depends on diet diversity, cooking, health.</p>
+      </div>
+      <div class="card purple">
+        <strong>Stability</strong>
+        <p>Consistent access over time. Climate, conflict, economic shocks threaten stability.</p>
+      </div>
+    </div>
+
+    <div class="sub-title">🗑️ Food Loss &amp; Waste</div>
+    <div class="cards">
+      <div class="card red">
+        <strong>Scale of the Problem</strong>
+        <p>FAO: <strong>⅓ of all food produced</strong> is lost or wasted annually — equivalent to 1.3 billion tonnes/year.</p>
+      </div>
+      <div class="card">
+        <strong>Food Loss vs. Waste</strong>
+        <p><em>Loss</em> = occurs during production, storage, processing (developing countries). <em>Waste</em> = at retail/consumer level (developed countries).</p>
+      </div>
+      <div class="card orange">
+        <strong>GHG Impact</strong>
+        <p>If food waste were a country, it would be the 3rd largest emitter of GHGs globally.</p>
+      </div>
+    </div>
+
+    <div class="sub-title">🇸🇬 Singapore Food Innovations</div>
+    <div class="cards">
+      <div class="card teal">
+        <strong>Black Soldier Fly (BSF)</strong>
+        <p>BSF larvae convert <strong>food waste into nutritious compost</strong>. Also a protein-rich feed for livestock/fish. Reduces landfill waste.</p>
+      </div>
+      <div class="card">
+        <strong>30 by 30 Goal</strong>
+        <p>SG aims to produce 30% of nutritional needs locally by 2030. Currently ~10%. Sky farms, vertical farming, aquaculture.</p>
+      </div>
+      <div class="card blue">
+        <strong>Diversification</strong>
+        <p>Import from 180+ countries/regions to avoid over-reliance on any single source. Food resilience strategy.</p>
+      </div>
+    </div>
+
+    <div class="sub-title">📊 Land Use for Food</div>
+    <ul class="def-list">
+      <li><strong>50% of habitable land</strong> is used for agriculture total</li>
+      <li><strong>27% of habitable land</strong> is used for livestock (pasture + feed crops)</li>
+      <li><strong>7% of habitable land</strong> grows crops directly for human consumption</li>
+      <li><strong>WFP 2020 Nobel Peace Prize</strong> — "For efforts to combat hunger, contribution to bettering conditions for conflict-affected areas"</li>
+    </ul>
+
+    <div class="must-know">
+      <h4>⭐ Must-Know for Exams</h4>
+      <ul>
+        <li>Undernourished people: numbers <strong>increased</strong> from 2019–2020</li>
+        <li>WFP Nobel 2020: <strong>combat hunger + conflict-affected areas</strong></li>
+        <li>FAO: <strong>⅓ of produced food</strong> wasted/lost</li>
+        <li>Black Soldier Fly larvae: <strong>food waste → compost</strong></li>
+        <li>Land: <strong>27% livestock, 7% crops</strong> for humans</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===== WEEK 4 ===== -->
+<div class="section" id="w4">
+  <div class="cover-slide cs-teal">
+    <div class="cs-week-tag">Week 4</div>
+    <h2>Water — Availability &amp; Sustainable Management</h2>
+    <p>Global water stress, the challenge of freshwater scarcity, and Singapore's remarkable Four National Taps strategy.</p>
+    <div class="cs-sdg-tags">
+      <span class="cs-sdg-tag">💧 SDG 6: Clean Water</span>
+      <span class="cs-sdg-tag">🇸🇬 NEWater</span>
+      <span class="cs-sdg-tag">🌦️ Climate Uncertainty</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="abstract">
+      Only 3% of Earth's water is fresh, and most of that is locked in glaciers. One quarter of the global population faces high water stress. Agriculture consumes ~70% of freshwater globally. Singapore — with no natural aquifers and limited land — has pioneered water security through diversification: local catchments, imported water (Malaysia), NEWater, and desalination.
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-pill blue"><span>3%</span> of Earth's water is freshwater</div>
+      <div class="stat-pill red"><span>¼ of world</span> faces high water stress</div>
+      <div class="stat-pill orange"><span>70%</span> freshwater used by agriculture</div>
+      <div class="stat-pill"><span>50%</span> NEWater to meet SG demand by 2030</div>
+      <div class="stat-pill teal"><span>430M</span> gallons/day SG water demand</div>
+    </div>
+
+    <div class="new-stat">
+      🚰 <strong>Singapore produces ~430 million gallons of water per day</strong> from its four taps. NEWater — ultra-clean recycled wastewater — already supplies ~40% and is targeted to reach 50% by 2030. The Deep Tunnel Sewerage System (DTSS) is key infrastructure enabling NEWater.
+    </div>
+
+    <div class="sub-title">🌍 Global Water Stress</div>
+    <div class="cards">
+      <div class="card blue">
+        <strong>Scarcity Drivers</strong>
+        <ul>
+          <li>Population growth</li>
+          <li>Climate change (hardest to predict)</li>
+          <li>Pollution of freshwater sources</li>
+          <li>Overextraction of groundwater</li>
+        </ul>
+      </div>
+      <div class="card red">
+        <strong>Water Stress Statistics</strong>
+        <p><strong>1 in 4 people</strong> globally face high baseline water stress. By 2050, could affect 40% of population.</p>
+      </div>
+      <div class="card orange">
+        <strong>Biggest User: Agriculture</strong>
+        <p>~70% of freshwater withdrawals go to agriculture (irrigation). Industrial use ~20%, Municipal ~10%.</p>
+      </div>
+    </div>
+
+    <div class="sub-title">🇸🇬 Singapore's Four National Taps</div>
+    <ul class="steps">
+      <li>
+        <div class="step-num">1</div>
+        <div><strong>Local Catchment Water</strong> — 17 reservoirs covering two-thirds of SG's land as catchment area. Rainwater collected island-wide.</div>
+      </li>
+      <li>
+        <div class="step-num">2</div>
+        <div><strong>Imported Water from Malaysia</strong> — via Johor River (NOT the Strait of Johor). Agreement valid until 2061. SG is reducing reliance.</div>
+      </li>
+      <li>
+        <div class="step-num">3</div>
+        <div><strong>NEWater</strong> — ultra-clean reclaimed water (treat → purify → test). Meets ~40% of needs today; target 50% by 2030. Used in industry + reservoirs + emergency drinking.</div>
+      </li>
+      <li>
+        <div class="step-num">4</div>
+        <div><strong>Desalinated Water</strong> — seawater processed through reverse osmosis. Energy-intensive but climate-resilient.</div>
+      </li>
+    </ul>
+
+    <div class="new-stat">
+      🏗️ <strong>Deep Tunnel Sewerage System (DTSS)</strong> — a massive underground system that efficiently conveys used water to reclamation plants, making NEWater production possible at scale. DTSS Phase 2 completed 2025.
+    </div>
+
+    <div class="sub-title">🔑 Key Water Concepts</div>
+    <div class="cards">
+      <div class="card">
+        <strong>Water Demand Uncertainty</strong>
+        <p>Climate change is the key factor that makes water demand <strong>hardest to predict</strong> — extreme droughts and floods disrupt supply.</p>
+      </div>
+      <div class="card teal">
+        <strong>Virtual Water</strong>
+        <p>Hidden water embedded in goods. Beef: ~15,000L per kg. Importing food = importing virtual water.</p>
+      </div>
+      <div class="card blue">
+        <strong>Water-Energy-Food Nexus</strong>
+        <p>Water, energy, and food systems are deeply interconnected. Saving water often saves energy too.</p>
+      </div>
+    </div>
+
+    <div class="must-know">
+      <h4>⭐ Must-Know for Exams</h4>
+      <ul>
+        <li>Water demand uncertainty: <strong>climate change</strong></li>
+        <li>High water stress: <strong>one-quarter</strong> of world population</li>
+        <li>Biggest water consumer: <strong>agriculture</strong></li>
+        <li>NEWater target: <strong>50% of SG demand by 2030</strong></li>
+        <li>NOT a national tap: <strong>Strait of Johor</strong> (actual source is Johor River)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===== WEEK 5 ===== -->
+<div class="section" id="w5">
+  <div class="cover-slide cs-amber">
+    <div class="cs-week-tag">Week 5</div>
+    <h2>Energy &amp; Climate Change (I) — Background, Technologies &amp; Policy</h2>
+    <p>Energy systems, greenhouse gases, the energy poverty challenge, and pathways to decarbonisation.</p>
+    <div class="cs-sdg-tags">
+      <span class="cs-sdg-tag">⚡ SDG 7: Clean Energy</span>
+      <span class="cs-sdg-tag">🌡️ SDG 13: Climate Action</span>
+      <span class="cs-sdg-tag">🔋 Mitigation &amp; Adaptation</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="abstract">
+      Energy is the backbone of the modern economy, but burning fossil fuels releases greenhouse gases (GHGs) that trap heat. CO₂ is the most important GHG by volume but not the only one (methane, N₂O, etc.). 800 million people lack electricity. The challenge: lift the poor while decarbonising — through clean energy, behaviour change, and fuel switching.
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-pill orange"><span>~800M</span> people lack electricity (energy poverty)</div>
+      <div class="stat-pill red"><span>73%</span> GHG from energy sector</div>
+      <div class="stat-pill blue"><span>1.5–2°C</span> Paris Agreement warming limits</div>
+      <div class="stat-pill"><span>CO₂, CH₄, N₂O</span> main GHGs</div>
+    </div>
+
+    <div class="sub-title">🌡️ Greenhouse Gases &amp; Climate Change</div>
+    <div class="cards">
+      <div class="card red">
+        <strong>Greenhouse Effect</strong>
+        <p>GHGs trap outgoing infrared radiation, warming Earth's surface. Natural process — but human emissions are supercharging it.</p>
+      </div>
+      <div class="card orange">
+        <strong>Key GHGs</strong>
+        <ul>
+          <li>CO₂ — fossil fuels, deforestation</li>
+          <li>CH₄ — livestock, landfills, gas leaks</li>
+          <li>N₂O — fertilisers, agriculture</li>
+          <li>F-gases — refrigerants, industry</li>
+        </ul>
+      </div>
+      <div class="card blue">
+        <strong>CO₂ is NOT the Only GHG</strong>
+        <p>Methane is 80× more potent than CO₂ over 20 years. N₂O is 265× more potent over 100 years. All must be addressed.</p>
+      </div>
+    </div>
+
+    <div class="sub-title">💡 Energy Poverty</div>
+    <div class="cards">
+      <div class="card purple">
+        <strong>Definition</strong>
+        <p>Lack of access to <strong>sustainable modern energy services and products</strong>. Affects cooking, heating, education, health, economic opportunity.</p>
+      </div>
+      <div class="card">
+        <strong>Low-income Countries</strong>
+        <p>People seeking access to energy for basic needs like cooking, lighting, and communications.</p>
+      </div>
+      <div class="card blue">
+        <strong>High-income Countries</strong>
+        <p>People looking for <strong>further improvement in well-being</strong> through energy — not just access, but higher standards of living.</p>
+      </div>
+    </div>
+
+    <div class="sub-title">🔋 Mitigation vs. Adaptation</div>
+    <div class="cards">
+      <div class="card teal">
+        <strong>Mitigation</strong>
+        <p>Reducing GHG emissions at source. Clean energy transition, efficiency, behaviour change, fuel switching.</p>
+      </div>
+      <div class="card orange">
+        <strong>Adaptation</strong>
+        <p>Adjusting to climate impacts already happening or expected. Seawalls, drought-resistant crops, early warning systems.</p>
+      </div>
+      <div class="card">
+        <strong>Key Fact</strong>
+        <p>Mitigation and adaptation are <strong>both needed simultaneously</strong> — mitigation does NOT make adaptation plans obsolete.</p>
+      </div>
+    </div>
+
+    <div class="sub-title">🌱 Emission Mitigation Strategies</div>
+    <ul class="def-list">
+      <li><strong>Advanced technologies</strong> — CCS, nuclear, green hydrogen</li>
+      <li><strong>Behaviour change</strong> — reduced consumption, diet shifts, travel choices</li>
+      <li><strong>Clean energy</strong> — solar, wind, hydro replacing fossil fuels</li>
+      <li><strong>Fuel shift</strong> — gas replacing coal, hydrogen replacing gas</li>
+    </ul>
+
+    <div class="must-know">
+      <h4>⭐ Must-Know for Exams</h4>
+      <ul>
+        <li>High-income countries: <strong>looking for further improvement in well-being</strong></li>
+        <li>CO₂ is <strong>NOT</strong> the only GHG (CH₄, N₂O also critical)</li>
+        <li>Energy poverty = <strong>lack of access to sustainable modern energy services</strong></li>
+        <li>Adaptation plans are <strong>NOT scrapped</strong> after mitigation — both run in parallel</li>
+        <li>Mitigation toolkit: <strong>tech + behaviour + clean energy + fuel shift</strong> — all True</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===== WEEK 6 ===== -->
+<div class="section" id="w6">
+  <div class="cover-slide cs-purple">
+    <div class="cs-week-tag">Week 6</div>
+    <h2>Energy &amp; Climate Change (II) — Policy Instruments &amp; Economics</h2>
+    <p>Carbon pricing, cap-and-trade systems, international agreements, and the economic case for climate action.</p>
+    <div class="cs-sdg-tags">
+      <span class="cs-sdg-tag">💰 Carbon Tax</span>
+      <span class="cs-sdg-tag">📊 Cap &amp; Trade</span>
+      <span class="cs-sdg-tag">🌐 UNFCCC &amp; Paris</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="abstract">
+      Governments use a mix of regulatory and economic tools to reduce emissions. Market-based instruments like carbon taxes and cap-and-trade make polluting expensive. The UNFCCC (1992) established the global framework; the Paris Agreement (2015) set binding commitments. The Stern Review proved climate action is economically rational — the cost of inaction far exceeds the cost of action.
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-pill blue"><span>1992</span> UNFCCC signed</div>
+      <div class="stat-pill orange"><span>2015</span> Paris Agreement</div>
+      <div class="stat-pill red"><span>China &gt; USA</span> CO₂ emissions in 2018</div>
+      <div class="stat-pill"><span>SG $25/tonne</span> carbon tax (2024)</div>
+    </div>
+
+    <div class="sub-title">💰 Policy Instruments: Categories</div>
+    <div class="cards">
+      <div class="card">
+        <strong>Regulatory (Command &amp; Control)</strong>
+        <p>Emission standards, technology mandates, bans. Direct but can be inflexible. Example: banning coal plants.</p>
+      </div>
+      <div class="card blue">
+        <strong>Economic Incentive-Based</strong>
+        <p>Market-based: <strong>cap-and-trade</strong>, carbon credits. Non-market: <strong>carbon tax</strong>, subsidies for clean tech.</p>
+      </div>
+      <div class="card orange">
+        <strong>Voluntary/Informational</strong>
+        <p>Labels, voluntary agreements, public campaigns. Complements mandatory measures.</p>
+      </div>
+    </div>
+
+    <div class="sub-title">📊 Cap and Trade vs. Carbon Tax</div>
+    <table class="data-table">
+      <thead>
+        <tr><th>Feature</th><th>Cap &amp; Trade</th><th>Carbon Tax</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>How it works</td><td>Set total emission cap; trade permits</td><td>Price per tonne of CO₂</td></tr>
+        <tr><td>Certainty</td><td>Certain quantity reduction</td><td>Certain price, uncertain quantity</td></tr>
+        <tr><td>Polluter pays?</td><td>Yes</td><td>Yes</td></tr>
+        <tr><td>Least cost?</td><td>Yes — emissions cut where cheapest</td><td>Depends on tax level</td></tr>
+        <tr><td>SG example</td><td>—</td><td>SG Carbon Tax: $5/t (2019), $25/t (2024), rising to $80/t by 2030</td></tr>
+      </tbody>
+    </table>
+
+    <div class="sub-title">🌐 International Climate Agreements</div>
+    <ul class="steps">
+      <li>
+        <div class="step-num">1</div>
+        <div><strong>UNFCCC (1992)</strong> — First global framework for addressing climate change. Signed at Rio Earth Summit.</div>
+      </li>
+      <li>
+        <div class="step-num">2</div>
+        <div><strong>Kyoto Protocol (1997)</strong> — First binding emission targets for developed countries (Annex I). Not ratified by USA.</div>
+      </li>
+      <li>
+        <div class="step-num">3</div>
+        <div><strong>Paris Agreement (2015)</strong> — Universal, legally binding. NDCs from all countries. Limit warming to 1.5–2°C above pre-industrial.</div>
+      </li>
+    </ul>
+
+    <div class="sub-title">📈 The Stern Review (2006)</div>
+    <div class="cards">
+      <div class="card teal">
+        <strong>Key Finding</strong>
+        <p>Climate change is the <strong>greatest market failure</strong> in history. Cost of inaction (5–20% of global GDP) far exceeds cost of action (~1% of GDP).</p>
+      </div>
+      <div class="card">
+        <strong>Pro-Growth Strategy</strong>
+        <p>The Stern Review argued that <strong>taking climate action IS a pro-growth strategy</strong> — investing in clean energy creates jobs and drives innovation.</p>
+      </div>
+    </div>
+
+    <div class="sub-title">🌏 Global CO₂ Emissions</div>
+    <div class="new-stat">
+      🏭 <strong>In 2018, China was the world's largest CO₂ emitter</strong>, emitting more than the United States. China ~28%, USA ~15% of global CO₂ emissions. However, on a per-capita basis, USA still emits significantly more per person than China.
+    </div>
+
+    <div class="must-know">
+      <h4>⭐ Must-Know for Exams</h4>
+      <ul>
+        <li>Economic instruments: <strong>cap-and-trade + carbon tax</strong> (market &amp; non-market)</li>
+        <li>Cap &amp; Trade: <strong>polluter pays + lowest cost mitigation</strong> — both True</li>
+        <li>CO₂ emissions 2018: <strong>China &gt; USA</strong></li>
+        <li>Stern Review: climate action is a <strong>pro-growth strategy</strong></li>
+        <li>UNFCCC signed: <strong>1992</strong></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===== WEEK 7 ===== -->
+<div class="section" id="w7">
+  <div class="cover-slide cs-red">
+    <div class="cs-week-tag">Week 7</div>
+    <h2>Pollution — Air, Light, Noise &amp; Plastic</h2>
+    <p>Types of pollution, health impacts, Singapore's environmental challenges, and the global plastic crisis.</p>
+    <div class="cs-sdg-tags">
+      <span class="cs-sdg-tag">🌬️ Air Quality</span>
+      <span class="cs-sdg-tag">💡 Light Pollution</span>
+      <span class="cs-sdg-tag">🔊 Noise Pollution</span>
+      <span class="cs-sdg-tag">🧴 Plastic Waste</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="abstract">
+      Pollution takes many forms — air, light, noise, and plastic — each with distinct health and ecological impacts. Air pollution causes 7 million deaths/year (WHO). Singapore recycles only 4% of plastic. Light pollution grows 2%/year globally, disrupting ecosystems and human health. Noise affects not just hearing but cardiovascular health and wildlife.
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-pill red"><span>7M</span> deaths/year from air pollution (WHO)</div>
+      <div class="stat-pill orange"><span>4%</span> plastic recycled in SG (2021)</div>
+      <div class="stat-pill blue"><span>67 dB</span> max noise 1hr at home (SG)</div>
+      <div class="stat-pill"><span>2%/year</span> light pollution growth globally</div>
+    </div>
+
+    <div class="new-stat">
+      🌫️ <strong>The Great Smog of London (1952)</strong> killed ~12,000 people over five days — a watershed event that led to the UK's Clean Air Act (1956). A stark reminder of what unchecked air pollution can do.
+    </div>
+
+    <div class="sub-title">🌬️ Air Pollution</div>
+    <div class="cards">
+      <div class="card red">
+        <strong>Health Effects (Most to Least Serious)</strong>
+        <ul>
+          <li>Premature death, cancer</li>
+          <li>Heart &amp; lung disease</li>
+          <li>Reduced lung function</li>
+          <li>Chest tightness (LEAST serious)</li>
+        </ul>
+      </div>
+      <div class="card orange">
+        <strong>Main Pollutants</strong>
+        <ul>
+          <li>PM2.5 — fine particles, deepest lung penetration</li>
+          <li>NO₂ — vehicle exhaust</li>
+          <li>SO₂ — coal combustion</li>
+          <li>O₃ (ozone) — photochemical smog</li>
+        </ul>
+      </div>
+      <div class="card">
+        <strong>Sources</strong>
+        <ul>
+          <li>Transport</li>
+          <li>Industry &amp; power plants</li>
+          <li>Agricultural burning</li>
+          <li>Haze from regional fires (SG)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sub-title">💡 Light Pollution</div>
+    <div class="cards">
+      <div class="card amber">
+        <strong>Diurnal Rhythm</strong>
+        <p>Our body's <strong>24-hour biological cycle</strong> — regulates sleep, hormones, metabolism. Light pollution disrupts melatonin production.</p>
+      </div>
+      <div class="card">
+        <strong>Ecological Impacts</strong>
+        <ul>
+          <li>Sea turtle hatchlings confused by lights</li>
+          <li>Bird migration disruption</li>
+          <li>Insect population decline</li>
+          <li>Plant flowering cycle affected</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sub-title">🔊 Noise Pollution</div>
+    <div class="cards">
+      <div class="card blue">
+        <strong>Marine Mammals</strong>
+        <p>Dolphins and whales are <strong>extra sensitive to noise</strong> because they <strong>rely on sound (echolocation) for communication, navigation, and finding prey</strong>.</p>
+      </div>
+      <div class="card">
+        <strong>SG Noise Standards</strong>
+        <p>Max permissible: <strong>67 dB for 1 hour</strong> at home. Prolonged exposure to 85+ dB causes hearing damage. Road traffic is main source.</p>
+      </div>
+    </div>
+
+    <div class="sub-title">🧴 Plastic Pollution</div>
+    <div class="cards">
+      <div class="card red">
+        <strong>SG Plastic Recycling</strong>
+        <p>Only <strong>4% of plastic recycled</strong> in Singapore as of 2021. Most goes to incineration or Semakau Landfill.</p>
+      </div>
+      <div class="card orange">
+        <strong>Microplastics</strong>
+        <p>Plastics break down into microplastics (&lt;5mm) that enter food chains, water supply, and have been found in human blood.</p>
+      </div>
+      <div class="card">
+        <strong>SG's Response</strong>
+        <ul>
+          <li>Mandatory packaging reporting</li>
+          <li>Disposable carrier bag charge (2023)</li>
+          <li>Extended Producer Responsibility for e-waste</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="must-know">
+      <h4>⭐ Must-Know for Exams</h4>
+      <ul>
+        <li>Least serious air pollution effect on children: <strong>chest tightness</strong></li>
+        <li>SG plastic recycling: <strong>4%</strong> (2021)</li>
+        <li>Max home noise 1hr: <strong>67 decibels</strong></li>
+        <li>Dolphins/whales sensitive to noise: <strong>rely on sound for communication</strong></li>
+        <li>Diurnal rhythm = <strong>24-hour biological cycle</strong></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===== WEEK 8 ===== -->
+<div class="section" id="w8">
+  <div class="cover-slide cs-grey">
+    <div class="cs-week-tag">Week 8</div>
+    <h2>Waste Management — Responsible Consumption &amp; Production</h2>
+    <p>Consumerism, material footprints, the production-consumption chain, and Singapore's Zero Waste vision.</p>
+    <div class="cs-sdg-tags">
+      <span class="cs-sdg-tag">♻️ SDG 12: Responsible Consumption</span>
+      <span class="cs-sdg-tag">🗑️ Zero Waste</span>
+      <span class="cs-sdg-tag">📦 Circular Economy</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="abstract">
+      Global consumption is accelerating — driven by population growth, rising incomes, and retail culture. The current linear "take-make-dispose" model is unsustainable. Material footprints measure total resources extracted globally to satisfy demand. Singapore's Zero Waste Masterplan targets a circular approach — reduce waste, extend product lifetimes, and recover materials.
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-pill red"><span>2 billion</span> tonnes of solid waste generated/year</div>
+      <div class="stat-pill orange"><span>40%</span> waste in SG is from food</div>
+      <div class="stat-pill blue"><span>2030</span> SG Zero Waste Masterplan target year</div>
+      <div class="stat-pill"><span>Semakau</span> SG's only landfill — nearly full</div>
+    </div>
+
+    <div class="sub-title">🛒 Consumerism</div>
+    <div class="cards">
+      <div class="card orange">
+        <strong>Dominant Driver</strong>
+        <p><strong>Retailer satisfaction</strong> dominates consumerism — continuous promotion of buying more, newer, faster. Fast fashion is a prime example.</p>
+      </div>
+      <div class="card red">
+        <strong>Why Unsustainable?</strong>
+        <p>Products rely on <strong>too many natural resources</strong> and create <strong>harmful emissions</strong> when consumed or discarded. Industrialised countries' patterns are especially problematic.</p>
+      </div>
+      <div class="card blue">
+        <strong>Planned Obsolescence</strong>
+        <p>Products designed to fail or become unfashionable quickly. Drives repurchase cycles and waste.</p>
+      </div>
+    </div>
+
+    <div class="sub-title">📊 Material Footprint</div>
+    <div class="cards">
+      <div class="card teal">
+        <strong>What it Measures</strong>
+        <p>Total amount of raw materials extracted globally to meet a country's consumption demand. Different from ecological footprint.</p>
+      </div>
+      <div class="card">
+        <strong>Ecological Footprint (different!)</strong>
+        <p>Measures human demand on nature — quantity of nature needed to support people. This is what material footprint is <strong>NOT</strong>.</p>
+      </div>
+    </div>
+
+    <div class="sub-title">🔗 Production &amp; Consumption Chain</div>
+    <ul class="steps">
+      <li><div class="step-num">1</div><div><strong>Extraction</strong> — mining, logging, fishing, farming for raw materials</div></li>
+      <li><div class="step-num">2</div><div><strong>Production</strong> — manufacturing, processing, refining</div></li>
+      <li><div class="step-num">3</div><div><strong>Distribution</strong> — transport, logistics, retail</div></li>
+      <li><div class="step-num">4</div><div><strong>Consumption</strong> — use by households and businesses</div></li>
+      <li><div class="step-num">5</div><div><strong>Disposal</strong> — landfill, incineration, recycling, composting</div></li>
+    </ul>
+
+    <div class="sub-title">🇸🇬 Singapore's Zero Waste Masterplan</div>
+    <div class="cards">
+      <div class="card">
+        <strong>Core Aim</strong>
+        <p>Adopt a <strong>circular economy approach</strong> to waste and resource management. Shift towards more sustainable production and consumption patterns.</p>
+      </div>
+      <div class="card blue">
+        <strong>3R Hierarchy</strong>
+        <ul>
+          <li><strong>Reduce</strong> — most preferred (buy less)</li>
+          <li><strong>Reuse</strong> — extend product life</li>
+          <li><strong>Recycle</strong> — last resort before disposal</li>
+        </ul>
+      </div>
+      <div class="card orange">
+        <strong>Semakau Landfill</strong>
+        <p>SG's only and last landfill. Projected to be full by ~2035. Driving urgency for waste reduction and circular economy.</p>
+      </div>
+    </div>
+
+    <div class="must-know">
+      <h4>⭐ Must-Know for Exams</h4>
+      <ul>
+        <li>Dominant in consumerism: <strong>retailer satisfaction</strong></li>
+        <li>Material footprint ≠ ecological footprint (ecological footprint measures <strong>nature demand</strong> — that's NOT material footprint)</li>
+        <li>Correct chain: <strong>Extraction → Production → Distribution → Consumption → Disposal</strong></li>
+        <li>Unsustainable consumption: <strong>too many natural resources + harmful emissions</strong></li>
+        <li>Zero Waste Masterplan aim: <strong>circular economy approach</strong></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===== WEEK 9 ===== -->
+<div class="section" id="w9">
+  <div class="cover-slide cs-indigo">
+    <div class="cs-week-tag">Week 9</div>
+    <h2>Sustainable Cities</h2>
+    <p>Urbanisation trends, cities' environmental impact, the Urban Heat Island effect, and what makes a resilient, liveable city.</p>
+    <div class="cs-sdg-tags">
+      <span class="cs-sdg-tag">🏙️ SDG 11: Sustainable Cities</span>
+      <span class="cs-sdg-tag">🌡️ Urban Heat Island</span>
+      <span class="cs-sdg-tag">💪 City Resilience</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="abstract">
+      Over 55% of humanity lives in cities — rising to 68% by 2050. Cities occupy only ~1% of land but consume 75% of energy and produce 70% of CO₂ emissions. This disproportionate impact makes urban sustainability central to global goals. Cities are simultaneously the problem AND the most powerful platform for sustainability solutions.
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-pill blue"><span>55%+</span> of humanity lives in cities now</div>
+      <div class="stat-pill red"><span>1%</span> of land but huge environmental footprint</div>
+      <div class="stat-pill orange"><span>75%</span> energy consumed by cities</div>
+      <div class="stat-pill"><span>70%</span> global CO₂ from cities</div>
+    </div>
+
+    <div class="sub-title">🌍 Urbanisation Trends</div>
+    <div class="cards">
+      <div class="card blue">
+        <strong>Disproportionate Impact</strong>
+        <p>Cities occupy only <strong>~1% of land</strong> globally yet consume the majority of resources and produce most emissions — a massive footprint mismatch.</p>
+      </div>
+      <div class="card orange">
+        <strong>Main Urban Impacts</strong>
+        <ul>
+          <li>High energy consumption</li>
+          <li>Transport emissions</li>
+          <li>Waste generation</li>
+          <li>Impervious surfaces → flooding</li>
+        </ul>
+      </div>
+      <div class="card">
+        <strong>NOT a main urban impact</strong>
+        <p>High use of agricultural pesticides/irrigation in urban farms — this is a rural/agricultural issue, not primarily urban.</p>
+      </div>
+    </div>
+
+    <div class="sub-title">🌡️ Urban Heat Island (UHI) Effect</div>
+    <div class="cards">
+      <div class="card red">
+        <strong>How it Works</strong>
+        <p>Dense urban areas with <strong>less trees + more concrete</strong> absorb and <strong>retain more heat</strong> than surrounding sea or forest. Cities are 2–5°C warmer than rural areas.</p>
+      </div>
+      <div class="card orange">
+        <strong>Causes</strong>
+        <ul>
+          <li>Dark surfaces absorb solar radiation</li>
+          <li>Lack of vegetation (no evapotranspiration)</li>
+          <li>Waste heat from buildings/vehicles</li>
+          <li>Dense building geometry traps radiation</li>
+        </ul>
+      </div>
+      <div class="card teal">
+        <strong>SG Solutions</strong>
+        <ul>
+          <li>Greenery on building walls/rooftops</li>
+          <li>Street trees and parks</li>
+          <li>Cool paint &amp; reflective materials</li>
+          <li>Urban ventilation corridors</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sub-title">💪 Resilient Cities</div>
+    <div class="cards">
+      <div class="card">
+        <strong>Definition</strong>
+        <p>A resilient city: <strong>the city and its urban dwellers can continue to thrive even in a disaster</strong>. Ability to absorb, adapt, and recover from shocks.</p>
+      </div>
+      <div class="card blue">
+        <strong>Types of Shocks</strong>
+        <ul>
+          <li>Climate: floods, heat waves, sea level rise</li>
+          <li>Economic: financial crises</li>
+          <li>Social: pandemics, civil unrest</li>
+          <li>Physical: infrastructure failure</li>
+        </ul>
+      </div>
+      <div class="card orange">
+        <strong>Why Cities Lead Sustainability</strong>
+        <p>Cities don't need to <em>reduce dependence</em> on environment — they need to manage it sustainably. Cities ARE platforms for innovation &amp; policy action.</p>
+      </div>
+    </div>
+
+    <div class="sub-title">🇸🇬 Singapore as a Sustainable City</div>
+    <div class="cards">
+      <div class="card">
+        <strong>City in a Garden</strong>
+        <p>Singapore's vision — integrating greenery throughout the urban fabric. 350km of park connectors, green rooftops, nature ways.</p>
+      </div>
+      <div class="card teal">
+        <strong>Long-Term Plan 2030</strong>
+        <p>Singapore Green Plan 2030: achieve net zero by 2050. Green buildings, solar panels, EV infrastructure, nature-based solutions.</p>
+      </div>
+    </div>
+
+    <div class="must-know">
+      <h4>⭐ Must-Know for Exams</h4>
+      <ul>
+        <li>Disproportionate city impact: <strong>1% of land, huge emissions/energy</strong></li>
+        <li>NOT a main urban impact: <strong>agricultural pesticides/irrigation</strong></li>
+        <li>NOT true about cities: they <strong>don't need to urgently reduce environmental dependence</strong> (they need sustainable management)</li>
+        <li>UHI: <strong>less trees + more concrete → absorbs &amp; retains more heat</strong></li>
+        <li>Resilient city: <strong>city &amp; dwellers continue to thrive even in disaster</strong></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===== WEEK 10 ===== -->
+<div class="section" id="w10">
+  <div class="cover-slide cs-teal">
+    <div class="cs-week-tag">Week 10</div>
+    <h2>Biodiversity, Ecosystems &amp; Sustainable Finance</h2>
+    <p>The web of life, biodiversity threats, ecosystem services valuation, ESG investing, and green finance frameworks.</p>
+    <div class="cs-sdg-tags">
+      <span class="cs-sdg-tag">🦋 SDG 15: Life on Land</span>
+      <span class="cs-sdg-tag">🐟 SDG 14: Life Below Water</span>
+      <span class="cs-sdg-tag">💵 Green Finance</span>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="abstract">
+      Biodiversity — the variety of life on Earth — underpins all ecosystem services that economies and societies depend on. The 6th mass extinction is underway, with species declining 60–70% since 1970. Sustainable finance — ESG criteria, green bonds, and impact investing — is re-routing capital toward sustainability. Singapore is positioning itself as Asia's green finance hub.
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-pill red"><span>1M+</span> species threatened with extinction</div>
+      <div class="stat-pill orange"><span>60–70%</span> wildlife decline since 1970 (WWF)</div>
+      <div class="stat-pill blue"><span>$44 trillion</span> global GDP dependent on nature</div>
+      <div class="stat-pill"><span>ESG</span> Environmental, Social, Governance</div>
+    </div>
+
+    <div class="sub-title">🌿 Ecosystem Services</div>
+    <div class="cards">
+      <div class="card teal">
+        <strong>Provisioning</strong>
+        <p>Food, fresh water, timber, fibre, genetic resources, medicines. Direct material benefits from nature.</p>
+      </div>
+      <div class="card">
+        <strong>Regulating</strong>
+        <p>Climate regulation, flood control, water purification, pollination, disease regulation.</p>
+      </div>
+      <div class="card blue">
+        <strong>Cultural</strong>
+        <p>Recreation, spiritual, aesthetic, educational value. Tourism, mental health benefits.</p>
+      </div>
+      <div class="card purple">
+        <strong>Supporting</strong>
+        <p>Soil formation, nutrient cycling, photosynthesis. Foundation for all other services.</p>
+      </div>
+    </div>
+
+    <div class="sub-title">🚨 Biodiversity Threats (HIPPO)</div>
+    <ul class="def-list">
+      <li><strong>H — Habitat Destruction</strong> — deforestation, wetland draining, urban sprawl (#1 threat)</li>
+      <li><strong>I — Invasive Species</strong> — out-compete native species, disrupt food webs</li>
+      <li><strong>P — Pollution</strong> — chemical contamination, plastic, eutrophication</li>
+      <li><strong>P — Population Growth</strong> — increased resource demand, land pressure</li>
+      <li><strong>O — Overharvesting</strong> — overfishing, poaching, unsustainable logging</li>
+    </ul>
+
+    <div class="sub-title">💵 Sustainable Finance</div>
+    <div class="cards">
+      <div class="card">
+        <strong>ESG Investing</strong>
+        <p>Investment decisions based on <strong>E</strong>nvironmental, <strong>S</strong>ocial, and <strong>G</strong>overnance criteria alongside financial returns.</p>
+      </div>
+      <div class="card blue">
+        <strong>Green Bonds</strong>
+        <p>Fixed-income securities raising capital specifically for climate/environmental projects. SG issued its first sovereign green bond (2022, S$2.4B).</p>
+      </div>
+      <div class="card orange">
+        <strong>Impact Investing</strong>
+        <p>Investments made with intention to generate positive, measurable social and environmental impact alongside financial return.</p>
+      </div>
+      <div class="card">
+        <strong>SG Green Finance</strong>
+        <p>MAS (Monetary Authority of Singapore) driving green taxonomy, sustainability disclosure, and SG-Asia Green Finance Centre.</p>
+      </div>
+    </div>
+
+    <div class="sub-title">🌊 Ocean Sustainability</div>
+    <div class="cards">
+      <div class="card teal">
+        <strong>Ocean Acidification</strong>
+        <p>Ocean absorbs 25% of CO₂ → forms carbonic acid → pH drops → dissolves coral skeletons, shellfish. Reef bleaching.</p>
+      </div>
+      <div class="card red">
+        <strong>Overfishing</strong>
+        <p>90% of fish stocks fully or over-exploited (FAO). Illegal, Unreported, Unregulated (IUU) fishing major problem.</p>
+      </div>
+    </div>
+
+    <div class="must-know">
+      <h4>⭐ Must-Know for Exams</h4>
+      <ul>
+        <li>Top biodiversity threat: <strong>habitat destruction</strong></li>
+        <li>Ecosystem services: provisioning, regulating, cultural, supporting</li>
+        <li>ESG = <strong>Environmental, Social, Governance</strong></li>
+        <li>Ocean absorbs CO₂ → <strong>ocean acidification</strong> → coral bleaching</li>
+        <li>6th mass extinction ongoing: <strong>human-caused, primarily habitat loss</strong></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CHEAT SHEET ===== -->
+<div class="section" id="cheatsheet">
+  <div class="cover-slide cs-grey">
+    <div class="cs-week-tag">Quick Reference</div>
+    <h2>📋 Master Cheat Sheet</h2>
+    <p>Critical numbers, definitions, and frameworks — everything essential in one place for last-minute revision.</p>
+  </div>
+  <div class="section-body">
+
+    <div class="sub-title">🔢 Critical Numbers to Remember</div>
+    <table class="data-table">
+      <thead><tr><th>Fact</th><th>Number</th><th>Context</th></tr></thead>
+      <tbody>
+        <tr><td>Paris Agreement signed</td><td>2015</td><td>First universal binding climate deal</td></tr>
+        <tr><td>UNFCCC signed</td><td>1992</td><td>Rio Earth Summit</td></tr>
+        <tr><td>CO₂ in atmosphere</td><td>420 ppm</td><td>Highest in 3 million years</td></tr>
+        <tr><td>Warming target</td><td>1.5°C</td><td>Above pre-industrial levels</td></tr>
+        <tr><td>People in extreme poverty</td><td>700M+</td><td>Less than $2.15/day</td></tr>
+        <tr><td>Undernourished globally</td><td>~828M</td><td>Increased 2019–2020</td></tr>
+        <tr><td>Food wasted globally</td><td>⅓ of all produced</td><td>FAO 2020</td></tr>
+        <tr><td>Land: livestock</td><td>27% of habitable land</td><td>Pasture + feed crops</td></tr>
+        <tr><td>Land: human crops</td><td>7% of habitable land</td><td>Direct food for humans</td></tr>
+        <tr><td>People without water</td><td>¼ of global population</td><td>High water stress</td></tr>
+        <tr><td>Agriculture water use</td><td>~70% of freshwater</td><td>Biggest consumer globally</td></tr>
+        <tr><td>NEWater target</td><td>50% by 2030</td><td>SG national tap</td></tr>
+        <tr><td>SG daily water demand</td><td>430M gallons/day</td><td>From four taps</td></tr>
+        <tr><td>Energy poverty</td><td>~800M people</td><td>No electricity access</td></tr>
+        <tr><td>SG plastic recycled</td><td>4% (2021)</td><td>Very low rate</td></tr>
+        <tr><td>SG home noise limit</td><td>67 dB (1 hour)</td><td>Maximum permissible</td></tr>
+        <tr><td>Light pollution growth</td><td>2%/year</td><td>Global rate</td></tr>
+        <tr><td>Great Smog deaths</td><td>~12,000</td><td>London 1952</td></tr>
+        <tr><td>Cities: land use</td><td>~1% of Earth's land</td><td>But 70% of CO₂</td></tr>
+        <tr><td>Species threatened</td><td>1M+</td><td>IPBES assessment</td></tr>
+        <tr><td>Wildlife decline</td><td>60–70% since 1970</td><td>WWF Living Planet</td></tr>
+        <tr><td>China vs USA emissions</td><td>China &gt; USA (2018)</td><td>China ~28% global</td></tr>
+      </tbody>
+    </table>
+
+    <div class="sub-title">🔑 Key Definitions</div>
+    <ul class="def-list">
+      <li><strong>Sustainability</strong> — Meeting present needs without compromising future generations (Brundtland 1987)</li>
+      <li><strong>Circular Economy</strong> — Design out waste, keep products in use, regenerate natural systems</li>
+      <li><strong>Energy Poverty</strong> — Lack of access to sustainable modern energy services and products</li>
+      <li><strong>Energy Security</strong> — Reliable, affordable, and clean energy for all</li>
+      <li><strong>Cap &amp; Trade</strong> — Sets total emission cap; companies trade pollution permits; ensures cost-effective reduction</li>
+      <li><strong>Carbon Tax</strong> — Direct price on CO₂ emissions; SG tax rises to $80/tonne by 2030</li>
+      <li><strong>NEWater</strong> — Ultra-clean reclaimed water (Singapore); industrial use + reservoir top-up</li>
+      <li><strong>Urban Heat Island</strong> — Urban areas warmer than surroundings due to concrete, less vegetation, waste heat</li>
+      <li><strong>Resilient City</strong> — City and dwellers can thrive even in a disaster</li>
+      <li><strong>Diurnal Rhythm</strong> — Body's 24-hour biological cycle (disrupted by light pollution)</li>
+      <li><strong>Material Footprint</strong> — Total raw materials extracted globally to satisfy a country's consumption</li>
+      <li><strong>Ecological Footprint</strong> — Human demand on nature; quantity of nature to support people</li>
+      <li><strong>ESG</strong> — Environmental, Social, Governance criteria for investment decisions</li>
+    </ul>
+
+    <div class="sub-title">🇸🇬 Singapore Specific — High Exam Frequency</div>
+    <div class="cards">
+      <div class="card">
+        <strong>Four National Taps</strong>
+        <ol style="padding-left:16px;font-size:0.85rem;">
+          <li>Local catchment water</li>
+          <li>Imported from Malaysia (Johor River)</li>
+          <li>NEWater (recycled)</li>
+          <li>Desalinated water</li>
+        </ol>
+      </div>
+      <div class="card blue">
+        <strong>30 by 30 Food Goal</strong>
+        <p>Produce 30% of nutritional needs locally by 2030. Currently ~10%. Sky farming, aquaculture, high-tech agriculture.</p>
+      </div>
+      <div class="card orange">
+        <strong>Zero Waste Masterplan</strong>
+        <p>Circular economy approach. Semakau Landfill full ~2035. 3R: Reduce → Reuse → Recycle.</p>
+      </div>
+      <div class="card teal">
+        <strong>Black Soldier Fly</strong>
+        <p>Larvae convert food waste into compost. Protein-rich byproduct for animal feed. Circular innovation.</p>
+      </div>
+      <div class="card purple">
+        <strong>Carbon Tax</strong>
+        <p>$5/t (2019) → $25/t (2024) → $50–80/t (2030). Economy-wide, covers ~80% of SG's emissions.</p>
+      </div>
+      <div class="card">
+        <strong>Singapore Green Plan 2030</strong>
+        <p>Net zero by 2050. Green buildings, 2GW solar by 2030, EV adoption, City in Nature.</p>
+      </div>
+    </div>
+
+    <div class="sub-title">🌐 International Agreements Timeline</div>
+    <ul class="steps">
+      <li><div class="step-num">1</div><div><strong>1972</strong> — Stockholm Conference: first major international environmental conference</div></li>
+      <li><div class="step-num">2</div><div><strong>1987</strong> — Brundtland Report: "Our Common Future" — defines sustainable development</div></li>
+      <li><div class="step-num">3</div><div><strong>1992</strong> — Rio Earth Summit: UNFCCC + Convention on Biological Diversity signed</div></li>
+      <li><div class="step-num">4</div><div><strong>1997</strong> — Kyoto Protocol: first binding emission targets (Annex I countries)</div></li>
+      <li><div class="step-num">5</div><div><strong>2000</strong> — Millennium Development Goals (MDGs): 8 goals, 189 countries</div></li>
+      <li><div class="step-num">6</div><div><strong>2015</strong> — Paris Agreement + SDGs adopted (17 goals, 169 targets)</div></li>
+      <li><div class="step-num">7</div><div><strong>2020</strong> — WFP Nobel Peace Prize; COVID impacts on SDG progress</div></li>
+      <li><div class="step-num">8</div><div><strong>2021</strong> — COP26 Glasgow: strengthened NDCs, methane pledge, coal phase-out</div></li>
+    </ul>
+
+  </div>
+</div>
+
+<!-- ===== PRACTICE QUESTIONS ===== -->
+<div class="section" id="practiceqs">
+  <div class="pq-hero">
+    <h2>📝 Key Practice Questions</h2>
+    <p>All 45 official MCQs from the CC0006 Quiz — Weeks 1 to 9 — with toggle-reveal answers. Test yourself before checking!</p>
+  </div>
+  <div class="section-body">
+
+    <!-- W1 Quiz Block -->
+    <div class="quiz-block">
+      <div class="quiz-block-header qwb-w1">
+        <div class="quiz-week-badge">W1</div>
+        Why Everyone Should Know About Sustainability
+      </div>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">1</span>
+          <span class="q-text">The first time that countries worldwide signed a deal to work together to limit global warming, and made financial commitments to do so, was in 2015. What was the deal called?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>The Paris Agreement.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">2</span>
+          <span class="q-text">What kind of human activity adds the most CO₂ to the atmosphere?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Combustion of fossil fuels.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">3</span>
+          <span class="q-text">Sustainable development spans many different areas and academic disciplines. Which option is NOT a characteristic of complex problems?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Solutions may be simple but hard to finance. (Complex problems do NOT have simple solutions.)</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">4</span>
+          <span class="q-text">Singapore aims to transition towards a more circular economy. Which of the following is NOT a characteristic of a circular economy?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Compensating for all emissions and pollution through, for example, tree planting or cleaning up plastic waste from benches. (That is offsetting/linear thinking, not circular.)</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">5</span>
+          <span class="q-text">In what way is planting a million trees in Singapore a natural climate solution?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Trees help cool down the island naturally through shading and releasing water through transpiration.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- W2 Quiz Block -->
+    <div class="quiz-block">
+      <div class="quiz-block-header qwb-w2">
+        <div class="quiz-week-badge">W2</div>
+        No Poverty, Social Inclusion &amp; Equality
+      </div>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">1</span>
+          <span class="q-text">No poverty, zero hunger, and reduced inequalities are some of the important sustainable development goals. True or False?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>True.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">2</span>
+          <span class="q-text">Which of these regions are some of the most poverty-stricken regions of the world?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Sub-Saharan Africa and South Asia.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">3</span>
+          <span class="q-text">A socially inclusive society aims to eliminate discrimination, enable high social mobility, and ensure that every human being can meet basic needs. True or False?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>True.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">4</span>
+          <span class="q-text">Technology and the digital revolution are widening the income gap. True or False?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>True — the digital divide means those without access fall further behind economically.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">5</span>
+          <span class="q-text">Gender pay gap is the only aspect of gender inequality. True or False?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>No — gender inequality also includes political representation, education access, violence, safety, and unpaid care work burden.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- W3 Quiz Block -->
+    <div class="quiz-block">
+      <div class="quiz-block-header qwb-w3">
+        <div class="quiz-week-badge">W3</div>
+        Food Security &amp; the Global Food System
+      </div>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">1</span>
+          <span class="q-text">From 2019–2020, the number of undernourished people in the world:</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Increased — COVID-19 pushed ~100 million more into food insecurity.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">2</span>
+          <span class="q-text">In 2020, the World Food Programme (WFP) was awarded the Nobel Peace Prize. What was the motivation?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>"For its efforts to combat hunger, for its contribution to bettering conditions for conflict-affected areas..."</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">3</span>
+          <span class="q-text">According to the FAO, how much of produced food did not reach the market or was discarded after purchase in 2020?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>A third of the food produced — approximately 1.3 billion tonnes per year.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">4</span>
+          <span class="q-text">In a successful project in Singapore, the larvae of Black Soldier Flies are used to:</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Convert food waste into nutritious compost. They also produce protein-rich larvae usable as animal feed.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">5</span>
+          <span class="q-text">How much of habitable land is used to grow crops for human consumption and for livestock respectively?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>27% of habitable land is used for livestock and 7% to grow crops for human consumption.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- W4 Quiz Block -->
+    <div class="quiz-block">
+      <div class="quiz-block-header qwb-w4">
+        <div class="quiz-week-badge">W4</div>
+        Water — Availability &amp; Sustainable Management
+      </div>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">1</span>
+          <span class="q-text">Which is the factor that makes water demand difficult to predict?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Climate change — unpredictable rainfall patterns, droughts, and floods make future demand impossible to forecast accurately.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">2</span>
+          <span class="q-text">How many people worldwide face high levels of baseline water stress?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>One-quarter (approximately 2 billion people).</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">3</span>
+          <span class="q-text">Which economic sector consumes the most water worldwide?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Agriculture — accounts for approximately 70% of global freshwater withdrawals.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">4</span>
+          <span class="q-text">NEWater is expected to meet how much of Singapore's water demand by 2030?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>50%.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">5</span>
+          <span class="q-text">Which one is NOT a national tap of Singapore?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Imported water from the Strait of Johor. (Singapore imports water from the Johor River, not the Strait of Johor — which is sea water.)</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- W5 Quiz Block -->
+    <div class="quiz-block">
+      <div class="quiz-block-header qwb-w5">
+        <div class="quiz-week-badge">W5</div>
+        Energy &amp; Climate Change (I)
+      </div>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">1</span>
+          <span class="q-text">People from the high-income countries are:</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Looking for further improvement in well-being (not basic access — they already have that).</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">2</span>
+          <span class="q-text">CO₂ is the only greenhouse gas. True or False?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>No — other major GHGs include methane (CH₄), nitrous oxide (N₂O), and fluorinated gases.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">3</span>
+          <span class="q-text">What is 'energy poverty'?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Lack of access to sustainable modern energy services and products.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">4</span>
+          <span class="q-text">Once emission mitigation measures are implemented, adaptation plans will need to be scrapped. True or False?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>False — both mitigation and adaptation are needed simultaneously. Mitigation reduces future warming; adaptation deals with impacts already locked in.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">5</span>
+          <span class="q-text">Advanced technologies, behaviour change, clean energy, and fuel shift are important for emission mitigation. True or False?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>True — all four are key pillars of the emission mitigation toolkit.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- W6 Quiz Block -->
+    <div class="quiz-block">
+      <div class="quiz-block-header qwb-w6">
+        <div class="quiz-week-badge">W6</div>
+        Energy &amp; Climate Change (II) — Policy &amp; Economics
+      </div>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">1</span>
+          <span class="q-text">Which of the following are economic incentive-based policy instruments?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Market-based tools such as cap and trade, and other non-market mechanisms such as carbon tax.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">2</span>
+          <span class="q-text">Which of the following statements is true about Cap and Trade?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Cap and Trade ensures that the polluter pays and allows for mitigating emissions at the lowest cost possible.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">3</span>
+          <span class="q-text">Which statement is true about CO₂ emissions in 2018?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>China emitted more than the United States. (China ~28%, USA ~15% of global CO₂ emissions.)</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">4</span>
+          <span class="q-text">The Stern Review suggested:</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Taking climate change action is a pro-growth strategy — the cost of inaction (5–20% of GDP) far exceeds the cost of action (~1% of GDP).</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">5</span>
+          <span class="q-text">When was the UN Framework Convention on Climate Change (UNFCCC) signed?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>1992 — at the Rio Earth Summit (United Nations Conference on Environment and Development).</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- W7 Quiz Block -->
+    <div class="quiz-block">
+      <div class="quiz-block-header qwb-w7">
+        <div class="quiz-week-badge">W7</div>
+        Pollution — Air, Light, Noise &amp; Plastic
+      </div>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">1</span>
+          <span class="q-text">What is the least serious effect of air pollution on children's health?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Chest tightness. (More serious effects include reduced lung function, heart disease, and cancer.)</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">2</span>
+          <span class="q-text">What percent of its plastic does Singapore recycle as of 2021?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>4%.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">3</span>
+          <span class="q-text">The maximum permissible noise level to which a Singaporean working at home can be exposed for one hour is about _____ decibels.</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>67 decibels.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">4</span>
+          <span class="q-text">Why are dolphins and whales extra sensitive to noise pollution?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>They rely on sound for communication (and navigation/echolocation). Noise pollution interferes with their ability to find food, navigate, and communicate.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">5</span>
+          <span class="q-text">Light pollution causes a disruption in our diurnal rhythm. Which of the following best describes the diurnal rhythm?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Our body's 24-hour biological cycle — regulating sleep, hormones, metabolism, and other physiological processes.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- W8 Quiz Block -->
+    <div class="quiz-block">
+      <div class="quiz-block-header qwb-w8">
+        <div class="quiz-week-badge">W8</div>
+        Waste Management — Responsible Consumption &amp; Production
+      </div>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">1</span>
+          <span class="q-text">Which of the following is an area which dominates consumerism?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Retailer satisfaction — constant promotion of buying more, faster, and newer drives consumerism.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">2</span>
+          <span class="q-text">Which of the following statements is NOT related to material footprints?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>"It measures human demand on nature — the quantity of nature it takes to support people or an economy." (That is the ecological footprint, not the material footprint.)</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">3</span>
+          <span class="q-text">Which of the sequences about the production and consumption chain is correct?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Extraction → Production → Distribution → Consumption → Disposal.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">4</span>
+          <span class="q-text">Why are consumption patterns in most industrialised and developed countries considered unsustainable?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Their products and services rely on too many natural resources and create harmful emissions when consumed or discarded.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">5</span>
+          <span class="q-text">What is the aim of the Singapore Zero Waste Masterplan?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Adopting a circular economy approach to waste and resource management practices, shifting towards more sustainable production and consumption.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- W9 Quiz Block -->
+    <div class="quiz-block">
+      <div class="quiz-block-header qwb-w9">
+        <div class="quiz-week-badge">W9</div>
+        Sustainable Cities
+      </div>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">1</span>
+          <span class="q-text">In what way is the environmental impact of cities disproportionate?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>Cities occupy only about 1% of land globally but have a large impact on the environment (consuming 75% of energy, producing 70% of CO₂).</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">2</span>
+          <span class="q-text">Which of the following is NOT one of the main ways that cities impact the environment?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>The high use of agricultural pesticides and water for irrigation in urban farms. (This is an agricultural/rural issue, not a primary urban environmental impact.)</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">3</span>
+          <span class="q-text">Which one is NOT true? Cities play a critical role in advancing the sustainability agenda because:</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>"Cities urgently need to reduce their dependence on the environment." (This is NOT true — cities need to manage and use nature sustainably, not reduce dependence. They depend on and should protect ecosystems.)</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">4</span>
+          <span class="q-text">How does the 'Urban Heat Island Effect' work?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>A dense urban environment, with less trees and more concrete, absorbs and retains more heat than the surrounding sea or forest.</p>
+        </div>
+      </details>
+      <details class="qitem">
+        <summary>
+          <span class="q-num">5</span>
+          <span class="q-text">What is meant by a 'resilient city' in the context of urban sustainability?</span>
+          <span class="q-toggle-icon">▾</span>
+        </summary>
+        <div class="q-answer">
+          <div class="q-answer-label">✅ Answer</div>
+          <p>The city and its urban dwellers should be able to continue to thrive even in a disaster.</p>
+        </div>
+      </details>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<footer style="text-align:center;padding:24px;background:#263238;color:#90a4ae;font-size:0.82rem;">
+  CC0006 Sustainability — Society, Economy &amp; Environment &nbsp;·&nbsp; NTU &nbsp;·&nbsp; Exam Prep Guide &nbsp;·&nbsp; 2026
+</footer>
+
+</body>
+</html>
