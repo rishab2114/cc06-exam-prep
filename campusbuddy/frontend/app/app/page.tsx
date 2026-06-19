@@ -6,6 +6,8 @@ const QUICK = [
   { slug: 'laundry-pickup', label: '🧺 Laundry' },
   { slug: 'grocery-shopping', label: '🛒 Grocery' },
   { slug: 'parcel-collection', label: '📦 Parcel' },
+  { slug: 'grocery-shopping&store=7-Eleven', label: '🏪 7-Eleven' },
+  { slug: 'grocery-shopping&store=Prime', label: '🏬 Prime' },
 ];
 
 export default function AppHome() {
@@ -39,13 +41,13 @@ export default function AppHome() {
 
         <section>
           <p className="mb-2 text-xs font-semibold uppercase text-slate-500">Your active tasks</p>
-          <div className="rounded-xl border bg-white p-3">
+          <Link href="/app/applicants/room-cleaning" className="block rounded-xl border bg-white p-3">
             <div className="flex items-center justify-between">
               <span className="font-medium">Room clean</span>
               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">OPEN</span>
             </div>
             <p className="mt-1 text-sm text-blue-700">3 applicants ›</p>
-          </div>
+          </Link>
         </section>
 
         <Link

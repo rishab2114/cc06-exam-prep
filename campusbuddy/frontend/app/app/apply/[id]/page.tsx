@@ -18,6 +18,7 @@ export default function ApplyPage() {
 
   const matricVerified = CURRENT_PROVIDER.matricVerified;
   const [message, setMessage] = useState('');
+  const [quote, setQuote] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
   if (!task) {
@@ -32,7 +33,10 @@ export default function ApplyPage() {
     task.sameGenderOnly && CURRENT_PROVIDER.gender !== task.customerGender;
   const needsMatric = task.requiresMatricVerification && !matricVerified;
   const canApply = !genderBlocked && !needsMatric;
-  const earnings = feeBreakdown(task.priceCents).buddyGets;
+  // Provider's own quote — defaults to the listed price until they change it.
+  const quoteCents =
+    quote.trim() === '' ? task.priceCents : Math.max(0, Math.round(Number(quote) * 100));
+  const earnings = feeBreakdown(quoteCents).buddyGets;
 
   if (submitted) {
     return (
@@ -136,6 +140,25 @@ export default function ApplyPage() {
           )}
         </div>
 
+        {/* Your quote — open bidding */}
+        {canApply && (
+          <label className="block text-sm">
+            <span className="text-slate-500">Your price (SGD)</span>
+            <input
+              type="number"
+              inputMode="decimal"
+              value={quote}
+              onChange={(e) => setQuote(e.target.value)}
+              placeholder={(task.priceCents / 100).toFixed(2)}
+              className="mt-1 w-full rounded-xl border px-3 py-2"
+            />
+            <span className="mt-1 block text-xs text-slate-400">
+              {task.customerName} listed {formatSgd(task.priceCents)} — offer your own price, higher
+              or lower. You earn <b>{formatSgd(earnings)}</b> after the 15% fee.
+            </span>
+          </label>
+        )}
+
         {/* Application message */}
         {canApply && (
           <label className="block text-sm">
@@ -159,8 +182,8 @@ export default function ApplyPage() {
           {genderBlocked
             ? 'Not eligible for this task'
             : needsMatric
-              ? 'Scan matric card to continue'
-              : 'Send application'}
+              ? 'Verify account to continue'
+              : `Send application · ${formatSgd(quoteCents)}`}
         </button>
       </div>
     </div>
