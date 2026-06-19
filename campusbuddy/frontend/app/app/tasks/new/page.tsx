@@ -1,20 +1,40 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { feeBreakdown, formatSgd } from '../../../../lib/format';
+import { useSearchParams } from 'next/navigation';
+import { formatSgd } from '../../../../lib/format';
 
-// Create-task form (wireframe #3, docs/05). Shows the live "you pay / buddy gets"
-// breakdown using the shared fee math (15% + S$1 floor) from lib/format.ts.
+// Create-task form (wireframe #3, docs/05). No min budget; buddies can also quote.
 const CATEGORIES = ['Room cleaning', 'Laundry pickup', 'Grocery shopping', 'Food delivery', 'Parcel collection', 'Late-night food run'];
 // Stores for grocery/delivery runs — buddy shops/picks up from here.
 const STORES = ['Any store', '7-Eleven / Prime', 'FairPrice', 'Cheers', 'Amazon / Prime Now'];
 
-export default function NewTaskPage() {
-  const [category, setCategory] = useState(CATEGORIES[0]);
+// Maps the home quick-post slugs to a category so the dropdown preselects correctly.
+const SLUG_TO_CATEGORY: Record<string, string> = {
+  'room-cleaning': 'Room cleaning',
+  'laundry-pickup': 'Laundry pickup',
+  'grocery-shopping': 'Grocery shopping',
+  'food-delivery': 'Food delivery',
+  'parcel-collection': 'Parcel collection',
+  'late-night-food-run': 'Late-night food run',
+};
+
+function NewTaskForm() {
+  const params = useSearchParams();
+  const initialCategory = SLUG_TO_CATEGORY[params.get('category') ?? ''] ?? CATEGORIES[0];
+  const storeParam = params.get('store');
+  const initialStore =
+    storeParam === 'convenience'
+      ? '7-Eleven / Prime'
+      : STORES.includes(storeParam ?? '')
+        ? (storeParam as string)
+        : 'Any store';
+
+  const [category, setCategory] = useState(initialCategory);
+  const [store, setStore] = useState(initialStore);
   const [budget, setBudget] = useState(20);
   const cents = Math.round(budget * 100);
-  const { youPay } = feeBreakdown(cents);
   const isGrocery = category === 'Grocery shopping' || category === 'Food delivery';
 
   return (
@@ -38,7 +58,11 @@ export default function NewTaskPage() {
         {isGrocery && (
           <label className="block">
             <span className="text-slate-500">Store</span>
-            <select className="mt-1 w-full rounded-xl border px-3 py-2">
+            <select
+              value={store}
+              onChange={(e) => setStore(e.target.value)}
+              className="mt-1 w-full rounded-xl border px-3 py-2"
+            >
               {STORES.map((s) => <option key={s}>{s}</option>)}
             </select>
           </label>
@@ -74,7 +98,7 @@ export default function NewTaskPage() {
         </label>
 
         <div className="rounded-xl bg-blue-50 p-3 text-blue-800">
-          You pay <b>{formatSgd(youPay)}</b>
+          You pay <b>{formatSgd(cents)}</b>
         </div>
 
         <button className="block w-full rounded-xl bg-blue-700 py-3 font-medium text-white">
@@ -82,5 +106,14 @@ export default function NewTaskPage() {
         </button>
       </form>
     </div>
+  );
+}
+
+export default function NewTaskPage() {
+  // useSearchParams must be inside a Suspense boundary for static rendering.
+  return (
+    <Suspense>
+      <NewTaskForm />
+    </Suspense>
   );
 }
