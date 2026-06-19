@@ -21,3 +21,6 @@ backend/prisma/migrations/dev.db*
 *.log
 .DS_Store
 coverage/
+
+# ts build info
+*.tsbuildinfo
