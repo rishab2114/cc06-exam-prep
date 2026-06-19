@@ -1,11 +1,8 @@
-// Provider task feed (wireframe #6, docs/05). Mock data; T2 tasks show the
-// ID-verification gate from the risk-tier redesign (docs/16).
-const FEED = [
-  { icon: '📦', title: 'Parcel pickup', price: 'S$6', meta: 'Hall 10 · now · 0.3km · cust ⭐4.8', tier: 'T1' },
-  { icon: '🧺', title: 'Laundry pickup', price: 'S$10', meta: 'Hall 9 · 5–7pm · 0.5km · cust ⭐5.0', tier: 'T1' },
-  { icon: '🧹', title: 'Room cleaning', price: 'S$20', meta: 'Hall 8 · today · 🪪 ID-verified required', tier: 'T2' },
-];
+import Link from 'next/link';
+import { MOCK_TASKS } from '../../../lib/mockTasks';
+import { formatSgd } from '../../../lib/format';
 
+// Provider task feed (wireframe #6, docs/05). Apply leads to the verification gate.
 export default function FindPage() {
   return (
     <div>
@@ -16,16 +13,31 @@ export default function FindPage() {
 
       <div className="space-y-3 p-4">
         <p className="text-xs text-slate-500">Laundry, Parcel · Halls 8–11</p>
-        {FEED.map((t) => (
-          <div key={t.title} className="rounded-xl border bg-white p-3">
+        {MOCK_TASKS.map((t) => (
+          <div key={t.id} className="rounded-xl border bg-white p-3">
             <div className="flex justify-between">
               <span className="font-medium">{t.icon} {t.title}</span>
-              <span className="text-green-700">{t.price}</span>
+              <span className="text-green-700">{formatSgd(t.priceCents)}</span>
             </div>
-            <p className="mt-1 text-sm text-slate-500">{t.meta}</p>
-            <button className="mt-2 w-full rounded-lg bg-blue-700 py-2 text-sm font-medium text-white">
+            <p className="mt-1 text-sm text-slate-500">
+              {t.hall} · {t.when} · {t.distanceKm}km · cust ⭐{t.customerRating}
+            </p>
+            <div className="mt-1 flex flex-wrap gap-1">
+              {t.requiresMatricVerification && (
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">🪪 ID-verified</span>
+              )}
+              {t.sameGenderOnly && (
+                <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-700">
+                  {t.customerGender === 'F' ? '♀ female buddies' : '♂ male buddies'}
+                </span>
+              )}
+            </div>
+            <Link
+              href={`/app/apply/${t.id}`}
+              className="mt-2 block rounded-lg bg-blue-700 py-2 text-center text-sm font-medium text-white"
+            >
               Apply
-            </button>
+            </Link>
           </div>
         ))}
       </div>
