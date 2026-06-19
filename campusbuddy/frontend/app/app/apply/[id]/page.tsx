@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { getTask, CURRENT_PROVIDER } from '../../../../lib/mockTasks';
-import { formatSgd } from '../../../../lib/format';
+import { feeBreakdown, formatSgd } from '../../../../lib/format';
 
 // Apply flow with the verification gate:
 //  1. Account must be matric-verified (done once at onboarding) for tasks that
@@ -34,10 +34,9 @@ export default function ApplyPage() {
   const needsMatric = task.requiresMatricVerification && !matricVerified;
   const canApply = !genderBlocked && !needsMatric;
   // Provider's own quote — defaults to the listed price until they change it.
-  // Paid directly by PayNow/cash on completion, so the buddy collects the full amount.
   const quoteCents =
     quote.trim() === '' ? task.priceCents : Math.max(0, Math.round(Number(quote) * 100));
-  const earnings = quoteCents;
+  const earnings = feeBreakdown(quoteCents).buddyGets;
 
   if (submitted) {
     return (
@@ -77,7 +76,7 @@ export default function ApplyPage() {
             {task.hall} · {task.when} · {task.customerName} ⭐{task.customerRating}
           </p>
           <p className="mt-2 rounded-lg bg-green-50 px-2 py-1 text-sm text-green-800">
-            You collect <b>{formatSgd(earnings)}</b> · PayNow or cash on completion
+            You earn <b>{formatSgd(earnings)}</b>
           </p>
         </div>
 
@@ -155,7 +154,7 @@ export default function ApplyPage() {
             />
             <span className="mt-1 block text-xs text-slate-400">
               {task.customerName} listed {formatSgd(task.priceCents)} — offer your own price, higher
-              or lower. You collect <b>{formatSgd(earnings)}</b> directly (PayNow or cash).
+              or lower. You earn <b>{formatSgd(earnings)}</b>.
             </span>
           </label>
         )}

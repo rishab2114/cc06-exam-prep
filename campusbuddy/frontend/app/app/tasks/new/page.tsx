@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { formatSgd } from '../../../../lib/format';
+import { feeBreakdown, formatSgd } from '../../../../lib/format';
 
-// Create-task form (wireframe #3, docs/05). No upfront/escrow payment — the
-// customer pays the buddy directly on completion via PayNow or cash.
+// Create-task form (wireframe #3, docs/05). Shows the live "you pay / buddy gets"
+// breakdown using the shared fee math (15% + S$1 floor) from lib/format.ts.
 const CATEGORIES = ['Room cleaning', 'Laundry pickup', 'Grocery shopping', 'Food delivery', 'Parcel collection', 'Late-night food run'];
 // Stores for grocery/delivery runs — buddy shops/picks up from here.
 const STORES = ['Any store', '7-Eleven / Prime', 'FairPrice', 'Cheers', 'Amazon / Prime Now'];
@@ -13,8 +13,8 @@ const STORES = ['Any store', '7-Eleven / Prime', 'FairPrice', 'Cheers', 'Amazon 
 export default function NewTaskPage() {
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [budget, setBudget] = useState(20);
-  const [pay, setPay] = useState<'PayNow' | 'Cash'>('PayNow');
   const cents = Math.round(budget * 100);
+  const { youPay } = feeBreakdown(cents);
   const isGrocery = category === 'Grocery shopping' || category === 'Food delivery';
 
   return (
@@ -73,31 +73,12 @@ export default function NewTaskPage() {
           </span>
         </label>
 
-        <div>
-          <span className="text-slate-500">How you&apos;ll pay (on completion)</span>
-          <div className="mt-1 grid grid-cols-2 gap-2">
-            {(['PayNow', 'Cash'] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setPay(m)}
-                className={`rounded-xl border py-2 font-medium ${
-                  pay === m ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-slate-300'
-                }`}
-              >
-                {m === 'PayNow' ? '📲 PayNow' : '💵 Cash'}
-              </button>
-            ))}
-          </div>
-        </div>
-
         <div className="rounded-xl bg-blue-50 p-3 text-blue-800">
-          Pay <b>{formatSgd(cents)}</b> directly to your buddy by <b>{pay}</b> when the task is done.
-          <span className="mt-1 block text-xs text-blue-500">No upfront charge — nothing is held by the app.</span>
+          You pay <b>{formatSgd(youPay)}</b>
         </div>
 
         <button className="block w-full rounded-xl bg-blue-700 py-3 font-medium text-white">
-          Post task
+          Continue to payment
         </button>
       </form>
     </div>

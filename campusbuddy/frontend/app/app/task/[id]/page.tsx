@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { getTask, CURRENT_PROVIDER } from '../../../../lib/mockTasks';
-import { formatSgd } from '../../../../lib/format';
+import { feeBreakdown, formatSgd } from '../../../../lib/format';
 
 // Active (accepted) task — provider side. Arrival check-in confirms the assigned
 // buddy is the one who showed up, via one of two methods:
@@ -16,15 +16,12 @@ import { formatSgd } from '../../../../lib/format';
 // customer is alerted — so nobody can send a substitute. Matric number is never shown.
 type Method = null | 'ntupass' | 'photo';
 type Status = 'idle' | 'verifying' | 'confirmed' | 'mismatch';
-type Stage = 'active' | 'paying' | 'paid';
 
 export default function ActiveTaskPage() {
   const { id } = useParams<{ id: string }>();
   const task = getTask(id);
   const [method, setMethod] = useState<Method>(null);
   const [status, setStatus] = useState<Status>('idle');
-  const [stage, setStage] = useState<Stage>('active');
-  const [payMethod, setPayMethod] = useState<'PayNow' | 'Cash'>('PayNow');
 
   if (!task) {
     return (
@@ -34,8 +31,7 @@ export default function ActiveTaskPage() {
     );
   }
 
-  // Paid directly on the spot (PayNow/cash), so the buddy collects the full agreed price.
-  const amount = task.priceCents;
+  const earnings = feeBreakdown(task.priceCents).buddyGets;
 
   // mine = the assigned buddy verifies as themselves -> match. Anything else is a
   // substitute and gets caught.
@@ -62,8 +58,8 @@ export default function ActiveTaskPage() {
           <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700">ASSIGNED</span>
         </div>
         <p className="mt-1 text-sm text-slate-500">
-          {task.hall} · with {task.customerName} ⭐{task.customerRating} · you collect{' '}
-          {formatSgd(amount)}
+          {task.hall} · with {task.customerName} ⭐{task.customerRating} · you earn{' '}
+          {formatSgd(earnings)}
         </p>
       </header>
 
@@ -158,72 +154,13 @@ export default function ActiveTaskPage() {
           </p>
         </div>
 
-        {/* Completion unlocks only after a confirmed check-in */}
-        {stage === 'active' && (
-          <button
-            disabled={!done}
-            onClick={() => setStage('paying')}
-            className="block w-full rounded-xl bg-green-600 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {done ? 'Mark task complete' : 'Check in to start the task'}
-          </button>
-        )}
-
-        {/* On-spot payment: PayNow or cash, paid directly by the customer */}
-        {stage === 'paying' && (
-          <div className="space-y-3 rounded-xl border bg-white p-4">
-            <p className="font-medium">💳 Collect payment</p>
-            <p className="text-sm text-slate-500">
-              {task.customerName} pays you <b>{formatSgd(amount)}</b> on the spot — nothing goes
-              through the app.
-            </p>
-
-            <div className="grid grid-cols-2 gap-2">
-              {(['PayNow', 'Cash'] as const).map((m) => (
-                <button
-                  key={m}
-                  onClick={() => setPayMethod(m)}
-                  className={`rounded-lg border py-2 text-sm font-medium ${
-                    payMethod === m ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-slate-300'
-                  }`}
-                >
-                  {m === 'PayNow' ? '📲 PayNow' : '💵 Cash'}
-                </button>
-              ))}
-            </div>
-
-            {payMethod === 'PayNow' ? (
-              <div className="rounded-lg border bg-slate-50 p-3 text-center text-sm text-slate-600">
-                <div className="mx-auto mb-2 flex h-32 w-32 items-center justify-center rounded border bg-white text-5xl">
-                  🔳
-                </div>
-                {task.customerName} scans to PayNow {formatSgd(amount)} to {CURRENT_PROVIDER.name}
-                <div className="text-xs text-slate-400">{CURRENT_PROVIDER.paynow}</div>
-              </div>
-            ) : (
-              <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
-                Collect {formatSgd(amount)} in cash from {task.customerName}.
-              </p>
-            )}
-
-            <button
-              onClick={() => setStage('paid')}
-              className="block w-full rounded-xl bg-green-600 py-3 font-medium text-white"
-            >
-              Confirm {formatSgd(amount)} received
-            </button>
-          </div>
-        )}
-
-        {stage === 'paid' && (
-          <div className="rounded-xl bg-green-50 p-4 text-center text-sm text-green-800">
-            ✅ <b>Paid &amp; complete.</b> You collected {formatSgd(amount)} via {payMethod} from{' '}
-            {task.customerName}.
-            <Link href="/app/find" className="mt-3 block font-medium underline">
-              Find more tasks
-            </Link>
-          </div>
-        )}
+        {/* Task actions unlock only after a confirmed check-in */}
+        <button
+          disabled={!done}
+          className="block w-full rounded-xl bg-green-600 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {done ? 'Mark task complete' : 'Check in to start the task'}
+        </button>
       </div>
     </div>
   );
