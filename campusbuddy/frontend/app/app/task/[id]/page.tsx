@@ -6,17 +6,22 @@ import { useParams } from 'next/navigation';
 import { getTask, CURRENT_PROVIDER } from '../../../../lib/mockTasks';
 import { feeBreakdown, formatSgd } from '../../../../lib/format';
 
-// Active (accepted) task — provider side. The key control here is the ARRIVAL
-// CHECK-IN scan: when the buddy reaches the door, they scan their matric card and
-// the system confirms the scanned identity matches the ASSIGNED provider. If a
-// different person scans, it's rejected and the customer is alerted — this stops
-// someone sending a substitute. The matric number itself is never displayed.
-type ScanState = 'idle' | 'scanning' | 'confirmed' | 'mismatch';
+// Active (accepted) task — provider side. Arrival check-in confirms the assigned
+// buddy is the one who showed up, via one of two methods:
+//   - NTU pass: re-auth with NTU SSO; the returned identity must equal the
+//     assigned buddy.
+//   - Live matric photo: card is photographed IN-APP on the spot (no gallery
+//     uploads), then OCR + face/name match against the onboarding record.
+// Either way, an identity that isn't the assigned buddy is rejected and the
+// customer is alerted — so nobody can send a substitute. Matric number is never shown.
+type Method = null | 'ntupass' | 'photo';
+type Status = 'idle' | 'verifying' | 'confirmed' | 'mismatch';
 
 export default function ActiveTaskPage() {
   const { id } = useParams<{ id: string }>();
   const task = getTask(id);
-  const [scan, setScan] = useState<ScanState>('idle');
+  const [method, setMethod] = useState<Method>(null);
+  const [status, setStatus] = useState<Status>('idle');
 
   if (!task) {
     return (
@@ -28,12 +33,19 @@ export default function ActiveTaskPage() {
 
   const earnings = feeBreakdown(task.priceCents).buddyGets;
 
-  // `mine` = the assigned buddy scanning their own card -> match.
-  // anything else -> mismatch (substitute caught).
-  function runScan(mine: boolean) {
-    setScan('scanning');
-    setTimeout(() => setScan(mine ? 'confirmed' : 'mismatch'), 900);
+  // mine = the assigned buddy verifies as themselves -> match. Anything else is a
+  // substitute and gets caught.
+  function verify(mine: boolean) {
+    setStatus('verifying');
+    setTimeout(() => setStatus(mine ? 'confirmed' : 'mismatch'), 900);
   }
+
+  function reset() {
+    setMethod(null);
+    setStatus('idle');
+  }
+
+  const done = status === 'confirmed';
 
   return (
     <div>
@@ -52,59 +64,102 @@ export default function ActiveTaskPage() {
       </header>
 
       <div className="space-y-4 p-4">
-        {/* Arrival check-in */}
         <div className="rounded-xl border bg-white p-4">
           <p className="font-medium">📍 Arrival check-in</p>
           <p className="mt-1 text-sm text-slate-500">
-            When you reach {task.customerName}&apos;s door, scan your matric card so they can
-            confirm the buddy they accepted is the one who showed up.
+            At {task.customerName}&apos;s door, verify it&apos;s really you so the buddy they
+            accepted is the one who showed up.
           </p>
 
-          {scan === 'confirmed' && (
+          {/* Result banners */}
+          {status === 'confirmed' && (
             <div className="mt-3 rounded-lg bg-green-50 p-3 text-sm text-green-800">
               ✅ <b>Identity confirmed — {CURRENT_PROVIDER.name}.</b> {task.customerName} now sees:
               “Your buddy is verified and has arrived.”
             </div>
           )}
-
-          {scan === 'mismatch' && (
+          {status === 'mismatch' && (
             <div className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-800">
-              🚫 <b>Card doesn&apos;t match the assigned buddy.</b> Check-in blocked and
-              {' '}{task.customerName} has been alerted. A different person can&apos;t take over a
-              task — only {CURRENT_PROVIDER.name} can check in here.
+              🚫 <b>This isn&apos;t the assigned buddy.</b> Check-in blocked and {task.customerName}{' '}
+              has been alerted. Only {CURRENT_PROVIDER.name} can check in for this task.
+              <button onClick={reset} className="mt-2 block font-medium underline">Try again</button>
             </div>
           )}
 
-          {(scan === 'idle' || scan === 'mismatch') && (
+          {/* Step 1: choose a method */}
+          {method === null && status === 'idle' && (
             <div className="mt-3 space-y-2">
               <button
-                onClick={() => runScan(true)}
-                className="w-full rounded-lg bg-slate-900 py-2 text-sm font-medium text-white"
+                onClick={() => setMethod('ntupass')}
+                className="flex w-full items-center justify-between rounded-lg border border-slate-300 px-3 py-3 text-sm font-medium"
               >
-                Scan my card ({CURRENT_PROVIDER.name})
+                <span>🎓 Verify with NTU pass</span><span className="text-slate-400">›</span>
               </button>
               <button
-                onClick={() => runScan(false)}
-                className="w-full rounded-lg border border-slate-300 py-2 text-sm text-slate-600"
+                onClick={() => setMethod('photo')}
+                className="flex w-full items-center justify-between rounded-lg border border-slate-300 px-3 py-3 text-sm font-medium"
               >
-                Demo: scan someone else&apos;s card
+                <span>📷 Photo of matric card</span><span className="text-slate-400">›</span>
               </button>
             </div>
           )}
 
-          {scan === 'scanning' && <p className="mt-3 text-sm text-slate-500">Scanning…</p>}
+          {/* Step 2a: NTU pass */}
+          {method === 'ntupass' && status !== 'confirmed' && (
+            <div className="mt-3 space-y-2">
+              <p className="text-sm text-slate-500">Sign in with NTU SSO to confirm your identity.</p>
+              <button
+                onClick={() => verify(true)}
+                disabled={status === 'verifying'}
+                className="w-full rounded-lg bg-slate-900 py-2 text-sm font-medium text-white disabled:opacity-60"
+              >
+                {status === 'verifying' ? 'Verifying…' : `Continue as ${CURRENT_PROVIDER.name}`}
+              </button>
+              <button
+                onClick={() => verify(false)}
+                className="w-full rounded-lg border border-slate-300 py-2 text-sm text-slate-600"
+              >
+                Demo: sign in as someone else
+              </button>
+            </div>
+          )}
+
+          {/* Step 2b: live photo capture */}
+          {method === 'photo' && status !== 'confirmed' && (
+            <div className="mt-3 space-y-2">
+              <div className="flex h-28 items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 text-3xl">
+                {status === 'verifying' ? '⏳' : '📷'}
+              </div>
+              <p className="text-xs text-slate-400">
+                Taken live in the app — no gallery uploads — so the card is checked on the spot.
+              </p>
+              <button
+                onClick={() => verify(true)}
+                disabled={status === 'verifying'}
+                className="w-full rounded-lg bg-slate-900 py-2 text-sm font-medium text-white disabled:opacity-60"
+              >
+                {status === 'verifying' ? 'Verifying card…' : 'Capture my matric card'}
+              </button>
+              <button
+                onClick={() => verify(false)}
+                className="w-full rounded-lg border border-slate-300 py-2 text-sm text-slate-600"
+              >
+                Demo: capture a different card
+              </button>
+            </div>
+          )}
 
           <p className="mt-3 text-xs text-slate-400">
-            🔒 The matric number is never shown — the scan only returns a verified identity match.
+            🔒 The matric number is never shown — verification only returns an identity match.
           </p>
         </div>
 
         {/* Task actions unlock only after a confirmed check-in */}
         <button
-          disabled={scan !== 'confirmed'}
+          disabled={!done}
           className="block w-full rounded-xl bg-green-600 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {scan === 'confirmed' ? 'Mark task complete' : 'Check in to start the task'}
+          {done ? 'Mark task complete' : 'Check in to start the task'}
         </button>
       </div>
     </div>

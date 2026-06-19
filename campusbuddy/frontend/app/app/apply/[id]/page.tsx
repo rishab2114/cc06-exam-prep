@@ -96,8 +96,9 @@ export default function ApplyPage() {
                 students only.
               </p>
               <p className="mt-2 rounded-lg bg-blue-50 px-2 py-1 text-xs text-blue-700">
-                📍 You&apos;ll scan your card at the door on arrival, so {task.customerName} knows
-                it&apos;s really you — not someone sent in your place.
+                📍 On arrival you&apos;ll verify with your NTU pass or a live photo of your matric
+                card, so {task.customerName} knows it&apos;s really you — not someone sent in your
+                place.
               </p>
             </div>
           ) : (
