@@ -24,3 +24,6 @@ coverage/
 
 # ts build info
 *.tsbuildinfo
+
+# next generated
+frontend/next-env.d.ts
