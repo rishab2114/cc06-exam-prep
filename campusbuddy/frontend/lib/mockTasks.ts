@@ -112,4 +112,5 @@ export const CURRENT_PROVIDER = {
   name: 'Priya',
   gender: 'F' as 'M' | 'F',
   matricVerified: true,
+  paynow: '+65 9123 4567', // shown as a PayNow QR for on-spot payment
 };
