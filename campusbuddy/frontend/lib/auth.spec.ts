@@ -1,4 +1,4 @@
-import { isNtuEmail } from './auth';
+import { isNtuEmail } from './ntu';
 
 // Run with your test runner of choice (vitest/jest). Documents the NTU gate.
 describe('isNtuEmail', () => {

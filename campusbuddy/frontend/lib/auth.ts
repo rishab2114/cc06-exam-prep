@@ -1,19 +1,13 @@
 import type { NextAuthOptions } from 'next-auth';
 import EmailProvider from 'next-auth/providers/email';
+import { isNtuEmail } from './ntu';
 
 /**
  * Auth.js (NextAuth) config. The critical control is the NTU email allowlist in
  * the signIn callback — only verified NTU domains may register/sign in (docs/11).
  * This is also re-validated server-side on the API; never trust the client alone.
  */
-const NTU_DOMAINS = (process.env.NTU_EMAIL_DOMAINS ?? 'e.ntu.edu.sg,ntu.edu.sg')
-  .split(',')
-  .map((d) => d.trim().toLowerCase());
-
-export function isNtuEmail(email: string): boolean {
-  const domain = email.split('@')[1]?.toLowerCase() ?? '';
-  return NTU_DOMAINS.some((d) => domain === d || domain.endsWith(`.${d}`));
-}
+export { isNtuEmail };
 
 export const authOptions: NextAuthOptions = {
   providers: [
