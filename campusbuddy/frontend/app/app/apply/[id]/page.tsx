@@ -6,18 +6,17 @@ import { useParams } from 'next/navigation';
 import { getTask, CURRENT_PROVIDER } from '../../../../lib/mockTasks';
 import { feeBreakdown, formatSgd } from '../../../../lib/format';
 
-// Apply flow with the verification gate (the feature requested in chat):
-//  1. Matric-card check for tasks that enter private space / handle belongings.
-//     The matric NUMBER is never shown to anyone — scanning only returns a
-//     verified=true result (privacy-by-design).
-//  2. Same-gender matching for intimate tasks (laundry), based on the provider's
-//     verified profile gender. Framed as a customer comfort preference.
+// Apply flow with the verification gate:
+//  1. Account must be matric-verified (done once at onboarding) for tasks that
+//     enter a room / handle belongings. The actual card SCAN happens on arrival
+//     (see /app/task/[id]) so a substitute can't be sent in their place.
+//  2. Same-gender matching is OPT-IN by the customer for intimate tasks (laundry),
+//     matched against the provider's verified profile gender.
 export default function ApplyPage() {
   const { id } = useParams<{ id: string }>();
   const task = getTask(id);
 
-  const [matricVerified, setMatricVerified] = useState(CURRENT_PROVIDER.matricVerified);
-  const [scanning, setScanning] = useState(false);
+  const matricVerified = CURRENT_PROVIDER.matricVerified;
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
@@ -35,16 +34,6 @@ export default function ApplyPage() {
   const canApply = !genderBlocked && !needsMatric;
   const earnings = feeBreakdown(task.priceCents).buddyGets;
 
-  function scanCard() {
-    setScanning(true);
-    // Simulates tapping the matric card on NFC / scanning the QR. The real app
-    // calls the verification service which returns only a boolean + signed token.
-    setTimeout(() => {
-      setMatricVerified(true);
-      setScanning(false);
-    }, 900);
-  }
-
   if (submitted) {
     return (
       <div className="flex min-h-[70vh] flex-col items-center justify-center p-6 text-center">
@@ -53,7 +42,13 @@ export default function ApplyPage() {
         <p className="mt-2 text-slate-600">
           {task.customerName} will review and confirm. You&apos;ll get a notification if accepted.
         </p>
-        <Link href="/app/find" className="mt-8 rounded-xl bg-blue-700 px-6 py-3 font-medium text-white">
+        <Link
+          href={`/app/task/${task.id}`}
+          className="mt-8 rounded-xl bg-blue-700 px-6 py-3 font-medium text-white"
+        >
+          Demo: customer accepted → open task
+        </Link>
+        <Link href="/app/find" className="mt-3 text-sm text-slate-500">
           Find more tasks
         </Link>
       </div>
@@ -85,11 +80,11 @@ export default function ApplyPage() {
         <div className="space-y-3">
           <p className="text-xs font-semibold uppercase text-slate-500">Verification</p>
 
-          {/* Matric card */}
+          {/* Matric card — account-level status, set once at onboarding */}
           {task.requiresMatricVerification ? (
             <div className="rounded-xl border bg-white p-3">
               <div className="flex items-center justify-between">
-                <span className="font-medium">🪪 Matric card</span>
+                <span className="font-medium">🪪 Matric-verified account</span>
                 {matricVerified ? (
                   <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700">Verified ✓</span>
                 ) : (
@@ -97,21 +92,12 @@ export default function ApplyPage() {
                 )}
               </div>
               <p className="mt-1 text-sm text-slate-500">
-                This task involves entering a room / handling belongings, so we confirm you&apos;re a
-                real NTU student.
+                This task enters a room / handles belongings, so it&apos;s open to matric-verified
+                students only.
               </p>
-              {!matricVerified && (
-                <button
-                  onClick={scanCard}
-                  disabled={scanning}
-                  className="mt-2 w-full rounded-lg bg-slate-900 py-2 text-sm font-medium text-white disabled:opacity-60"
-                >
-                  {scanning ? 'Scanning…' : 'Scan matric card'}
-                </button>
-              )}
-              <p className="mt-2 text-xs text-slate-400">
-                🔒 Your matric number is encrypted and never shown — not to the customer, not to
-                you. Scanning only confirms “verified”.
+              <p className="mt-2 rounded-lg bg-blue-50 px-2 py-1 text-xs text-blue-700">
+                📍 You&apos;ll scan your card at the door on arrival, so {task.customerName} knows
+                it&apos;s really you — not someone sent in your place.
               </p>
             </div>
           ) : (

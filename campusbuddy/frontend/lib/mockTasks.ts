@@ -78,10 +78,11 @@ export function getTask(id: string): MockTask | undefined {
   return MOCK_TASKS.find((t) => t.id === id);
 }
 
-// The signed-in provider, for the demo. Matric starts UNverified so you can see
-// the "scan to verify" step. Gender is used for same-gender task matching.
+// The signed-in provider, for the demo. matricVerified = account was verified
+// at ONBOARDING (proves real NTU student). The per-task arrival scan is separate
+// (see /app/task/[id]) and proves the assigned person actually showed up.
 export const CURRENT_PROVIDER = {
   name: 'Priya',
   gender: 'F' as 'M' | 'F',
-  matricVerified: false,
+  matricVerified: true,
 };
