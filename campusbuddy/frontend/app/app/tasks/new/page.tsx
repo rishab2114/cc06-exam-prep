@@ -8,13 +8,13 @@ import { feeBreakdown, formatSgd } from '../../../../lib/format';
 // breakdown using the shared fee math (15% + S$1 floor) from lib/format.ts.
 const CATEGORIES = ['Room cleaning', 'Laundry pickup', 'Grocery shopping', 'Food delivery', 'Parcel collection', 'Late-night food run'];
 // Stores for grocery/delivery runs — buddy shops/picks up from here.
-const STORES = ['Any store', '7-Eleven', 'Prime', 'FairPrice', 'Cheers', 'Amazon / Prime Now'];
+const STORES = ['Any store', '7-Eleven / Prime', 'FairPrice', 'Cheers', 'Amazon / Prime Now'];
 
 export default function NewTaskPage() {
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [budget, setBudget] = useState(20);
   const cents = Math.round(budget * 100);
-  const { youPay, platformFee, buddyGets } = feeBreakdown(cents);
+  const { youPay } = feeBreakdown(cents);
   const isGrocery = category === 'Grocery shopping' || category === 'Food delivery';
 
   return (
@@ -74,8 +74,7 @@ export default function NewTaskPage() {
         </label>
 
         <div className="rounded-xl bg-blue-50 p-3 text-blue-800">
-          You pay <b>{formatSgd(youPay)}</b> · Buddy gets <b>{formatSgd(buddyGets)}</b>{' '}
-          <span className="text-blue-500">(platform fee {formatSgd(platformFee)})</span>
+          You pay <b>{formatSgd(youPay)}</b>
         </div>
 
         <button className="block w-full rounded-xl bg-blue-700 py-3 font-medium text-white">

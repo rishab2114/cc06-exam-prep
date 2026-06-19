@@ -6,8 +6,8 @@ const QUICK = [
   { slug: 'laundry-pickup', label: '🧺 Laundry' },
   { slug: 'grocery-shopping', label: '🛒 Grocery' },
   { slug: 'parcel-collection', label: '📦 Parcel' },
-  { slug: 'grocery-shopping&store=7-Eleven', label: '🏪 7-Eleven' },
-  { slug: 'grocery-shopping&store=Prime', label: '🏬 Prime' },
+  { slug: 'late-night-food-run', label: '🍜 Food run' },
+  { slug: 'grocery-shopping&store=convenience', label: '🏪 7-Eleven / Prime' },
 ];
 
 export default function AppHome() {

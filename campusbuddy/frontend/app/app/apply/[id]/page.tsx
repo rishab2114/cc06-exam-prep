@@ -76,7 +76,7 @@ export default function ApplyPage() {
             {task.hall} · {task.when} · {task.customerName} ⭐{task.customerRating}
           </p>
           <p className="mt-2 rounded-lg bg-green-50 px-2 py-1 text-sm text-green-800">
-            You earn <b>{formatSgd(earnings)}</b> after the 15% platform fee
+            You earn <b>{formatSgd(earnings)}</b>
           </p>
         </div>
 
@@ -154,7 +154,7 @@ export default function ApplyPage() {
             />
             <span className="mt-1 block text-xs text-slate-400">
               {task.customerName} listed {formatSgd(task.priceCents)} — offer your own price, higher
-              or lower. You earn <b>{formatSgd(earnings)}</b> after the 15% fee.
+              or lower. You earn <b>{formatSgd(earnings)}</b>.
             </span>
           </label>
         )}

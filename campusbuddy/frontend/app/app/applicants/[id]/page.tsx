@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { getTask, applicantsFor } from '../../../../lib/mockTasks';
-import { feeBreakdown, formatSgd } from '../../../../lib/format';
+import { formatSgd } from '../../../../lib/format';
 
 // Customer view: the people who applied to my task, each with THEIR quote. Open
 // bidding — quotes can be above or below the listed budget. The customer picks on
@@ -39,7 +39,6 @@ export default function ApplicantsPage() {
 
       <div className="space-y-3 p-4">
         {ranked.map((a) => {
-          const youPay = a.quoteCents;
           const diff = a.quoteCents - task.priceCents;
           return (
             <div key={a.id} className="rounded-xl border bg-white p-3">
@@ -68,10 +67,6 @@ export default function ApplicantsPage() {
 
               <p className="mt-2 rounded-lg bg-slate-50 px-2 py-1 text-sm text-slate-600">
                 “{a.message}”
-              </p>
-
-              <p className="mt-2 text-xs text-slate-400">
-                You pay {formatSgd(youPay)} · buddy gets {formatSgd(feeBreakdown(youPay).buddyGets)} after fee
               </p>
 
               <Link
