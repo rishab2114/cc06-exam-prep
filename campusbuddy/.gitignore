@@ -1,0 +1,23 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# builds
+dist/
+.next/
+out/
+build/
+
+# env
+.env
+.env.local
+.env*.local
+
+# prisma
+backend/prisma/migrations/dev.db*
+
+# logs / os
+*.log
+.DS_Store
+coverage/

@@ -1,0 +1,395 @@
+// CampusBuddy NTU — Prisma schema (canonical source of truth for the data model).
+// See docs/02-database-schema.md for rationale and the equivalent SQL DDL.
+// Money is stored as integer minor units (SGD cents). Balances are derived from the ledger.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Enums ----------
+enum UserRole {
+  CUSTOMER
+  PROVIDER
+  ADMIN
+}
+
+enum VerificationKind {
+  EMAIL
+  STUDENT_ID
+  HALL
+  PAYOUTS
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+enum TaskStatus {
+  DRAFT
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CLOSED
+  CANCELLED
+  DISPUTED
+}
+
+enum ApplicationStatus {
+  APPLIED
+  WITHDRAWN
+  SELECTED
+  REJECTED
+}
+
+enum PaymentStatus {
+  REQUIRES_AUTH
+  AUTHORIZED
+  CAPTURED
+  RELEASED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  FAILED
+}
+
+enum PayoutStatus {
+  PENDING
+  PAID
+  FAILED
+  REVERSED
+}
+
+enum LedgerType {
+  CHARGE
+  PLATFORM_FEE
+  PROVIDER_EARNING
+  REFUND
+  PAYOUT
+  ADJUSTMENT
+}
+
+enum RiskTier {
+  T1
+  T2
+  T3
+}
+
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED_REFUND
+  RESOLVED_RELEASE
+  RESOLVED_SPLIT
+  REJECTED
+}
+
+// ---------- Users & identity ----------
+model User {
+  id              String     @id @default(uuid())
+  email           String     @unique
+  emailVerifiedAt DateTime?
+  fullName        String
+  photoUrl        String?
+  hall            String?
+  school          String?
+  yearOfStudy     Int?
+  phone           String?
+  roles           UserRole[] @default([CUSTOMER])
+  isSuspended     Boolean    @default(false)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  deletedAt       DateTime?
+
+  providerProfile ProviderProfile?
+  verifications   Verification[]
+  tasksAsCustomer Task[]          @relation("CustomerTasks")
+  tasksAsProvider Task[]          @relation("ProviderTasks")
+  applications    Application[]
+  reviewsWritten  Review[]        @relation("RaterReviews")
+  reviewsReceived Review[]        @relation("RateeReviews")
+  payouts         Payout[]
+  notifications   Notification[]
+  pushSubs        PushSubscription[]
+  messages        Message[]
+  disputesRaised  Dispute[]
+  safetyEvents    SafetyEvent[]
+  blocksMade      UserBlock[]     @relation("Blocker")
+  blocksAgainst   UserBlock[]     @relation("Blocked")
+
+  @@map("users")
+}
+
+model ProviderProfile {
+  userId             String   @id
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio                String?
+  categoriesOffered  String[] @default([])
+  isAvailable        Boolean  @default(false)
+  stripeAccountId    String?
+  payoutsEnabled     Boolean  @default(false)
+  workEligibilityAck Boolean  @default(false)
+  createdAt          DateTime @default(now())
+
+  @@map("provider_profiles")
+}
+
+model Verification {
+  id          String             @id @default(uuid())
+  userId      String
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind        VerificationKind
+  status      VerificationStatus @default(PENDING)
+  evidenceKey String?
+  reviewedBy  String?
+  notes       String?
+  createdAt   DateTime           @default(now())
+  reviewedAt  DateTime?
+
+  @@unique([userId, kind])
+  @@map("verifications")
+}
+
+// ---------- Catalog ----------
+model ServiceCategory {
+  id                String   @id @default(uuid())
+  slug              String   @unique
+  groupName         String
+  name              String
+  description       String?
+  riskTier          RiskTier @default(T1)
+  suggestedMinPrice Int?
+  suggestedMaxPrice Int?
+  isActive          Boolean  @default(true)
+  sortOrder         Int      @default(0)
+
+  tasks Task[]
+
+  @@map("service_categories")
+}
+
+// ---------- Tasks / bookings ----------
+model Task {
+  id              String     @id @default(uuid())
+  customerId      String
+  customer        User       @relation("CustomerTasks", fields: [customerId], references: [id])
+  providerId      String?
+  provider        User?      @relation("ProviderTasks", fields: [providerId], references: [id])
+  categoryId      String
+  category        ServiceCategory @relation(fields: [categoryId], references: [id])
+  title           String
+  description     String?
+  status          TaskStatus @default(OPEN)
+  hall            String?
+  locationNote    String?
+  budgetCents     Int
+  finalPriceCents Int?
+  windowStart     DateTime?
+  windowEnd       DateTime?
+  createdAt       DateTime   @default(now())
+  assignedAt      DateTime?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  closedAt        DateTime?
+  cancelledAt     DateTime?
+  cancelReason    String?
+
+  applications Application[]
+  events       TaskEvent[]
+  payment      Payment?
+  reviews      Review[]
+  messages     Message[]
+  disputes     Dispute[]
+  safetyEvents SafetyEvent[]
+
+  @@index([status, hall])
+  @@index([categoryId])
+  @@index([customerId])
+  @@index([providerId])
+  @@map("tasks")
+}
+
+model Application {
+  id         String            @id @default(uuid())
+  taskId     String
+  task       Task              @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  providerId String
+  provider   User              @relation(fields: [providerId], references: [id])
+  message    String?
+  quoteCents Int?
+  status     ApplicationStatus @default(APPLIED)
+  createdAt  DateTime          @default(now())
+
+  @@unique([taskId, providerId])
+  @@map("applications")
+}
+
+model TaskEvent {
+  id         String      @id @default(uuid())
+  taskId     String
+  task       Task        @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  actorId    String?
+  fromStatus TaskStatus?
+  toStatus   TaskStatus?
+  meta       Json?
+  createdAt  DateTime    @default(now())
+
+  @@map("task_events")
+}
+
+// ---------- Payments & ledger ----------
+model Payment {
+  id                   String        @id @default(uuid())
+  taskId               String        @unique
+  task                 Task          @relation(fields: [taskId], references: [id])
+  customerId           String
+  amountCents          Int
+  platformFeeCents     Int
+  providerAmountCents  Int
+  currency             String        @default("sgd")
+  status               PaymentStatus @default(REQUIRES_AUTH)
+  stripePaymentIntentId String?      @unique
+  stripeTransferId     String?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  ledgerEntries LedgerEntry[]
+
+  @@map("payments")
+}
+
+model LedgerEntry {
+  id         String     @id @default(uuid())
+  paymentId  String?
+  payment    Payment?   @relation(fields: [paymentId], references: [id])
+  userId     String?
+  type       LedgerType
+  amountCents Int
+  currency   String     @default("sgd")
+  stripeRef  String?
+  meta       Json?
+  createdAt  DateTime   @default(now())
+
+  @@map("ledger_entries")
+}
+
+model Payout {
+  id            String       @id @default(uuid())
+  providerId    String
+  provider      User         @relation(fields: [providerId], references: [id])
+  amountCents   Int
+  status        PayoutStatus @default(PENDING)
+  stripePayoutId String?
+  createdAt     DateTime     @default(now())
+  paidAt        DateTime?
+
+  @@map("payouts")
+}
+
+// ---------- Reviews ----------
+model Review {
+  id          String   @id @default(uuid())
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id])
+  raterId     String
+  rater       User     @relation("RaterReviews", fields: [raterId], references: [id])
+  rateeId     String
+  ratee       User     @relation("RateeReviews", fields: [rateeId], references: [id])
+  stars       Int
+  comment     String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@unique([taskId, raterId])
+  @@map("reviews")
+}
+
+// ---------- Trust & safety ----------
+model Dispute {
+  id             String        @id @default(uuid())
+  taskId         String
+  task           Task          @relation(fields: [taskId], references: [id])
+  raisedBy       String
+  raisedByUser   User          @relation(fields: [raisedBy], references: [id])
+  reason         String
+  status         DisputeStatus @default(OPEN)
+  resolutionNote String?
+  resolvedBy     String?
+  createdAt      DateTime      @default(now())
+  resolvedAt     DateTime?
+
+  @@map("disputes")
+}
+
+model SafetyEvent {
+  id        String   @id @default(uuid())
+  taskId    String?
+  task      Task?    @relation(fields: [taskId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  kind      String // CHECK_IN | CHECK_OUT | SOS | REPORT | SHARE_LINK
+  payload   Json?
+  createdAt DateTime @default(now())
+
+  @@map("safety_events")
+}
+
+model UserBlock {
+  blockerId String
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id])
+  blockedId String
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@id([blockerId, blockedId])
+  @@map("user_blocks")
+}
+
+// ---------- Messaging ----------
+model Message {
+  id        String    @id @default(uuid())
+  taskId    String
+  task      Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User      @relation(fields: [senderId], references: [id])
+  body      String
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+
+  @@index([taskId, createdAt])
+  @@map("messages")
+}
+
+// ---------- Notifications ----------
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String?
+  data      Json?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@map("notifications")
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String
+  keys      Json
+  createdAt DateTime @default(now())
+
+  @@unique([userId, endpoint])
+  @@map("push_subscriptions")
+}
