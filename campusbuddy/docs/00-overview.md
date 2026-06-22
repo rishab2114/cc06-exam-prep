@@ -1,5 +1,12 @@
 # 00 — Executive Overview
 
+> **⚠️ Direction has evolved since this doc was first written.** CampusBuddy is now
+> **multi-campus** (all SG universities, not NTU-only), monetised primarily via
+> **advertising** to a verified-student audience with a **light progressive
+> commission** (not a flat 15% / escrow take), and the verification/safety model has
+> been refined. For current truth see **`positioning.md`**, **`13-revenue-model.md`**,
+> and the **`17-decisions-log.md`** (which overrides older docs where they conflict).
+
 ## The one-paragraph pitch
 CampusBuddy is a closed, verified, on-demand services marketplace for NTU students. A student posts a task (clean my room before inspection, pick up my parcel, do my laundry, late-night food run). Verified NTU students nearby accept it, complete it, and get paid. Payment is escrowed by the platform via Stripe and released on completion, minus a 15% platform fee. Trust is enforced through NTU email + matric-card verification, two-sided ratings, and a safety layer.
 

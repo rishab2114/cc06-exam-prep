@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { MOCK_TASKS } from '../../../lib/mockTasks';
 import { formatSgd } from '../../../lib/format';
+import { SponsoredCard } from '../../../components/Sponsored';
+import { adFor } from '../../../lib/ads';
 
 // Provider task feed (wireframe #6, docs/05). Apply leads to the verification gate.
 export default function FindPage() {
@@ -13,6 +15,7 @@ export default function FindPage() {
 
       <div className="space-y-3 p-4">
         <p className="text-xs text-slate-500">Laundry, Parcel · Halls 8–11</p>
+        <SponsoredCard ad={adFor(2)} />
         {MOCK_TASKS.map((t) => (
           <div key={t.id} className="rounded-xl border bg-white p-3">
             <div className="flex justify-between">

@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { SponsoredCard } from '../../components/Sponsored';
+import { adFor } from '../../lib/ads';
 
 // Customer home / marketplace (wireframe #2, docs/05). Mock data for the demo.
 const QUICK = [
@@ -56,6 +58,8 @@ export default function AppHome() {
             <p className="mt-1 text-sm text-blue-700">Track live ›</p>
           </Link>
         </section>
+
+        <SponsoredCard ad={adFor(0)} />
 
         <Link
           href="/app/tasks/new"

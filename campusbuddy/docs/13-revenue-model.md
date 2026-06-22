@@ -1,71 +1,93 @@
 # 13 — Revenue Model & Unit Economics
 
-## Primary revenue: marketplace take rate
-**15% platform fee** on each completed task (per brief).
+> **Status: current (supersedes the original flat-15%/escrow model).** See
+> `17-decisions-log.md` for the decision history.
 
-### Per-transaction (brief example, SGD)
-| Item | Amount |
+## Strategy in one line
+CampusBuddy monetises a **verified-student audience**, not individual transactions.
+Commission is kept **deliberately low** as an adoption lever; the durable revenue
+is **advertising** to that audience, with subscriptions/partnerships layered on later.
+
+This reframes the North Star from *"maximise take per task"* to
+**"maximise verified-student engagement (DAU + frequency)."** Ads pay on attention,
+so engagement — not transaction volume alone — is what we optimise.
+
+## Why not a high transaction take
+- A campus marketplace where supply and demand are the **same population** caps
+  transaction volume.
+- A high take + on-the-spot/PayNow behaviour invites **disintermediation** (users
+  match once, then pay each other directly). An ad model is robust to this: we earn
+  as long as users are **in the app**, regardless of how they settle payment.
+- "Cheaper than Urban Company / by students" is core positioning — a fat take rate
+  contradicts it.
+
+## Revenue stream 1 — Commission (light, progressive)
+Progressive marginal brackets, capped well below the old 15%:
+
+| Portion of task value | Marginal rate |
 |---|---|
-| Customer pays | 20.00 |
-| Platform fee (15%) | 3.00 |
-| Provider receives | 17.00 |
+| up to S$10 | 1% |
+| S$10 – S$30 | 3% |
+| above S$30 | 5% |
 
-### The honesty problem: Stripe processing fees
-Stripe SG card fee ≈ **3.4% + S$0.50** ⇒ on a S$20 charge ≈ **S$1.18**.
-So gross take 3.00 − processing 1.18 = **net S$1.82 per S$20 task** if the platform absorbs fees.
+Effective rate ≈ 1% on small tasks → ~4–5% on large ones (e.g. S$20 → S$0.40;
+S$100 → S$4.20). Implemented in `frontend/lib/format.ts` and
+`backend/src/common/utils/money.ts`. **The fee is hidden from users in the UI**
+(customer sees "You pay X"; buddy sees net "You earn Y").
 
-**Two pricing options:**
-- **A. Absorb (MVP default):** clean "you pay 20 / buddy gets 17" message. Net margin per task ≈ S$1.82. Good for trust & conversion; thin early.
-- **B. Service fee passthrough:** customer pays 20 + small service fee (e.g., S$1–1.50) covering processing; platform keeps the full 15%. Better margin, slightly higher friction. **Recommended once liquidity proven.**
+> Honesty note: at 1–5%, commission may not fully cover Stripe processing
+> (~3.4% + S$0.50) on its own. That's acceptable **because commission is an
+> adoption lever, not the business.** If/when payment is on-platform, add a small
+> flat **buyer service fee** (e.g. S$0.30–0.50) purely to cover processing — never
+> framed as platform profit.
 
-> Low-value tasks (e.g., S$5 parcel pickup) are margin-negative under absorb (fee 0.75 vs processing ~0.67 → net ~0.08, or negative after the fixed S$0.50). **Mitigation:** a **minimum platform fee floor** (e.g., S$1.00) and/or **minimum task value** (e.g., S$5), and batching small tasks. This is a real economic constraint — design for it from day one.
+## Revenue stream 2 — Advertising (the real engine)
+The **verified 18–24 student audience** is premium inventory. Buyers:
+- **F&B near campus** (the highest-intent local advertiser), cafés, bubble tea.
+- **Banks** (student accounts/cards), **telcos** (student SIM plans).
+- **Tuition / test-prep, gyms, events, software student-discount programs.**
 
-## Secondary / future revenue
-- **Service fee passthrough** (option B) — small fee on the customer side.
-- **Provider subscription ("Buddy+")** — lower take rate / priority feed / instant payout for a monthly fee.
-- **Featured/boosted tasks** — customer pays to surface a task (surge demand).
-- **Surge/priority pricing** — peak windows (exam week, move-out) with dynamic floors.
-- **B2B2C with NTU/halls** — sponsored cleaning during inspection weeks, partnerships with laundromats/F&B for referral fees.
-- **Ads/partnerships** — local merchants (groceries, food) — carefully, without harming UX.
+Ad surfaces (must be clearly labelled "Sponsored" to protect trust):
+- **Sponsored card** in the home/feed (built — see `components/Sponsored.tsx`).
+- A future **Deals / Offers tab** (drives daily opens — important for ad value).
+- **Targeted inventory** off verification data ("verified NTU, Year 2, Engineering")
+  — handle under PDPA with consent; verified status is sensitive data.
 
-## Unit economics model (illustrative)
-Assumptions: avg task value (ATV) **S$15**, blended take **15%**, processing **~S$0.95/task**, option A (absorb) early then B.
+### Ad revenue math (illustrative, per campus)
+A well-engaged student app earns roughly **S$5–20 per active user per year** from
+ads at scale.
 
-| Metric | Value |
-|---|---|
-| Gross take / task | S$2.25 |
-| Processing / task | ~S$0.95 |
-| **Net contribution / task (A)** | **~S$1.30** |
-| Net contribution / task (B, fee passthrough) | ~S$2.10 |
-| Variable ops (support, incidents) / task | ~S$0.30 |
-| Contribution margin / task (B) | ~S$1.80 |
+| Engaged students | @ S$8/user/yr | @ S$15/user/yr |
+|---|---|---|
+| 2,000 | S$16k/yr | S$30k/yr |
+| 10,000 | S$80k/yr | S$150k/yr |
+| 30,000 | S$240k/yr | S$450k/yr |
 
-### CAC & payback
-- Blended CAC target (campus, grassroots): **S$3–6 per active user** (referrals + ambassadors keep this low).
-- If an active user completes ~2 tasks/month, contribution ≈ S$3.6/month (option B) → **CAC payback ~1.5–2 months**. Referral-driven users payback faster.
+Reality check: ad revenue is **back-loaded and sales-grindy early** (hand-sold
+S$200–500 campaigns to local shops). It needs **DAU and session frequency** —
+a once-a-week laundry utility won't sustain it, so engagement surfaces (deals,
+events, feed) are a priority, not a nice-to-have.
 
-### Path to profitability
-- **Contribution-positive per task:** achievable immediately with fee floors + option B.
-- **Operating profit:** requires scale to cover fixed costs (eng, insurance, ops salaries). Model below.
+## Revenue stream 3 — Later layers
+- **Buddy+ subscription:** priority feed / instant payout / lower take for a monthly fee.
+- **Featured/boosted tasks** during surge windows (exam week, move-out).
+- **B2B partnerships:** halls/laundromats/F&B referral deals; sponsored inspection-week cleaning.
 
-## Revenue projection (illustrative, single-campus ramp)
-| Stage | Active users | Tasks/user/mo | Tasks/mo | GMV/mo (ATV S$15) | Net rev/mo (B, ~S$2.1) |
-|---|---|---|---|---|---|
-| Beachhead | 500 | 2 | 1,000 | S$15k | ~S$2.1k |
-| Cluster | 2,000 | 2.5 | 5,000 | S$75k | ~S$10.5k |
-| Half campus | 5,000 | 3 | 15,000 | S$225k | ~S$31.5k |
-| Full NTU | 10,000 | 3 | 30,000 | S$450k | ~S$63k |
+## Market sizing (TAM)
+Singapore tertiary students (all universities, ~250k+ incl. polytechnics & private):
+NUS ~38k, NTU ~33k, SUSS ~16k, SMU ~12k, SIT ~10k, SUTD ~1.5k, + ~95k polytechnic
++ large private (SIM/Kaplan). Vision = **all campuses**; the model ports regionally
+(Malaysia/India) with the same playbook.
 
-> At ~10k active and 30k tasks/mo, net revenue ≈ **S$60k+/month (~S$750k/yr run-rate)** — enough to cover a small team and insurance, and a proof point for multi-university expansion / fundraising. These are planning figures, not promises; frequency (tasks/user/mo) is the key sensitivity.
+## Go-to-market: vision wide, launch narrow
+"Market = all unis" and "launch one campus first" are **not in conflict** — both
+**liquidity and ad demand are local** (a laundromat near NTU won't pay to reach
+SUTD). So: **win one dense campus → prove engagement + first ad dollars → clone.**
+Pick the launch campus for *ad-buyer density + student density*, not sentiment.
 
-## Cost structure
-- **COGS:** Stripe fees, SMS/email/push, S3, hosting (Vercel/Railway), KYC.
-- **Fixed:** eng/ops salaries, insurance (PLI + dispute fund), legal/compliance, ambassador stipends.
-- **Variable growth:** demand credits, supply guarantees (taper as liquidity self-sustains).
-
-## Key levers (in priority order)
-1. **Frequency** (tasks/user/month) — the biggest driver; recurring demand campaigns.
-2. **Fill rate** — unfilled tasks = lost revenue + churn.
-3. **Take realization** — fee floor + service fee passthrough.
-4. **CAC** — keep grassroots/referral-led.
-5. **ATV mix** — encourage higher-value tasks (cleaning, moving) over tiny ones.
+## Key levers (priority order)
+1. **Engagement / DAU** — the input to ad revenue (deals, events, habitual laundry).
+2. **Frequency & retention** — weekly laundry rhythm is the wedge; measure repeat use.
+3. **Fill rate** — unfilled tasks = churn on both sides.
+4. **Ad sell-through & targeting quality** — premium verified inventory.
+5. **CAC** — keep grassroots/referral-led (ambassadors, hall reps).
