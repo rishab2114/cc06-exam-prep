@@ -27,3 +27,6 @@ coverage/
 
 # next generated
 frontend/next-env.d.ts
+
+# generated docs pdf
+CampusBuddy-Docs.pdf

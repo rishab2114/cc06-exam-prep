@@ -1,7 +1,7 @@
 # CampusBuddy NTU
 
 > An on-demand, student-to-student services marketplace for Nanyang Technological University (NTU), Singapore.
-> "Uber + Urban Company + TaskRabbit, exclusively for verified university students."
+> On-demand campus chores & errands, exclusively for verified university students.
 
 CampusBuddy connects **students who need everyday tasks done** (cleaning, laundry, food runs, parcel pickup, moving help) with **verified NTU students who want flexible income**. The platform handles discovery, booking, escrowed payments via Stripe, ratings, and trust & safety.
 

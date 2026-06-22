@@ -1,7 +1,7 @@
 # Positioning
 
 ## One-liner
-**Urban Company for students — by students, cheaper.**
+**On-demand campus help — by students, for students, cheaper.**
 A verified-student marketplace for campus chores and errands.
 
 ## The pitch
@@ -25,7 +25,7 @@ ratings and built-in safety. No owing anyone a favour.
 | **Asking a friend (free)** | Not always available; you owe them; can't ask repeatedly; they flake | On-demand + no social debt + reliability |
 | **Free Telegram "favour" posts** | Read as sketchy/scam; unreliable; no accountability | Verified identity + ratings + tracked, accountable flow |
 | **Paid Telegram / Carousell gigs** | No identity assurance, no safety, no recourse | Verified students, safety layer, dispute path |
-| **Urban Company / professional services** | Expensive; not campus-native; overkill for a S$10 errand | Cheaper, student-to-student, hyper-local |
+| **Professional services / agencies** | Expensive; not campus-native; overkill for a S$10 errand | Cheaper, student-to-student, hyper-local |
 
 > Key insight: demand already exists (people pay for informal gigs today). We're not
 > creating demand — we're **moving existing informal demand onto a trusted, reliable

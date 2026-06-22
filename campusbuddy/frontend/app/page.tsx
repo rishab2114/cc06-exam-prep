@@ -5,7 +5,7 @@ export default function LandingPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6">
       <h1 className="text-2xl font-bold text-blue-700">CampusBuddy</h1>
-      <p className="text-sm text-slate-500">Urban Company for students — by students, cheaper.</p>
+      <p className="text-sm text-slate-500">On-demand campus help — by students, for students.</p>
       <p className="mt-4 text-3xl font-semibold leading-tight">
         Campus chores, done on demand by fellow students.
       </p>

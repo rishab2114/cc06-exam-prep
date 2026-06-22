@@ -11,7 +11,7 @@ log + the running app win.** Newest decisions reflect current direction.
 - **Launch narrow, vision wide.** Roll out **campus-by-campus** (liquidity AND ad
   demand are local) even though the platform supports all. SUTD is an early pilot;
   pick launch campuses for student + advertiser density.
-- **Positioning:** "Urban Company for students, by students, cheaper." Win on
+- **Positioning:** "On-demand campus help — by students, for students, cheaper." Win on
   **verified + on-demand + no social debt.** See `positioning.md`.
 
 ## Revenue (see `13-revenue-model.md`)

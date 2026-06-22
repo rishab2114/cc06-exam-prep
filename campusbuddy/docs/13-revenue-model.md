@@ -18,7 +18,7 @@ so engagement — not transaction volume alone — is what we optimise.
 - A high take + on-the-spot/PayNow behaviour invites **disintermediation** (users
   match once, then pay each other directly). An ad model is robust to this: we earn
   as long as users are **in the app**, regardless of how they settle payment.
-- "Cheaper than Urban Company / by students" is core positioning — a fat take rate
+- "Cheaper, by students" is core positioning — a fat take rate
   contradicts it.
 
 ## Revenue stream 1 — Commission (light, progressive)
