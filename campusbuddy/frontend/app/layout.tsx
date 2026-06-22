@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'CampusBuddy NTU',
-  description: 'Campus chores, done by fellow NTU students. Verified, escrow-protected.',
+  title: 'CampusBuddy',
+  description: 'Campus chores, done by fellow verified students. Same-gender & in-person safety options.',
   manifest: '/manifest.webmanifest',
 };
 

@@ -31,6 +31,9 @@ export default function FindPage() {
                   {t.customerGender === 'F' ? '♀ female buddies' : '♂ male buddies'}
                 </span>
               )}
+              {t.presenceRequired && (
+                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700">👥 customer present</span>
+              )}
             </div>
             <Link
               href={`/app/apply/${t.id}`}

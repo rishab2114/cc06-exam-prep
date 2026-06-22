@@ -111,6 +111,20 @@ export default function ApplyPage() {
             </div>
           )}
 
+          {/* In-person rule — buddy is never alone in the room */}
+          {task.presenceRequired && (
+            <div className="rounded-xl border bg-white p-3">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">👥 Done with {task.customerName} present</span>
+                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700">In person</span>
+              </div>
+              <p className="mt-1 text-sm text-slate-500">
+                For safety, this task is done while {task.customerName} is in the room — you&apos;re
+                never working alone in someone&apos;s space.
+              </p>
+            </div>
+          )}
+
           {/* Same-gender matching */}
           {task.sameGenderOnly && (
             <div

@@ -1,13 +1,14 @@
 import type { NextAuthOptions } from 'next-auth';
 import EmailProvider from 'next-auth/providers/email';
-import { isNtuEmail } from './ntu';
+import { isCampusEmail } from './ntu';
 
 /**
- * Auth.js (NextAuth) config. The critical control is the NTU email allowlist in
- * the signIn callback — only verified NTU domains may register/sign in (docs/11).
- * This is also re-validated server-side on the API; never trust the client alone.
+ * Auth.js (NextAuth) config. The critical control is the campus email allowlist in
+ * the signIn callback — only verified Singapore university domains may register/sign
+ * in (docs/11). This is also re-validated server-side on the API; never trust the
+ * client alone.
  */
-export { isNtuEmail };
+export { isCampusEmail };
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -18,8 +19,8 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user }) {
-      // Gate: only NTU students may join.
-      return !!user.email && isNtuEmail(user.email);
+      // Gate: only verified campus students may join.
+      return !!user.email && isCampusEmail(user.email);
     },
   },
   pages: {

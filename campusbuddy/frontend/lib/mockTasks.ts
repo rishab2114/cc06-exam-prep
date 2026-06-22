@@ -21,6 +21,9 @@ export interface MockTask {
   tier: TaskTier;
   requiresMatricVerification: boolean;
   sameGenderOnly: boolean;
+  // presenceRequired: customer must be present the whole time — the buddy is never
+  // alone in the room. Default for cleaning & in-room laundry (safety redesign).
+  presenceRequired: boolean;
 }
 
 export const MOCK_TASKS: MockTask[] = [
@@ -30,7 +33,7 @@ export const MOCK_TASKS: MockTask[] = [
     title: 'Parcel pickup',
     category: 'Convenience',
     priceCents: 600,
-    hall: 'Hall 10',
+    hall: 'Block 57',
     when: 'now',
     distanceKm: 0.3,
     customerName: 'Jia Hui',
@@ -39,6 +42,24 @@ export const MOCK_TASKS: MockTask[] = [
     tier: 'T1',
     requiresMatricVerification: false,
     sameGenderOnly: false,
+    presenceRequired: false,
+  },
+  {
+    id: 'extra-meal',
+    icon: '🍱',
+    title: 'Spare home-cooked dinner',
+    category: 'Food',
+    priceCents: 700,
+    hall: 'Block 55',
+    when: 'tonight 7pm',
+    distanceKm: 0.4,
+    customerName: 'Arjun',
+    customerGender: 'M',
+    customerRating: 4.6,
+    tier: 'T1',
+    requiresMatricVerification: false,
+    sameGenderOnly: false,
+    presenceRequired: false,
   },
   {
     id: 'laundry-pickup',
@@ -46,7 +67,7 @@ export const MOCK_TASKS: MockTask[] = [
     title: 'Laundry pickup & wash',
     category: 'Laundry',
     priceCents: 1000,
-    hall: 'Hall 9',
+    hall: 'Block 59',
     when: '5–7pm',
     distanceKm: 0.5,
     customerName: 'Mei Lin',
@@ -55,14 +76,15 @@ export const MOCK_TASKS: MockTask[] = [
     tier: 'T2',
     requiresMatricVerification: true,
     sameGenderOnly: true,
+    presenceRequired: true,
   },
   {
     id: 'room-cleaning',
     icon: '🧹',
     title: 'Room cleaning',
-    category: 'Hall Services',
+    category: 'Hostel Services',
     priceCents: 2000,
-    hall: 'Hall 8',
+    hall: 'Block 58',
     when: 'today',
     distanceKm: 0.7,
     customerName: 'Sarah',
@@ -70,7 +92,8 @@ export const MOCK_TASKS: MockTask[] = [
     customerRating: 4.9,
     tier: 'T2',
     requiresMatricVerification: true,
-    sameGenderOnly: false,
+    sameGenderOnly: true,
+    presenceRequired: true,
   },
 ];
 
@@ -94,9 +117,10 @@ export interface Applicant {
 }
 
 const APPLICANTS: Record<string, Applicant[]> = {
+  // Same-gender cleaning task for a female customer -> female buddies only.
   'room-cleaning': [
-    { id: 'a1', name: 'Wei', gender: 'M', rating: 5.0, completedJobs: 12, matricVerified: true, quoteCents: 1800, message: 'Free now, can start in 15 min.', etaMins: 15 },
-    { id: 'a2', name: 'Daniel', gender: 'M', rating: 4.7, completedJobs: 23, matricVerified: true, quoteCents: 2000, message: 'Can come right after my 2pm lab.', etaMins: 25 },
+    { id: 'a1', name: 'Nur', gender: 'F', rating: 5.0, completedJobs: 12, matricVerified: true, quoteCents: 1800, message: 'Free now, can start in 15 min.', etaMins: 15 },
+    { id: 'a2', name: 'Priya', gender: 'F', rating: 4.7, completedJobs: 23, matricVerified: true, quoteCents: 2000, message: 'Can come right after my 2pm lab.', etaMins: 25 },
     { id: 'a3', name: 'Aisha', gender: 'F', rating: 4.9, completedJobs: 58, matricVerified: true, quoteCents: 2500, message: 'I bring my own supplies + do windows and skirting.', etaMins: 40 },
   ],
 };

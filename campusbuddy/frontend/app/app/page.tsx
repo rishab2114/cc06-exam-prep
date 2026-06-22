@@ -4,9 +4,9 @@ import Link from 'next/link';
 const QUICK = [
   { slug: 'room-cleaning', label: '🧹 Clean' },
   { slug: 'laundry-pickup', label: '🧺 Laundry' },
+  { slug: 'spare-meal', label: '🍱 Spare meal' },
   { slug: 'grocery-shopping', label: '🛒 Grocery' },
   { slug: 'parcel-collection', label: '📦 Parcel' },
-  { slug: 'late-night-food-run', label: '🍜 Food run' },
   { slug: 'grocery-shopping&store=convenience', label: '🏪 7-Eleven / Prime' },
 ];
 
