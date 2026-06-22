@@ -34,6 +34,9 @@ export default function FindPage() {
               {t.presenceRequired && (
                 <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700">👥 customer present</span>
               )}
+              {t.contactless && (
+                <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs text-sky-700">📦 contactless</span>
+              )}
             </div>
             <Link
               href={`/app/apply/${t.id}`}

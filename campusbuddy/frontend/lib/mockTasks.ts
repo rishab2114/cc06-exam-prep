@@ -22,8 +22,11 @@ export interface MockTask {
   requiresMatricVerification: boolean;
   sameGenderOnly: boolean;
   // presenceRequired: customer must be present the whole time — the buddy is never
-  // alone in the room. Default for cleaning & in-room laundry (safety redesign).
+  // alone in the room. Default for in-room tasks like cleaning (safety redesign).
   presenceRequired: boolean;
+  // contactless: doorstep handoff (bag left outside), no room entry. Buddy sends
+  // Grab-style status updates. Used for laundry.
+  contactless: boolean;
 }
 
 export const MOCK_TASKS: MockTask[] = [
@@ -43,6 +46,7 @@ export const MOCK_TASKS: MockTask[] = [
     requiresMatricVerification: false,
     sameGenderOnly: false,
     presenceRequired: false,
+    contactless: false,
   },
   {
     id: 'extra-meal',
@@ -60,6 +64,7 @@ export const MOCK_TASKS: MockTask[] = [
     requiresMatricVerification: false,
     sameGenderOnly: false,
     presenceRequired: false,
+    contactless: false,
   },
   {
     id: 'laundry-pickup',
@@ -76,7 +81,8 @@ export const MOCK_TASKS: MockTask[] = [
     tier: 'T2',
     requiresMatricVerification: true,
     sameGenderOnly: true,
-    presenceRequired: true,
+    presenceRequired: false,
+    contactless: true,
   },
   {
     id: 'room-cleaning',
@@ -94,6 +100,7 @@ export const MOCK_TASKS: MockTask[] = [
     requiresMatricVerification: true,
     sameGenderOnly: true,
     presenceRequired: true,
+    contactless: false,
   },
 ];
 

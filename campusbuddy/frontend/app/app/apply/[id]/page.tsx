@@ -111,6 +111,20 @@ export default function ApplyPage() {
             </div>
           )}
 
+          {/* Contactless rule — doorstep handoff, Grab-style updates */}
+          {task.contactless && (
+            <div className="rounded-xl border bg-white p-3">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">📦 Contactless</span>
+                <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs text-sky-700">No room entry</span>
+              </div>
+              <p className="mt-1 text-sm text-slate-500">
+                {task.customerName} leaves the bag outside the door. You pick it up and send live
+                status updates (like Grab) — picked up, washing, on the way back.
+              </p>
+            </div>
+          )}
+
           {/* In-person rule — buddy is never alone in the room */}
           {task.presenceRequired && (
             <div className="rounded-xl border bg-white p-3">
