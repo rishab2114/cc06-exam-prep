@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { getTask, CURRENT_PROVIDER } from '../../../../lib/mockTasks';
+import { getTask, CURRENT_PROVIDER, LAUNDRY_STEPS } from '../../../../lib/mockTasks';
 import { feeBreakdown, formatSgd } from '../../../../lib/format';
 
 // Active (accepted) task — provider side. Two modes:
@@ -15,15 +15,6 @@ import { feeBreakdown, formatSgd } from '../../../../lib/format';
 //    identity is rejected and the customer alerted, so nobody can send a substitute.
 type Method = null | 'ntupass' | 'photo';
 type Status = 'idle' | 'verifying' | 'confirmed' | 'mismatch';
-
-// Grab-style laundry timeline; `text` is what the customer is notified.
-const LAUNDRY_STEPS = [
-  { label: 'Picked up from door', text: 'Buddy collected your laundry bag 🧺' },
-  { label: 'Washing', text: 'Your laundry is in the wash 🫧' },
-  { label: 'Drying', text: 'Drying now ☀️' },
-  { label: 'On the way back', text: 'On the way back to your door 🚶' },
-  { label: 'Left at your door', text: 'Left at your door — all done! ✅' },
-];
 
 export default function ActiveTaskPage() {
   const { id } = useParams<{ id: string }>();

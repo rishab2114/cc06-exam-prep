@@ -144,3 +144,13 @@ export const CURRENT_PROVIDER = {
   gender: 'F' as 'M' | 'F',
   matricVerified: true,
 };
+
+// Grab-style laundry status timeline, shared by the provider (who advances it) and
+// the customer (who watches it). `text` is the notification the customer receives.
+export const LAUNDRY_STEPS = [
+  { label: 'Picked up from door', text: 'Buddy collected your laundry bag 🧺' },
+  { label: 'Washing', text: 'Your laundry is in the wash 🫧' },
+  { label: 'Drying', text: 'Drying now ☀️' },
+  { label: 'On the way back', text: 'On the way back to your door 🚶' },
+  { label: 'Left at your door', text: 'Left at your door — all done! ✅' },
+];

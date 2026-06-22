@@ -39,7 +39,7 @@ export default function AppHome() {
           </div>
         </section>
 
-        <section>
+        <section className="space-y-2">
           <p className="mb-2 text-xs font-semibold uppercase text-slate-500">Your active tasks</p>
           <Link href="/app/applicants/room-cleaning" className="block rounded-xl border bg-white p-3">
             <div className="flex items-center justify-between">
@@ -47,6 +47,13 @@ export default function AppHome() {
               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">OPEN</span>
             </div>
             <p className="mt-1 text-sm text-blue-700">3 applicants ›</p>
+          </Link>
+          <Link href="/app/track/laundry-pickup" className="block rounded-xl border bg-white p-3">
+            <div className="flex items-center justify-between">
+              <span className="font-medium">Laundry pickup & wash</span>
+              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700">IN PROGRESS</span>
+            </div>
+            <p className="mt-1 text-sm text-blue-700">Track live ›</p>
           </Link>
         </section>
 
