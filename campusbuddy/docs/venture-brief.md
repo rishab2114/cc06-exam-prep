@@ -17,7 +17,7 @@ At the same time, plenty of students want **flexible income** between classes.
 ## The product
 Post a task → a **verified student from your campus** accepts and does it → both
 sides rate each other. Categories: **laundry, parcel/errand runs, grocery & food
-runs, a spare home-cooked meal, room cleaning.**
+runs, a spare home-cooked meal, room cleaning, and room/storage moving help.**
 
 What makes it different from a chat group:
 - **Verified students only** — gated by campus email + matric verification.
@@ -27,6 +27,19 @@ What makes it different from a chat group:
 - **Safety by design** — same-gender option for personal tasks; cleaning is done
   with the customer present; **laundry is contactless** (bag left outside) with
   Grab-style live status updates.
+
+## Spotlight service — room shift & storage
+Helping students **move belongings between rooms/halls and to or from storage** —
+carrying, packing, and shifting boxes/luggage, often as a two-buddy job.
+
+Why it's a strong service:
+- **High value per job** (S$15–40+) vs micro-errands — better economics and worth a buddy's time.
+- **Seasonal surge** at end-of-semester move-out, hall reallocation, and break-time
+  storage — predictable demand spikes to market around.
+- **Pairs with storage**: connects to the break-time pain of "where do I keep my
+  stuff?" — a natural B2B tie-in with local self-storage providers.
+- **Lower risk**: the customer is present and moving their own things, so it avoids
+  the alone-in-a-room concern.
 
 ## Why people pay instead of asking a friend
 1. **On demand** — a buddy is available when you need one.

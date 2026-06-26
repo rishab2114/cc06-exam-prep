@@ -45,6 +45,10 @@ log + the running app win.** Newest decisions reflect current direction.
   → delivered). Customer tracks it live.
 
 ## Services
+- **Room shift & storage help** added: moving belongings between rooms/halls and
+  to/from storage (carry/pack/shift, often two buddies). High value per job;
+  surges at move-out & semester break; customer-present so lower risk; natural
+  B2B tie-in with self-storage providers.
 - **"Cooking" reframed as "Spare home-cooked meal"** (sharing an extra portion, not
   a chef service). Note: still under SFA home-based food rules — keep small-scale,
   not a launch headline.

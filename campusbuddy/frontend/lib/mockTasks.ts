@@ -102,6 +102,24 @@ export const MOCK_TASKS: MockTask[] = [
     presenceRequired: true,
     contactless: false,
   },
+  {
+    id: 'room-move',
+    icon: '🧳',
+    title: 'Room shift & storage help',
+    category: 'Moving',
+    priceCents: 1500,
+    hall: 'Block 56',
+    when: 'Sat 10am',
+    distanceKm: 0.6,
+    customerName: 'Daryl',
+    customerGender: 'M',
+    customerRating: 4.7,
+    tier: 'T1',
+    requiresMatricVerification: false,
+    sameGenderOnly: false,
+    presenceRequired: true,
+    contactless: false,
+  },
 ];
 
 export function getTask(id: string): MockTask | undefined {

@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { formatSgd } from '../../../../lib/format';
 
 // Create-task form (wireframe #3, docs/05). No min budget; buddies can also quote.
-const CATEGORIES = ['Room cleaning', 'Laundry pickup', 'Spare home-cooked meal', 'Grocery shopping', 'Food delivery', 'Parcel collection', 'Late-night food run'];
+const CATEGORIES = ['Room cleaning', 'Laundry pickup', 'Spare home-cooked meal', 'Grocery shopping', 'Food delivery', 'Parcel collection', 'Room shift & storage', 'Late-night food run'];
 // Stores for grocery/delivery runs — buddy shops/picks up from here.
 const STORES = ['Any store', '7-Eleven / Prime', 'FairPrice', 'Cheers', 'Amazon / Prime Now'];
 
@@ -18,6 +18,7 @@ const SLUG_TO_CATEGORY: Record<string, string> = {
   'grocery-shopping': 'Grocery shopping',
   'food-delivery': 'Food delivery',
   'parcel-collection': 'Parcel collection',
+  'room-move': 'Room shift & storage',
   'late-night-food-run': 'Late-night food run',
 };
 
