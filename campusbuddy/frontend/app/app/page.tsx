@@ -19,7 +19,7 @@ export default function AppHome() {
     <div>
       <header className="flex items-center justify-between border-b bg-white px-4 py-3">
         <span className="font-semibold">Hi Priya 👋</span>
-        <span className="text-slate-400">🔔 ⚙ 👤</span>
+        <Link href="/app/profile" className="text-slate-400">🔔 ⚙ 👤</Link>
       </header>
 
       <div className="space-y-5 p-4">

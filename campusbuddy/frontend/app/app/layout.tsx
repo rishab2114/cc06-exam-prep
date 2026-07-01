@@ -6,12 +6,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col bg-slate-50">
       <div className="flex-1 pb-16">{children}</div>
-      <nav className="fixed inset-x-0 bottom-0 mx-auto flex max-w-md justify-around border-t bg-white py-2 text-xs text-slate-500">
+      <nav className="fixed inset-x-0 bottom-0 mx-auto flex max-w-md justify-around border-t bg-white py-2 text-center text-xs text-slate-500">
         <Link href="/app" className="px-3">🏠<div>Home</div></Link>
         <Link href="/app/find" className="px-3">🔎<div>Find</div></Link>
         <Link href="/app/tasks/new" className="px-3">➕<div>Post</div></Link>
-        <Link href="/app" className="px-3">💰<div>Wallet</div></Link>
-        <Link href="/app" className="px-3">👤<div>Profile</div></Link>
+        <Link href="/app/wallet" className="px-3">💰<div>Wallet</div></Link>
+        <Link href="/app/profile" className="px-3">👤<div>Profile</div></Link>
       </nav>
     </div>
   );

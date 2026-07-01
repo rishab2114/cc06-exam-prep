@@ -179,7 +179,25 @@ export const CURRENT_PROVIDER = {
   name: 'Priya',
   gender: 'F' as 'M' | 'F',
   matricVerified: true,
+  campus: 'NTU',
+  school: 'School of Computer Science & Engineering',
+  hall: 'Hall 9',
+  year: 'Year 2',
+  rating: 4.9,
+  completedJobs: 58,
+  availableCents: 8400,
+  monthCents: 21000,
+  services: ['Laundry', 'Study help', 'Parcel', 'Move/Shift'],
 };
+
+// Mock wallet history for the earnings screen.
+export const WALLET_HISTORY = [
+  { id: 'w1', label: 'Study help · Calculus II', date: 'Jun 18', deltaCents: 2500 },
+  { id: 'w2', label: 'Laundry pickup & wash', date: 'Jun 17', deltaCents: 1000 },
+  { id: 'w3', label: 'Parcel pickup', date: 'Jun 16', deltaCents: 600 },
+  { id: 'w4', label: 'Payout to bank', date: 'Jun 15', deltaCents: -8400 },
+  { id: 'w5', label: 'Room shift help', date: 'Jun 14', deltaCents: 1500 },
+];
 
 // Grab-style laundry status timeline, shared by the provider (who advances it) and
 // the customer (who watches it). `text` is the notification the customer receives.
