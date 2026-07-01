@@ -26,6 +26,9 @@ export default function FindPage() {
               {t.hall} · {t.when} · {t.distanceKm}km · cust ⭐{t.customerRating}
             </p>
             <div className="mt-1 flex flex-wrap gap-1">
+              {t.category === 'Study help' && (
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">📚 tutoring only</span>
+              )}
               {t.requiresMatricVerification && (
                 <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">🪪 ID-verified</span>
               )}

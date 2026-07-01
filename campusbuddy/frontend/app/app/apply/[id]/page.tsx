@@ -19,6 +19,7 @@ export default function ApplyPage() {
   const matricVerified = CURRENT_PROVIDER.matricVerified;
   const [message, setMessage] = useState('');
   const [quote, setQuote] = useState('');
+  const [integrityOk, setIntegrityOk] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   if (!task) {
@@ -32,7 +33,8 @@ export default function ApplyPage() {
   const genderBlocked =
     task.sameGenderOnly && CURRENT_PROVIDER.gender !== task.customerGender;
   const needsMatric = task.requiresMatricVerification && !matricVerified;
-  const canApply = !genderBlocked && !needsMatric;
+  const needsIntegrity = task.category === 'Study help' && !integrityOk;
+  const canApply = !genderBlocked && !needsMatric && !needsIntegrity;
   // Provider's own quote — defaults to the listed price until they change it.
   const quoteCents =
     quote.trim() === '' ? task.priceCents : Math.max(0, Math.round(Number(quote) * 100));
@@ -79,6 +81,27 @@ export default function ApplyPage() {
             You earn <b>{formatSgd(earnings)}</b>
           </p>
         </div>
+
+        {/* Academic-integrity guardrail for study help / tutoring */}
+        {task.category === 'Study help' && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
+            <p className="font-medium text-amber-800">📚 Study help — keep it honest</p>
+            <p className="mt-1 text-sm text-amber-700">
+              Explain concepts, work through practice questions, and help {task.customerName} prep.
+              You must <b>not</b> do their assignments, write their essays, or sit exams for them —
+              that&apos;s contract cheating and gets both accounts banned.
+            </p>
+            <label className="mt-2 flex items-start gap-2 text-xs text-amber-800">
+              <input
+                type="checkbox"
+                checked={integrityOk}
+                onChange={(e) => setIntegrityOk(e.target.checked)}
+                className="mt-0.5"
+              />
+              I&apos;ll tutor and explain only — no doing the work for them.
+            </label>
+          </div>
+        )}
 
         {/* Verification gate */}
         <div className="space-y-3">
@@ -211,7 +234,9 @@ export default function ApplyPage() {
             ? 'Not eligible for this task'
             : needsMatric
               ? 'Verify account to continue'
-              : `Send application · ${formatSgd(quoteCents)}`}
+              : needsIntegrity
+                ? 'Tick the tutoring pledge to continue'
+                : `Send application · ${formatSgd(quoteCents)}`}
         </button>
       </div>
     </div>
