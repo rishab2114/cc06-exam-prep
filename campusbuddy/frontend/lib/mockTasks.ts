@@ -120,6 +120,24 @@ export const MOCK_TASKS: MockTask[] = [
     presenceRequired: true,
     contactless: false,
   },
+  {
+    id: 'study-help',
+    icon: '📚',
+    title: 'Calculus II — exam prep session',
+    category: 'Study help',
+    priceCents: 2500,
+    hall: 'Library / online',
+    when: 'this week',
+    distanceKm: 0.2,
+    customerName: 'Rachel',
+    customerGender: 'F',
+    customerRating: 4.9,
+    tier: 'T1',
+    requiresMatricVerification: false,
+    sameGenderOnly: false,
+    presenceRequired: false,
+    contactless: false,
+  },
 ];
 
 export function getTask(id: string): MockTask | undefined {

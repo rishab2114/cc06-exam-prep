@@ -45,6 +45,14 @@ log + the running app win.** Newest decisions reflect current direction.
   → delivered). Customer tracks it live.
 
 ## Services
+- **Study help / peer tutoring** added: students help other students study — concept
+  explanation & exam prep, hourly, in-person (library) or online. GUARDRAIL:
+  tutoring/explaining only, **never** doing assignments or exam proxying (contract
+  cheating is banned — serious academic-integrity risk).
+- **Moving/shift = labour only.** Founder decision: help students *move* their stuff;
+  do NOT run a storage facility or become a logistics/storage operator (would pivot
+  away from the help-marketplace). A self-storage *referral partner* is a possible
+  future upsell, explicitly deferred.
 - **Room shift & storage help** added: moving belongings between rooms/halls and
   to/from storage (carry/pack/shift, often two buddies). High value per job;
   surges at move-out & semester break; customer-present so lower risk; natural

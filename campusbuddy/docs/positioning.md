@@ -5,7 +5,7 @@
 A verified-student marketplace for campus chores and errands.
 
 ## The pitch
-Post a task — laundry, parcel runs, a spare home-cooked meal, room/storage moving, cleaning — and a
+Post a task — laundry, parcel runs, a spare home-cooked meal, room/move help, study help, cleaning — and a
 **verified student from your campus** gets it done. On demand, fairly priced, with
 ratings and built-in safety. No owing anyone a favour.
 

@@ -17,7 +17,7 @@ At the same time, plenty of students want **flexible income** between classes.
 ## The product
 Post a task → a **verified student from your campus** accepts and does it → both
 sides rate each other. Categories: **laundry, parcel/errand runs, grocery & food
-runs, a spare home-cooked meal, room cleaning, and room/storage moving help.**
+runs, a spare home-cooked meal, room cleaning, room/move-out help, and peer study help (tutoring).**
 
 What makes it different from a chat group:
 - **Verified students only** — gated by campus email + matric verification.
@@ -28,9 +28,11 @@ What makes it different from a chat group:
   with the customer present; **laundry is contactless** (bag left outside) with
   Grab-style live status updates.
 
-## Spotlight service — room shift & storage
-Helping students **move belongings between rooms/halls and to or from storage** —
-carrying, packing, and shifting boxes/luggage, often as a two-buddy job.
+## Spotlight service — move-out & shifting help
+Helping students **move and carry belongings** at room change / move-out — carrying,
+packing, and shifting boxes/luggage, often as a two-buddy job. This is a **labour
+service only** — CampusBuddy does not hold/store anyone's items (staying true to the
+help-marketplace idea, not becoming a storage operator).
 
 Why it's a strong service:
 - **High value per job** (S$15–40+) vs micro-errands — better economics and worth a buddy's time.

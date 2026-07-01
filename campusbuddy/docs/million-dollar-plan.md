@@ -10,6 +10,15 @@ A **verified-student platform** where everyday help builds the audience, **move-
 via brand deals + ads.** Each piece is already a proven business overseas — nobody
 runs the *integrated* version in Southeast Asia yet.
 
+## Founder decisions that shape this plan
+- **Moving/shift stays labour-only** — no storage facility, no logistics pivot. This
+  keeps CampusBuddy a pure student-help marketplace, but it also **removes the
+  storage-margin that the "S$1M-in-a-year" path relied on.** Treat that number as an
+  optional-future stretch (only if a self-storage referral partner is added), not the
+  base plan.
+- **Study help / tutoring added** as a high-value, recurring, on-brand vertical —
+  better per-hour economics and repeat use than micro-errands.
+
 ## It's proven abroad — this de-risks the idea
 | Company | Country | What it proves | Scale signal |
 |---|---|---|---|

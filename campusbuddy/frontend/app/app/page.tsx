@@ -10,6 +10,7 @@ const QUICK = [
   { slug: 'grocery-shopping', label: '🛒 Grocery' },
   { slug: 'parcel-collection', label: '📦 Parcel' },
   { slug: 'room-move', label: '🧳 Move/Shift' },
+  { slug: 'study-help', label: '📚 Study help' },
   { slug: 'grocery-shopping&store=convenience', label: '🏪 7-Eleven / Prime' },
 ];
 
