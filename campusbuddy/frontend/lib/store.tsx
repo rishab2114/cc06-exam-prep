@@ -1,107 +1,138 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import type { MockTask } from './mockTasks';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { api, ApiClientError, type ApiTask, type ApiNotification, type Me } from './api';
 
 /**
- * Client-side app store: the user's posted tasks + notifications, persisted to
- * localStorage so the demo behaves like a real product (post -> appears in
- * Explore/Home, survives refresh). Swaps for the API layer later — pages only
- * talk to this interface.
- *
- * Hydration-safe: state starts empty on both server and first client render,
- * then loads from localStorage in an effect (avoids SSR markup mismatch).
- * localStorage reads are guarded — corrupted/legacy data must never crash the app.
+ * App store, backed by the real API. Mounted by the /app layout: it loads the
+ * session (/me) and redirects to /login when there isn't one, then keeps the
+ * campus feed, the user's own posts, and notifications fresh — a light poll
+ * stands in for SSE until Phase 2. Pages read from here and call `refresh()`
+ * after mutations so every screen agrees on the state.
  */
-export interface AppNotification {
-  id: string;
-  text: string;
-  at: number; // epoch ms
-  read: boolean;
-}
-
 interface StoreShape {
-  myTasks: MockTask[];
-  addTask: (t: MockTask) => void;
-  cancelTask: (id: string) => void;
-  findTask: (id: string) => MockTask | undefined;
-  notifications: AppNotification[];
+  me: Me | null;
+  ready: boolean;
+  feed: ApiTask[];
+  myTasks: ApiTask[];
+  findTask: (id: string) => ApiTask | undefined;
+  refresh: () => Promise<void>;
+  cancelTask: (id: string) => Promise<void>;
+  notifications: ApiNotification[];
   unread: number;
-  notify: (text: string) => void;
-  markAllRead: () => void;
+  markAllRead: () => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
 const StoreContext = createContext<StoreShape | null>(null);
 
-const TASKS_KEY = 'cb.myTasks.v1';
-const NOTIFS_KEY = 'cb.notifications.v1';
-
-function load<T>(key: string, fallback: T): T {
-  if (typeof window === 'undefined') return fallback;
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return fallback;
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as T) : fallback;
-  } catch {
-    return fallback; // corrupted storage or privacy mode — never crash
-  }
-}
-
-function save(key: string, value: unknown) {
-  try {
-    window.localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // storage full / privacy mode — degrade silently
-  }
-}
+const POLL_MS = 20_000; // notifications + feed freshness until SSE lands
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
-  const [myTasks, setMyTasks] = useState<MockTask[]>([]);
-  const [notifications, setNotifications] = useState<AppNotification[]>([]);
-  const [hydrated, setHydrated] = useState(false);
+  const router = useRouter();
+  const [me, setMe] = useState<Me | null>(null);
+  const [ready, setReady] = useState(false);
+  const [feed, setFeed] = useState<ApiTask[]>([]);
+  const [myTasks, setMyTasks] = useState<ApiTask[]>([]);
+  const [notifications, setNotifications] = useState<ApiNotification[]>([]);
+  const [unread, setUnread] = useState(0);
+  const alive = useRef(true);
 
-  useEffect(() => {
-    setMyTasks(load<MockTask[]>(TASKS_KEY, []));
-    setNotifications(load<AppNotification[]>(NOTIFS_KEY, []));
-    setHydrated(true);
+  const refresh = useCallback(async () => {
+    // Fire together; each is independent so one failure doesn't blank the rest.
+    const [feedR, mineR, notifR] = await Promise.allSettled([
+      api.feed(),
+      api.myTasks(),
+      api.notifications(),
+    ]);
+    if (!alive.current) return;
+    if (feedR.status === 'fulfilled') setFeed(feedR.value.tasks);
+    if (mineR.status === 'fulfilled') setMyTasks(mineR.value.tasks);
+    if (notifR.status === 'fulfilled') {
+      setNotifications(notifR.value.notifications);
+      setUnread(notifR.value.unread);
+    }
   }, []);
 
   useEffect(() => {
-    if (hydrated) save(TASKS_KEY, myTasks);
-  }, [myTasks, hydrated]);
-  useEffect(() => {
-    if (hydrated) save(NOTIFS_KEY, notifications);
-  }, [notifications, hydrated]);
-
-  const addTask = useCallback((t: MockTask) => {
-    setMyTasks((prev) => [t, ...prev].slice(0, 50)); // cap: no unbounded growth
-  }, []);
-
-  const cancelTask = useCallback((id: string) => {
-    setMyTasks((prev) => prev.filter((t) => t.id !== id));
-  }, []);
+    alive.current = true;
+    let timer: ReturnType<typeof setInterval> | undefined;
+    (async () => {
+      try {
+        const { user } = await api.me();
+        if (!alive.current) return;
+        if (!user) {
+          router.replace('/login');
+          return;
+        }
+        setMe(user);
+        await refresh();
+        if (!alive.current) return;
+        setReady(true);
+        timer = setInterval(() => {
+          if (document.visibilityState === 'visible') void refresh();
+        }, POLL_MS);
+      } catch (e) {
+        if (e instanceof ApiClientError && e.status === 401) {
+          router.replace('/login');
+          return;
+        }
+        // network hiccup — show the shell, the poll will recover
+        if (alive.current) setReady(true);
+      }
+    })();
+    return () => {
+      alive.current = false;
+      if (timer) clearInterval(timer);
+    };
+  }, [router, refresh]);
 
   const findTask = useCallback(
-    (id: string) => myTasks.find((t) => t.id === id),
-    [myTasks],
+    (id: string) => myTasks.find((t) => t.id === id) ?? feed.find((t) => t.id === id),
+    [myTasks, feed],
   );
 
-  const notify = useCallback((text: string) => {
-    setNotifications((prev) =>
-      [{ id: `n-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, text, at: Date.now(), read: false }, ...prev].slice(0, 100),
-    );
-  }, []);
+  const cancelTask = useCallback(
+    async (id: string) => {
+      await api.cancelTask(id);
+      await refresh();
+    },
+    [refresh],
+  );
 
-  const markAllRead = useCallback(() => {
+  const markAllRead = useCallback(async () => {
+    setUnread(0); // optimistic — reads are cheap to lose
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    try {
+      await api.markNotificationsRead();
+    } catch {
+      /* poll will reconcile */
+    }
   }, []);
 
-  const unread = notifications.filter((n) => !n.read).length;
+  const signOut = useCallback(async () => {
+    try {
+      await api.logout();
+    } finally {
+      router.replace('/login');
+    }
+  }, [router]);
+
+  if (!ready) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <div className="text-center text-slate-400">
+          <div className="text-3xl">🎒</div>
+          <p className="mt-2 text-sm">Loading CampusBuddy…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <StoreContext.Provider
-      value={{ myTasks, addTask, cancelTask, findTask, notifications, unread, notify, markAllRead }}
+      value={{ me, ready, feed, myTasks, findTask, refresh, cancelTask, notifications, unread, markAllRead, signOut }}
     >
       {children}
     </StoreContext.Provider>

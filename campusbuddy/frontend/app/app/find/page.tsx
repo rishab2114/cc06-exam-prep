@@ -2,17 +2,15 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { MOCK_TASKS } from '../../../lib/mockTasks';
 import { formatSgd } from '../../../lib/format';
 import { SponsoredCard } from '../../../components/Sponsored';
 import { adFor } from '../../../lib/ads';
 import { useStore } from '../../../lib/store';
 
-// Marketplace / Explore. Filters map to how students actually choose: category,
-// trust flags (verified / contactless / customer present / same-gender) and
-// sorting by distance, price, or rating. Client-side over mock data for the demo;
-// the same params become API query params later.
-const CATEGORIES = ['All', ...Array.from(new Set(MOCK_TASKS.map((t) => t.category)))];
+// Marketplace / Explore — the live campus feed. Filters map to how students
+// actually choose: category, trust flags (verified / contactless / customer
+// present / same-gender) and sorting. Client-side over the fetched feed; the
+// same params become API query params once volume needs server paging.
 
 const SORTS = [
   { key: 'nearest', label: 'Nearest' },
@@ -46,7 +44,7 @@ function FilterChip({
 }
 
 export default function FindPage() {
-  const { myTasks } = useStore();
+  const { feed } = useStore();
   const [category, setCategory] = useState('All');
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [contactlessOnly, setContactlessOnly] = useState(false);
@@ -54,8 +52,13 @@ export default function FindPage() {
   const [sameGenderOnly, setSameGenderOnly] = useState(false);
   const [sort, setSort] = useState<SortKey>('nearest');
 
+  const categories = useMemo(
+    () => ['All', ...Array.from(new Set(feed.map((t) => t.category)))],
+    [feed],
+  );
+
   const tasks = useMemo(() => {
-    const filtered = [...myTasks, ...MOCK_TASKS].filter(
+    const filtered = feed.filter(
       (t) =>
         (category === 'All' || t.category === category) &&
         (!verifiedOnly || t.requiresMatricVerification) &&
@@ -70,7 +73,7 @@ export default function FindPage() {
           ? a.priceCents - b.priceCents
           : b.customerRating - a.customerRating,
     );
-  }, [myTasks, category, verifiedOnly, contactlessOnly, presentOnly, sameGenderOnly, sort]);
+  }, [feed, category, verifiedOnly, contactlessOnly, presentOnly, sameGenderOnly, sort]);
 
   function clearFilters() {
     setCategory('All');
@@ -103,7 +106,7 @@ export default function FindPage() {
       {/* Filters: categories, then trust toggles */}
       <div className="space-y-2 border-b bg-white px-4 py-3">
         <div className="flex gap-2 overflow-x-auto pb-1">
-          {CATEGORIES.map((c) => (
+          {categories.map((c) => (
             <FilterChip key={c} active={category === c} onClick={() => setCategory(c)}>
               {c}
             </FilterChip>
@@ -187,19 +190,19 @@ export default function FindPage() {
                   )}
                 </div>
                 <div className="mt-auto pt-2">
-                  {t.id.startsWith('mine-') ? (
+                  {t.isMine ? (
                     <Link
                       href={`/app/applicants/${t.id}`}
                       className="block rounded-lg border border-blue-600 py-2 text-center text-sm font-medium text-blue-700"
                     >
-                      Your post — view applicants
+                      Your post — {t.offerCount} offer{t.offerCount === 1 ? '' : 's'}
                     </Link>
                   ) : (
                     <Link
                       href={`/app/apply/${t.id}`}
                       className="block rounded-lg bg-blue-700 py-2 text-center text-sm font-medium text-white"
                     >
-                      Apply
+                      Offer to help{t.offerCount > 0 ? ` · ${t.offerCount} offer${t.offerCount === 1 ? '' : 's'} in` : ''}
                     </Link>
                   )}
                 </div>

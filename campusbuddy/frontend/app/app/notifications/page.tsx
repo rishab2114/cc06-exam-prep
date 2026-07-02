@@ -4,15 +4,9 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 import { useStore } from '../../../lib/store';
 
-// Notification centre. Real events from the store (task posted, deal agreed, …)
-// plus seeded examples so the screen is never empty on first open. Opening the
-// page marks everything read.
-const SEEDED = [
-  { id: 's1', text: 'Wei applied to “Room clean” at S$18 — review applicants.', ago: '2h ago' },
-  { id: 's2', text: 'Your laundry is being washed 🫧 — track it live.', ago: '3h ago' },
-  { id: 's3', text: 'Payout of S$84.00 sent to your bank.', ago: 'Jun 15' },
-];
-
+// Notification centre — real events from the API (new offer, counter, deal,
+// completion). Each one deep-links to the screen where you act on it. Opening
+// the page marks everything read.
 function timeAgo(at: number): string {
   const mins = Math.max(0, Math.round((Date.now() - at) / 60000));
   if (mins < 1) return 'just now';
@@ -22,12 +16,29 @@ function timeAgo(at: number): string {
   return `${Math.round(hrs / 24)}d ago`;
 }
 
+const TYPE_ICON: Record<string, string> = {
+  'offer.new': '💬',
+  'offer.countered': '🔁',
+  'offer.accepted': '🤝',
+  'task.assigned': '🤝',
+  'task.completed': '✅',
+  'task.cancelled': '🚫',
+};
+
 export default function NotificationsPage() {
-  const { notifications, markAllRead } = useStore();
+  const { notifications, markAllRead, myTasks } = useStore();
 
   useEffect(() => {
-    markAllRead();
+    void markAllRead();
   }, [markAllRead]);
+
+  // My own posts route to the offers view; everything else to the task page.
+  function hrefFor(taskId?: string): string | null {
+    if (!taskId) return null;
+    return myTasks.some((t) => t.id === taskId)
+      ? `/app/applicants/${taskId}`
+      : `/app/task/${taskId}`;
+  }
 
   return (
     <div>
@@ -36,24 +47,36 @@ export default function NotificationsPage() {
       </header>
 
       <div className="divide-y">
-        {notifications.map((n) => (
-          <div key={n.id} className="flex items-start gap-3 bg-white px-4 py-3">
-            <span className="mt-0.5">🔔</span>
-            <div className="flex-1">
-              <p className="text-sm">{n.text}</p>
-              <p className="mt-0.5 text-xs text-slate-400">{timeAgo(n.at)}</p>
+        {notifications.map((n) => {
+          const href = hrefFor(n.data?.taskId);
+          const inner = (
+            <>
+              <span className="mt-0.5">{TYPE_ICON[n.type] ?? '🔔'}</span>
+              <div className="flex-1">
+                <p className={`text-sm ${n.read ? 'text-slate-600' : 'font-medium'}`}>{n.title}</p>
+                {n.body && <p className="mt-0.5 text-sm text-slate-500">{n.body}</p>}
+                <p className="mt-0.5 text-xs text-slate-400">{timeAgo(n.at)}</p>
+              </div>
+              {href && <span className="mt-0.5 text-slate-300">›</span>}
+            </>
+          );
+          return href ? (
+            <Link key={n.id} href={href} className="flex items-start gap-3 bg-white px-4 py-3">
+              {inner}
+            </Link>
+          ) : (
+            <div key={n.id} className="flex items-start gap-3 bg-white px-4 py-3">
+              {inner}
             </div>
+          );
+        })}
+
+        {notifications.length === 0 && (
+          <div className="bg-white p-8 text-center text-sm text-slate-500">
+            <p className="text-3xl">🔔</p>
+            <p className="mt-2">Nothing yet — post a task or offer on one and the action lands here.</p>
           </div>
-        ))}
-        {SEEDED.map((n) => (
-          <div key={n.id} className="flex items-start gap-3 bg-white px-4 py-3">
-            <span className="mt-0.5">🔔</span>
-            <div className="flex-1">
-              <p className="text-sm text-slate-600">{n.text}</p>
-              <p className="mt-0.5 text-xs text-slate-400">{n.ago}</p>
-            </div>
-          </div>
-        ))}
+        )}
       </div>
     </div>
   );

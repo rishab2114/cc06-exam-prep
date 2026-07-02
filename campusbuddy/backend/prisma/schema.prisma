@@ -252,6 +252,7 @@ model Task {
   description     String?
   status          TaskStatus @default(OPEN)
   hall            String?
+  whenText        String? // human schedule text, e.g. "Today 6-8pm"
   locationNote    String?
   budgetCents     Int
   finalPriceCents Int?
@@ -264,6 +265,7 @@ model Task {
   closedAt        DateTime?
   cancelledAt     DateTime?
   cancelReason    String?
+  study           Json? // structured study request (module/topics/level/goal/format)
   deletedAt       DateTime?
   repeatOfId      String?
   repeatOf        Task?      @relation("TaskRepeats", fields: [repeatOfId], references: [id])
@@ -460,6 +462,20 @@ model Notification {
 
   @@index([userId, readAt]) // unread badge query
   @@map("notifications")
+}
+
+// Email login codes (6-digit, single-use, 10-min TTL). Only the salted hash is
+// stored; a cleanup job can purge rows past expiresAt.
+model LoginCode {
+  id         String    @id @default(uuid())
+  email      String
+  codeHash   String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([email, expiresAt])
+  @@map("login_codes")
 }
 
 model PushSubscription {

@@ -42,6 +42,9 @@ const CATEGORIES: Cat[] = [
   { slug: 'queue-standing', group: 'Convenience', name: 'Queue standing', tier: 'T1', min: 500, max: 2000 },
   { slug: 'printing-docs', group: 'Convenience', name: 'Printing & document collection', tier: 'T1', min: 300, max: 1000 },
 
+  // Study & meals
+  { slug: 'study-help', group: 'Study help', name: 'Study help / tutoring', tier: 'T1', min: 1500, max: 4000 },
+  { slug: 'spare-meal', group: 'Food & grocery', name: 'Spare home-cooked meal', tier: 'T1', min: 500, max: 1200 },
   // Student help
   { slug: 'hall-moving', group: 'Student help', name: 'Hall moving assistance', tier: 'T2', min: 1500, max: 5000 },
   { slug: 'luggage-carrying', group: 'Student help', name: 'Luggage carrying', tier: 'T2', min: 800, max: 2500 },

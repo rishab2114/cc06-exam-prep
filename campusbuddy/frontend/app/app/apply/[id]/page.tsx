@@ -1,28 +1,38 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { getTask, CURRENT_PROVIDER } from '../../../../lib/mockTasks';
 import { feeBreakdown, formatSgd } from '../../../../lib/format';
 import { parseSgdToCents } from '../../../../lib/store';
+import { api, ApiClientError, type ApiTask } from '../../../../lib/api';
 
-// Apply flow with the verification gate:
-//  1. Account must be matric-verified (done once at onboarding) for tasks that
-//     enter a room / handle belongings. The actual card SCAN happens on arrival
-//     (see /app/task/[id]) so a substitute can't be sent in their place.
-//  2. Same-gender matching is OPT-IN by the customer for intimate tasks (laundry),
-//     matched against the provider's verified profile gender.
+// Offer flow (provider side). Your quote opens a real negotiation thread with
+// the poster — they can accept it or counter, and you continue on the task page.
+// Safety rails shown up front: matric verification happens at arrival (so a
+// substitute can't be sent), contactless/in-person rules per category, and the
+// academic-integrity pledge for study help.
 export default function ApplyPage() {
   const { id } = useParams<{ id: string }>();
-  const task = getTask(id);
 
-  const matricVerified = CURRENT_PROVIDER.matricVerified;
+  const [task, setTask] = useState<ApiTask | null>(null);
+  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [quote, setQuote] = useState('');
   const [integrityOk, setIntegrityOk] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    api
+      .task(id)
+      .then((r) => setTask(r.task))
+      .catch(() => setTask(null))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) return <div className="p-6 text-center text-slate-400">Loading task…</div>;
   if (!task) {
     return (
       <div className="p-6 text-center text-slate-500">
@@ -31,30 +41,43 @@ export default function ApplyPage() {
     );
   }
 
-  const genderBlocked =
-    task.sameGenderOnly && CURRENT_PROVIDER.gender !== task.customerGender;
-  const needsMatric = task.requiresMatricVerification && !matricVerified;
+  const notOpen = task.status !== 'OPEN';
+  const ownTask = task.isMine;
   const needsIntegrity = task.category === 'Study help' && !integrityOk;
-  const canApply = !genderBlocked && !needsMatric && !needsIntegrity;
+  const canApply = !ownTask && !notOpen && !needsIntegrity;
   // Provider's own quote — defaults to the listed price until they change it.
   // Safe parse: empty -> listed price; junk/zero -> 0 (blocks submit below).
   const quoteCents = quote.trim() === '' ? task.priceCents : parseSgdToCents(quote);
   const invalidQuote = quote.trim() !== '' && quoteCents <= 0;
   const earnings = feeBreakdown(quoteCents).buddyGets;
 
+  async function submit() {
+    if (!canApply || invalidQuote || submitting || !task) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      await api.makeOffer(task.id, quoteCents, message);
+      setSubmitted(true);
+    } catch (e) {
+      setError(e instanceof ApiClientError ? e.message : 'Could not send your offer — try again.');
+      setSubmitting(false);
+    }
+  }
+
   if (submitted) {
     return (
       <div className="flex min-h-[70vh] flex-col items-center justify-center p-6 text-center">
         <div className="text-5xl">✅</div>
-        <h1 className="mt-4 text-xl font-bold">Application sent!</h1>
+        <h1 className="mt-4 text-xl font-bold">Offer sent — {formatSgd(quoteCents)}!</h1>
         <p className="mt-2 text-slate-600">
-          {task.customerName} will review and confirm. You&apos;ll get a notification if accepted.
+          {task.customerName} can accept your price or counter. We&apos;ll notify you the moment they
+          respond.
         </p>
         <Link
           href={`/app/task/${task.id}`}
           className="mt-8 rounded-xl bg-blue-700 px-6 py-3 font-medium text-white"
         >
-          Demo: customer accepted → open task
+          Track your offer ›
         </Link>
         <Link href="/app/find" className="mt-3 text-sm text-slate-500">
           Find more tasks
@@ -66,7 +89,7 @@ export default function ApplyPage() {
   return (
     <div>
       <header className="border-b bg-white px-4 py-3 font-semibold">
-        <Link href="/app/find" className="text-slate-500">‹ </Link> Apply
+        <Link href="/app/find" className="text-slate-500">‹ </Link> Offer to help
       </header>
 
       <div className="space-y-4 p-4">
@@ -74,15 +97,27 @@ export default function ApplyPage() {
         <div className="rounded-xl border bg-white p-3">
           <div className="flex justify-between">
             <span className="font-medium">{task.icon} {task.title}</span>
-            <span className="text-green-700">{formatSgd(task.priceCents)}</span>
+            <span className="text-green-700">{formatSgd(task.priceCents)}{task.study ? '/hr' : ''}</span>
           </div>
           <p className="mt-1 text-sm text-slate-500">
-            {task.hall} · {task.when} · {task.customerName} ⭐{task.customerRating}
+            {task.hall} · {task.when} · {task.customerName}
           </p>
           <p className="mt-2 rounded-lg bg-green-50 px-2 py-1 text-sm text-green-800">
             You earn <b>{formatSgd(earnings)}</b>
           </p>
         </div>
+
+        {ownTask && (
+          <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+            This is your own post — you can&apos;t offer on it.{' '}
+            <Link href={`/app/applicants/${task.id}`} className="font-medium underline">See your offers ›</Link>
+          </p>
+        )}
+        {notOpen && !ownTask && (
+          <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+            This task is no longer taking offers.
+          </p>
+        )}
 
         {/* Structured study request — what exactly they need help with */}
         {task.study && (
@@ -103,7 +138,7 @@ export default function ApplyPage() {
         )}
 
         {/* Academic-integrity guardrail for study help / tutoring */}
-        {task.category === 'Study help' && (
+        {task.category === 'Study help' && !ownTask && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
             <p className="font-medium text-amber-800">📚 Study help — keep it honest</p>
             <p className="mt-1 text-sm text-amber-700">
@@ -123,38 +158,24 @@ export default function ApplyPage() {
           </div>
         )}
 
-        {/* Verification gate */}
+        {/* Safety rails for this task type */}
         <div className="space-y-3">
-          <p className="text-xs font-semibold uppercase text-slate-500">Verification</p>
+          <p className="text-xs font-semibold uppercase text-slate-500">How this task works</p>
 
-          {/* Matric card — account-level status, set once at onboarding */}
-          {task.requiresMatricVerification ? (
+          {task.requiresMatricVerification && (
             <div className="rounded-xl border bg-white p-3">
               <div className="flex items-center justify-between">
-                <span className="font-medium">🪪 Matric-verified account</span>
-                {matricVerified ? (
-                  <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700">Verified ✓</span>
-                ) : (
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">Required</span>
-                )}
+                <span className="font-medium">🪪 Matric-verified task</span>
+                <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700">Campus email ✓</span>
               </div>
               <p className="mt-1 text-sm text-slate-500">
-                This task enters a room / handles belongings, so it&apos;s open to matric-verified
-                students only.
+                This task enters a room / handles belongings. On arrival you&apos;ll verify with your
+                campus pass or a live photo of your matric card, so {task.customerName} knows it&apos;s
+                really you — not someone sent in your place.
               </p>
-              <p className="mt-2 rounded-lg bg-blue-50 px-2 py-1 text-xs text-blue-700">
-                📍 On arrival you&apos;ll verify with your NTU pass or a live photo of your matric
-                card, so {task.customerName} knows it&apos;s really you — not someone sent in your
-                place.
-              </p>
-            </div>
-          ) : (
-            <div className="rounded-xl border bg-white p-3 text-sm text-slate-500">
-              ✓ No ID scan needed for this task type.
             </div>
           )}
 
-          {/* Contactless rule — doorstep handoff, Grab-style updates */}
           {task.contactless && (
             <div className="rounded-xl border bg-white p-3">
               <div className="flex items-center justify-between">
@@ -168,7 +189,6 @@ export default function ApplyPage() {
             </div>
           )}
 
-          {/* In-person rule — buddy is never alone in the room */}
           {task.presenceRequired && (
             <div className="rounded-xl border bg-white p-3">
               <div className="flex items-center justify-between">
@@ -178,34 +198,6 @@ export default function ApplyPage() {
               <p className="mt-1 text-sm text-slate-500">
                 For safety, this task is done while {task.customerName} is in the room — you&apos;re
                 never working alone in someone&apos;s space.
-              </p>
-            </div>
-          )}
-
-          {/* Same-gender matching */}
-          {task.sameGenderOnly && (
-            <div
-              className={`rounded-xl border p-3 ${
-                genderBlocked ? 'border-red-200 bg-red-50' : 'bg-white'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-medium">
-                  {task.customerGender === 'F' ? '♀' : '♂'} Same-gender buddy
-                </span>
-                {genderBlocked ? (
-                  <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">Not eligible</span>
-                ) : (
-                  <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700">Match ✓</span>
-                )}
-              </div>
-              <p className="mt-1 text-sm text-slate-600">
-                {task.title.toLowerCase().includes('laundry') ? 'Laundry' : 'This task'} involves
-                personal items, so {task.customerName} chose a{' '}
-                {task.customerGender === 'F' ? 'female' : 'male'} buddy.
-                {genderBlocked
-                  ? ' Your profile doesn’t match, so this one’s not open to you — but most tasks are.'
-                  : ' Your verified profile matches.'}
               </p>
             </div>
           )}
@@ -225,13 +217,13 @@ export default function ApplyPage() {
             />
             <span className={`mt-1 block text-xs ${invalidQuote ? 'text-red-500' : 'text-slate-400'}`}>
               {invalidQuote
-                ? 'That price doesn\u2019t look right — enter a number above S$0 (or clear it to use the listed price).'
+                ? 'That price doesn’t look right — enter a number above S$0 (or clear it to use the listed price).'
                 : <>{task.customerName} listed {formatSgd(task.priceCents)} — offer your own price, higher or lower. You earn <b>{formatSgd(earnings)}</b>.</>}
             </span>
           </label>
         )}
 
-        {/* Application message */}
+        {/* Message to the poster */}
         {canApply && (
           <label className="block text-sm">
             <span className="text-slate-500">Message to {task.customerName} (optional)</span>
@@ -239,27 +231,32 @@ export default function ApplyPage() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={2}
+              maxLength={300}
               placeholder="Hi! I can do this right after my 4pm class."
               className="mt-1 w-full rounded-xl border px-3 py-2"
             />
           </label>
         )}
 
+        {error && <p className="text-sm text-red-600">{error}</p>}
+
         {/* Submit */}
         <button
-          onClick={() => setSubmitted(true)}
-          disabled={!canApply || invalidQuote}
+          onClick={() => void submit()}
+          disabled={!canApply || invalidQuote || submitting}
           className="block w-full rounded-xl bg-blue-700 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {genderBlocked
-            ? 'Not eligible for this task'
-            : needsMatric
-              ? 'Verify account to continue'
+          {ownTask
+            ? 'This is your own task'
+            : notOpen
+              ? 'No longer taking offers'
               : needsIntegrity
                 ? 'Tick the tutoring pledge to continue'
                 : invalidQuote
                   ? 'Fix your price to continue'
-                  : `Send application · ${formatSgd(quoteCents)}`}
+                  : submitting
+                    ? 'Sending offer…'
+                    : `Send offer · ${formatSgd(quoteCents)}`}
         </button>
       </div>
     </div>

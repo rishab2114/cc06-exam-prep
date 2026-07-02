@@ -5,12 +5,12 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { formatSgd } from '../../../../lib/format';
 import { useStore, parseSgdToCents } from '../../../../lib/store';
-import { CURRENT_PROVIDER, type MockTask } from '../../../../lib/mockTasks';
+import { api, ApiClientError } from '../../../../lib/api';
 
-// Create-task form. Posting is FREE and actually creates the task (client store,
-// persisted): it appears on Home and in Explore immediately. Inputs are hardened —
-// budget parses safely (no NaN, clamped to S$999), study needs a module, and the
-// submit is guarded against double-posts.
+// Create-task form. Posting is FREE and creates the task for real — it goes
+// live on the campus feed immediately and every student on campus can offer.
+// Inputs are hardened: budget parses safely (no NaN, clamped to S$999), study
+// needs a module, and the submit is guarded against double-posts.
 const CATEGORIES = ['Room cleaning', 'Laundry pickup', 'Spare home-cooked meal', 'Grocery shopping', 'Food delivery', 'Parcel collection', 'Room shift & storage', 'Study help / tutoring', 'Late-night food run'];
 const STORES = ['Any store', '7-Eleven / Prime', 'FairPrice', 'Cheers', 'Amazon / Prime Now'];
 
@@ -24,20 +24,6 @@ const SLUG_TO_CATEGORY: Record<string, string> = {
   'room-move': 'Room shift & storage',
   'study-help': 'Study help / tutoring',
   'late-night-food-run': 'Late-night food run',
-};
-
-// Maps form categories to marketplace categories/icons + safety flags, so posted
-// tasks slot into the Explore filters exactly like seeded ones.
-const CATEGORY_META: Record<string, { icon: string; feedCategory: string; presenceRequired: boolean; contactless: boolean; matric: boolean }> = {
-  'Room cleaning': { icon: '🧹', feedCategory: 'Hostel Services', presenceRequired: true, contactless: false, matric: true },
-  'Laundry pickup': { icon: '🧺', feedCategory: 'Laundry', presenceRequired: false, contactless: true, matric: true },
-  'Spare home-cooked meal': { icon: '🍱', feedCategory: 'Food', presenceRequired: false, contactless: false, matric: false },
-  'Grocery shopping': { icon: '🛒', feedCategory: 'Convenience', presenceRequired: false, contactless: false, matric: false },
-  'Food delivery': { icon: '🍜', feedCategory: 'Food', presenceRequired: false, contactless: false, matric: false },
-  'Parcel collection': { icon: '📦', feedCategory: 'Convenience', presenceRequired: false, contactless: false, matric: false },
-  'Room shift & storage': { icon: '🧳', feedCategory: 'Moving', presenceRequired: true, contactless: false, matric: false },
-  'Study help / tutoring': { icon: '📚', feedCategory: 'Study help', presenceRequired: false, contactless: false, matric: false },
-  'Late-night food run': { icon: '🍜', feedCategory: 'Food', presenceRequired: false, contactless: false, matric: false },
 };
 
 const LEVELS = ['Starting from basics', 'Intermediate', 'Advanced'] as const;
@@ -66,7 +52,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 
 function NewTaskForm() {
   const params = useSearchParams();
-  const { addTask, notify } = useStore();
+  const { refresh } = useStore();
   const initialCategory = SLUG_TO_CATEGORY[params.get('category') ?? ''] ?? CATEGORIES[0];
   const storeParam = params.get('store');
   const initialStore =
@@ -90,63 +76,53 @@ function NewTaskForm() {
   const [showDetails, setShowDetails] = useState(false);
 
   const [postedId, setPostedId] = useState<string | null>(null);
+  const [posting, setPosting] = useState(false);
+  const [postError, setPostError] = useState<string | null>(null);
 
   const cents = parseSgdToCents(budgetRaw);
   const isGrocery = category === 'Grocery shopping' || category === 'Food delivery';
   const isStudy = category === 'Study help / tutoring';
   const missingModule = isStudy && module.trim() === '';
   const invalidBudget = cents <= 0;
-  const canPost = !missingModule && !invalidBudget;
+  const canPost = !missingModule && !invalidBudget && !posting;
 
   function toggleHelpType(key: string) {
     setHelpTypes((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
   }
 
-  function post() {
+  async function post() {
     if (!canPost || postedId) return; // double-submit guard
-    const meta = CATEGORY_META[category] ?? CATEGORY_META['Parcel collection'];
-    const id = `mine-${Date.now()}`;
+    setPosting(true);
+    setPostError(null);
     const desc = description.trim();
-    const title = isStudy
-      ? `${module.trim().slice(0, 60)} — study help`
-      : desc
-        ? desc.slice(0, 60)
-        : category;
-
-    const task: MockTask = {
-      id,
-      icon: meta.icon,
-      title,
-      category: meta.feedCategory,
-      priceCents: cents,
-      hall: isStudy ? (format === '💻 Online' ? 'Online' : 'Library') : where.trim() || 'On campus',
-      when: isStudy ? studyWhen : `${when.trim() || 'Today'} ${time.trim()}`.trim(),
-      distanceKm: 0,
-      customerName: CURRENT_PROVIDER.name,
-      customerGender: CURRENT_PROVIDER.gender,
-      customerRating: CURRENT_PROVIDER.rating,
-      tier: 'T1',
-      requiresMatricVerification: meta.matric,
-      sameGenderOnly: false,
-      presenceRequired: meta.presenceRequired,
-      contactless: meta.contactless,
-      ...(isStudy
-        ? {
-            study: {
-              module: module.trim(),
-              topics: details.trim() ? [details.trim().slice(0, 80)] : ['See request'],
-              level,
-              helpTypes: HELP_TYPES.filter((h) => helpTypes.includes(h.key)).map((h) => h.label),
-              goal: details.trim() || '—',
-              format,
-            },
-          }
-        : {}),
-    };
-
-    addTask(task);
-    notify(`Your task “${title}” is live — buddies can now apply.`);
-    setPostedId(id);
+    // Store preference rides in the description — the buddy needs it, the schema doesn't (yet).
+    const fullDesc = isGrocery && store !== 'Any store' ? `[${store}] ${desc}`.trim() : desc;
+    try {
+      const res = await api.createTask({
+        category,
+        description: fullDesc || undefined,
+        hall: isStudy ? (format === '💻 Online' ? 'Online' : 'Library') : where.trim() || 'On campus',
+        when: isStudy ? studyWhen : `${when.trim() || 'Today'} ${time.trim()}`.trim(),
+        priceCents: cents,
+        ...(isStudy
+          ? {
+              study: {
+                module: module.trim(),
+                topics: details.trim() ? [details.trim().slice(0, 80)] : ['See request'],
+                level,
+                helpTypes: HELP_TYPES.filter((h) => helpTypes.includes(h.key)).map((h) => h.label),
+                goal: details.trim() || '—',
+                format,
+              },
+            }
+          : {}),
+      });
+      await refresh(); // home + explore show it immediately
+      setPostedId(res.task.id);
+    } catch (err) {
+      setPostError(err instanceof ApiClientError ? err.message : 'Could not post — check your connection and try again.');
+      setPosting(false);
+    }
   }
 
   if (postedId) {
@@ -324,18 +300,22 @@ function NewTaskForm() {
           you accept a buddy. We hold the agreed amount and refund anything unused.
         </div>
 
+        {postError && <p className="text-sm text-red-600">{postError}</p>}
+
         <button
           type="submit"
           disabled={!canPost}
           className="block w-full rounded-xl bg-blue-700 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {missingModule
-            ? 'Type your module to post'
-            : invalidBudget
-              ? 'Set a budget to post'
-              : isStudy
-                ? 'Post study request (free)'
-                : 'Post task (free)'}
+          {posting
+            ? 'Posting…'
+            : missingModule
+              ? 'Type your module to post'
+              : invalidBudget
+                ? 'Set a budget to post'
+                : isStudy
+                  ? 'Post study request (free)'
+                  : 'Post task (free)'}
         </button>
       </form>
     </div>

@@ -6,9 +6,8 @@ import { adFor } from '../../lib/ads';
 import { useStore } from '../../lib/store';
 import { formatSgd } from '../../lib/format';
 
-// Customer home. "Your active tasks" is LIVE — tasks you post appear here (and in
-// Explore) and persist across refreshes. Two seeded demo tasks stay so the accept/
-// bargain and live-tracking flows are always explorable.
+// Customer home. "Your active tasks" is live from the API — everything you've
+// posted that's still open/assigned, with real offer counts.
 const QUICK = [
   { slug: 'room-cleaning', label: '🧹 Clean' },
   { slug: 'laundry-pickup', label: '🧺 Laundry' },
@@ -20,13 +19,20 @@ const QUICK = [
   { slug: 'grocery-shopping&store=convenience', label: '🏪 7-Eleven / Prime' },
 ];
 
+const STATUS_CHIP: Record<string, { label: string; cls: string }> = {
+  OPEN: { label: 'OPEN', cls: 'bg-amber-100 text-amber-700' },
+  ASSIGNED: { label: 'ASSIGNED', cls: 'bg-blue-100 text-blue-700' },
+  IN_PROGRESS: { label: 'IN PROGRESS', cls: 'bg-blue-100 text-blue-700' },
+};
+
 export default function AppHome() {
-  const { myTasks, cancelTask, unread } = useStore();
+  const { me, myTasks, cancelTask, unread } = useStore();
+  const firstName = me?.name.split(' ')[0] ?? 'there';
 
   return (
     <div>
       <header className="flex items-center justify-between border-b bg-white px-4 py-3">
-        <span className="font-semibold">Hi Priya 👋</span>
+        <span className="font-semibold">Hi {firstName} 👋</span>
         <div className="flex items-center gap-3">
           <Link href="/app/notifications" aria-label="Notifications" className="relative text-lg">
             🔔
@@ -45,43 +51,45 @@ export default function AppHome() {
         <section className="space-y-2">
           <p className="mb-2 text-xs font-semibold uppercase text-slate-500">Your active tasks</p>
 
-          {myTasks.map((t) => (
-            <div key={t.id} className="rounded-xl border bg-white p-3">
-              <Link href={`/app/applicants/${t.id}`} className="block">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">{t.icon} {t.title}</span>
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">OPEN</span>
-                </div>
-                <p className="mt-1 text-sm text-slate-500">
-                  {formatSgd(t.priceCents)}{t.study ? '/hr' : ''} · {t.hall} · {t.when}
-                </p>
-                <p className="mt-1 text-sm text-blue-700">View applicants ›</p>
-              </Link>
-              <button
-                onClick={() => cancelTask(t.id)}
-                className="mt-2 text-xs text-red-500"
-                aria-label={`Cancel task ${t.title}`}
-              >
-                Cancel task
-              </button>
-            </div>
-          ))}
+          {myTasks.map((t) => {
+            const chip = STATUS_CHIP[t.status] ?? STATUS_CHIP.OPEN;
+            return (
+              <div key={t.id} className="rounded-xl border bg-white p-3">
+                <Link href={`/app/applicants/${t.id}`} className="block">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{t.icon} {t.title}</span>
+                    <span className={`rounded-full px-2 py-0.5 text-xs ${chip.cls}`}>{chip.label}</span>
+                  </div>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {formatSgd(t.priceCents)}{t.study ? '/hr' : ''} · {t.hall} · {t.when}
+                  </p>
+                  <p className="mt-1 text-sm text-blue-700">
+                    {t.status === 'OPEN'
+                      ? t.offerCount > 0
+                        ? `${t.offerCount} offer${t.offerCount === 1 ? '' : 's'} — accept or bargain ›`
+                        : 'Waiting for offers ›'
+                      : 'View your buddy ›'}
+                  </p>
+                </Link>
+                {t.status === 'OPEN' && (
+                  <button
+                    onClick={() => void cancelTask(t.id)}
+                    className="mt-2 text-xs text-red-500"
+                    aria-label={`Cancel task ${t.title}`}
+                  >
+                    Cancel task
+                  </button>
+                )}
+              </div>
+            );
+          })}
 
-          {/* Seeded demo tasks so the full flows are always explorable */}
-          <Link href="/app/applicants/room-cleaning" className="block rounded-xl border bg-white p-3">
-            <div className="flex items-center justify-between">
-              <span className="font-medium">Room clean</span>
-              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">OPEN</span>
+          {myTasks.length === 0 && (
+            <div className="rounded-xl border border-dashed bg-white p-6 text-center text-sm text-slate-500">
+              <p className="text-2xl">📭</p>
+              <p className="mt-1">Nothing active — post a task below and offers roll in.</p>
             </div>
-            <p className="mt-1 text-sm text-blue-700">3 applicants — accept or bargain ›</p>
-          </Link>
-          <Link href="/app/track/laundry-pickup" className="block rounded-xl border bg-white p-3">
-            <div className="flex items-center justify-between">
-              <span className="font-medium">Laundry pickup & wash</span>
-              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700">IN PROGRESS</span>
-            </div>
-            <p className="mt-1 text-sm text-blue-700">Track live ›</p>
-          </Link>
+          )}
         </section>
 
         <section>

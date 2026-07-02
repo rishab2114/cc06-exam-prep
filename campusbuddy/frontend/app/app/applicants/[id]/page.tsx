@@ -1,30 +1,69 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { getTask, applicantsFor } from '../../../../lib/mockTasks';
 import { formatSgd } from '../../../../lib/format';
 import { useStore, parseSgdToCents } from '../../../../lib/store';
+import { api, ApiClientError, type ApiTask, type ApiOffer } from '../../../../lib/api';
 
-// Customer view: applicants + BARGAINING. Each buddy has a live number on the
-// table (starts at their quote). The customer can Accept it or Counter. A counter
-// is simulated: within ~10% of the buddy's price they accept; otherwise they
-// counter back at the midpoint, and you can accept or counter again. Fully
-// client-side so the negotiation UX is testable without a backend.
-type Phase = 'open' | 'theyCountered' | 'agreed';
-type Nego = { current: number; phase: Phase; note?: string };
-
+// Customer view of one task: every offer thread, with REAL turn-taking
+// bargaining. Each buddy has a live number on the table; whoever moved last
+// waits (the server enforces it — `yourTurn` comes from the state machine).
+// Accept runs the serializable accept transaction: task assigned, siblings
+// declined. Polls while open so the other side's counters appear live.
 export default function ApplicantsPage() {
   const { id } = useParams<{ id: string }>();
-  const { findTask, notify } = useStore();
-  const task = getTask(id) ?? findTask(id);
-  const applicants = applicantsFor(id);
+  const { refresh } = useStore();
 
-  const [nego, setNego] = useState<Record<string, Nego>>({});
+  const [task, setTask] = useState<ApiTask | null>(null);
+  const [offers, setOffers] = useState<ApiOffer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [counterOpen, setCounterOpen] = useState<string | null>(null);
   const [counterVal, setCounterVal] = useState('');
+  const [acting, setActing] = useState<string | null>(null); // offer id mid-request
 
+  const load = useCallback(async () => {
+    try {
+      const [t, o] = await Promise.all([api.task(id), api.offers(id)]);
+      setTask(t.task);
+      setOffers(o.offers);
+      setError(null);
+    } catch (e) {
+      if (e instanceof ApiClientError && e.status === 404) setTask(null);
+      else setError(e instanceof ApiClientError ? e.message : 'Could not load — retrying…');
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    void load();
+    const timer = setInterval(() => {
+      if (document.visibilityState === 'visible') void load();
+    }, 8_000);
+    return () => clearInterval(timer);
+  }, [load]);
+
+  async function act(offerId: string, fn: () => Promise<unknown>) {
+    if (acting) return;
+    setActing(offerId);
+    setError(null);
+    try {
+      await fn();
+      await Promise.all([load(), refresh()]);
+    } catch (e) {
+      setError(e instanceof ApiClientError ? e.message : 'That didn’t go through — try again.');
+      await load(); // state may have moved under us (e.g. task just taken)
+    } finally {
+      setActing(null);
+    }
+  }
+
+  if (loading) {
+    return <div className="p-6 text-center text-slate-400">Loading offers…</div>;
+  }
   if (!task) {
     return (
       <div className="p-6 text-center text-slate-500">
@@ -33,34 +72,15 @@ export default function ApplicantsPage() {
     );
   }
 
-  const ranked = [...applicants].sort((a, b) => a.quoteCents - b.quoteCents);
-  const stateFor = (aid: string, quote: number): Nego =>
-    nego[aid] ?? { current: quote, phase: 'open' };
+  const assigned = task.status !== 'OPEN';
+  const open = offers.filter((o) => o.state === 'PENDING' || o.state === 'COUNTERED');
+  const accepted = offers.find((o) => o.state === 'ACCEPTED');
+  const ranked = [...open].sort((a, b) => a.amountCents - b.amountCents);
 
-  function openCounter(aid: string, current: number) {
-    setCounterOpen(aid);
-    // pre-fill a sensible offer: midpoint between the listed budget and their number
-    setCounterVal(String(Math.round((current / 100 + task!.priceCents / 100) / 2)));
-  }
-
-  function submitCounter(aid: string, quote: number, name: string) {
-    const cur = stateFor(aid, quote).current;
-    const offerCents = parseSgdToCents(counterVal);
-    if (offerCents <= 0) return; // invalid offer — button is disabled, belt & braces
-    setCounterOpen(null);
-    if (offerCents >= Math.round(cur * 0.9)) {
-      setNego((n) => ({ ...n, [aid]: { current: offerCents, phase: 'agreed', note: 'accepted your offer 🎉' } }));
-      notify(`${name} accepted your offer of ${formatSgd(offerCents)} 🎉`);
-    } else {
-      const meet = Math.round((offerCents + cur) / 2);
-      setNego((n) => ({ ...n, [aid]: { current: meet, phase: 'theyCountered', note: 'countered back' } }));
-      notify(`${name} countered at ${formatSgd(meet)} — your move.`);
-    }
-  }
-
-  function accept(aid: string, price: number, name: string) {
-    setNego((n) => ({ ...n, [aid]: { current: price, phase: 'agreed', note: 'deal 🤝' } }));
-    notify(`Deal! ${name} will do it for ${formatSgd(price)} 🤝`);
+  function openCounter(o: ApiOffer) {
+    setCounterOpen(o.id);
+    // pre-fill a sensible number: midpoint between your budget and their price
+    setCounterVal(String(Math.round((o.amountCents / 100 + task!.priceCents / 100) / 2)));
   }
 
   return (
@@ -71,96 +91,114 @@ export default function ApplicantsPage() {
           {task.icon} {task.title}
         </span>
         <p className="mt-1 text-sm text-slate-500">
-          You listed {formatSgd(task.priceCents)} · {applicants.length} applicants · accept a price
-          or bargain
+          You listed {formatSgd(task.priceCents)}{task.study ? '/hr' : ''} ·{' '}
+          {assigned
+            ? `status: ${task.status.toLowerCase().replace('_', ' ')}`
+            : `${open.length} offer${open.length === 1 ? '' : 's'} — accept a price or bargain`}
         </p>
       </header>
 
       <div className="space-y-3 p-4">
-        {ranked.map((a) => {
-          const s = stateFor(a.id, a.quoteCents);
-          const diff = s.current - task.priceCents;
-          const agreed = s.phase === 'agreed';
-          return (
-            <div key={a.id} className={`rounded-xl border bg-white p-3 ${agreed ? 'border-green-300' : ''}`}>
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="font-medium">
-                    {a.name}{' '}
-                    <span className="text-sm font-normal text-slate-500">
-                      ⭐{a.rating} · {a.completedJobs} jobs
-                    </span>
-                  </p>
-                  <div className="mt-1 flex flex-wrap gap-1">
-                    {a.matricVerified && (
-                      <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700">🪪 Verified</span>
-                    )}
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">⏱ ~{a.etaMins} min</span>
+        {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+
+        {accepted && (
+          <div className="rounded-xl border border-green-300 bg-white p-3">
+            <p className="font-medium">🤝 Deal with {accepted.providerName}</p>
+            <p className="mt-1 text-sm text-slate-600">
+              Agreed at <b className="text-green-700">{formatSgd(accepted.amountCents)}</b>
+              {task.status === 'COMPLETED' ? ' · completed ✅' : ' · they’ll get it done and mark it complete.'}
+            </p>
+          </div>
+        )}
+
+        {!assigned &&
+          ranked.map((o) => {
+            const diff = o.amountCents - task.priceCents;
+            const busy = acting === o.id;
+            return (
+              <div key={o.id} className="rounded-xl border bg-white p-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="font-medium">
+                      {o.providerName}{' '}
+                      <span className="text-sm font-normal text-slate-500">🪪 campus-verified</span>
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      round {o.round} · {o.yourTurn ? 'your move' : 'waiting for them'}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-semibold text-green-700">{formatSgd(o.amountCents)}</p>
+                    <p className="text-xs text-slate-400">
+                      {diff === 0 ? 'at your budget' : diff > 0 ? `+${formatSgd(diff)}` : `−${formatSgd(-diff)}`}
+                    </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-lg font-semibold text-green-700">{formatSgd(s.current)}</p>
-                  <p className="text-xs text-slate-400">
-                    {diff === 0 ? 'at your budget' : diff > 0 ? `+${formatSgd(diff)}` : `−${formatSgd(-diff)}`}
-                    {s.phase !== 'open' && s.note ? ` · ${a.name} ${s.note}` : ''}
+
+                {o.message && (
+                  <p className="mt-2 rounded-lg bg-slate-50 px-2 py-1 text-sm text-slate-600">“{o.message}”</p>
+                )}
+
+                {o.yourTurn ? (
+                  counterOpen === o.id ? (
+                    <div className="mt-2 flex items-center gap-2">
+                      <span className="text-sm text-slate-500">Offer S$</span>
+                      <input
+                        type="number"
+                        value={counterVal}
+                        onChange={(e) => setCounterVal(e.target.value)}
+                        className="w-20 rounded-lg border px-2 py-1 text-sm"
+                        autoFocus
+                      />
+                      <button
+                        onClick={() =>
+                          void act(o.id, async () => {
+                            const cents = parseSgdToCents(counterVal);
+                            setCounterOpen(null);
+                            await api.counterOffer(o.id, cents);
+                          })
+                        }
+                        disabled={parseSgdToCents(counterVal) <= 0 || busy}
+                        className="rounded-lg bg-blue-700 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+                      >
+                        {busy ? 'Sending…' : 'Send counter'}
+                      </button>
+                      <button onClick={() => setCounterOpen(null)} className="text-sm text-slate-400">Cancel</button>
+                    </div>
+                  ) : (
+                    <div className="mt-2 flex gap-2">
+                      <button
+                        onClick={() => void act(o.id, () => api.acceptOffer(o.id))}
+                        disabled={busy}
+                        className="flex-1 rounded-lg bg-blue-700 py-2 text-sm font-medium text-white disabled:opacity-60"
+                      >
+                        {busy ? 'Accepting…' : `Accept ${formatSgd(o.amountCents)}`}
+                      </button>
+                      <button
+                        onClick={() => openCounter(o)}
+                        disabled={busy}
+                        className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
+                      >
+                        {o.round > 1 ? 'Counter again' : 'Bargain'}
+                      </button>
+                    </div>
+                  )
+                ) : (
+                  <p className="mt-2 rounded-lg bg-blue-50 px-2 py-1.5 text-sm text-blue-700">
+                    ⏳ You countered {formatSgd(o.amountCents)} — waiting for {o.providerName} to accept
+                    or counter back.
                   </p>
-                </div>
+                )}
               </div>
+            );
+          })}
 
-              <p className="mt-2 rounded-lg bg-slate-50 px-2 py-1 text-sm text-slate-600">“{a.message}”</p>
-
-              {agreed ? (
-                <Link
-                  href={`/app/task/${task.id}`}
-                  className="mt-2 block rounded-lg bg-green-600 py-2 text-center text-sm font-medium text-white"
-                >
-                  ✓ Agreed at {formatSgd(s.current)} — start task with {a.name}
-                </Link>
-              ) : counterOpen === a.id ? (
-                <div className="mt-2 flex items-center gap-2">
-                  <span className="text-sm text-slate-500">Offer S$</span>
-                  <input
-                    type="number"
-                    value={counterVal}
-                    onChange={(e) => setCounterVal(e.target.value)}
-                    className="w-20 rounded-lg border px-2 py-1 text-sm"
-                    autoFocus
-                  />
-                  <button
-                    onClick={() => submitCounter(a.id, a.quoteCents, a.name)}
-                    disabled={parseSgdToCents(counterVal) <= 0}
-                    className="rounded-lg bg-blue-700 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
-                  >
-                    Send offer
-                  </button>
-                  <button onClick={() => setCounterOpen(null)} className="text-sm text-slate-400">Cancel</button>
-                </div>
-              ) : (
-                <div className="mt-2 flex gap-2">
-                  <button
-                    onClick={() => accept(a.id, s.current, a.name)}
-                    className="flex-1 rounded-lg bg-blue-700 py-2 text-sm font-medium text-white"
-                  >
-                    Accept {formatSgd(s.current)}
-                  </button>
-                  <button
-                    onClick={() => openCounter(a.id, s.current)}
-                    className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
-                  >
-                    {s.phase === 'theyCountered' ? 'Counter again' : 'Bargain'}
-                  </button>
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        {ranked.length === 0 && (
+        {!assigned && ranked.length === 0 && (
           <div className="rounded-xl border border-dashed bg-white p-8 text-center text-sm text-slate-500">
             <p className="text-3xl">⏳</p>
-            <p className="mt-2 font-medium text-slate-700">No applicants yet</p>
+            <p className="mt-2 font-medium text-slate-700">No offers yet</p>
             <p className="mt-1">
-              Your post is live in Explore — we&apos;ll notify you the moment a buddy applies.
+              Your post is live in Explore — we&apos;ll notify you the moment a buddy offers.
             </p>
             <Link href="/app/find" className="mt-3 block font-medium text-blue-700">
               See it in Explore ›
@@ -169,8 +207,8 @@ export default function ApplicantsPage() {
         )}
 
         <p className="rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700">
-          💡 Posting is free. You only pay once you accept a buddy — we hold the agreed amount and
-          refund anything unused back to your CampusBuddy balance.
+          💡 Posting is free. Accept a number you like or counter — each side takes turns until you
+          shake on a price.
         </p>
       </div>
     </div>
