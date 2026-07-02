@@ -82,6 +82,24 @@ export default function ApplyPage() {
           </p>
         </div>
 
+        {/* Structured study request — what exactly they need help with */}
+        {task.study && (
+          <div className="rounded-xl border bg-white p-3">
+            <p className="font-medium">📖 {task.study.module}</p>
+            <div className="mt-2 space-y-1.5 text-sm">
+              <p><span className="text-slate-400">Topics:</span> {task.study.topics.join(', ')}</p>
+              <p><span className="text-slate-400">Level:</span> {task.study.level}</p>
+              <p><span className="text-slate-400">Goal:</span> {task.study.goal}</p>
+              <p><span className="text-slate-400">Format:</span> {task.study.format}</p>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-1">
+              {task.study.helpTypes.map((h) => (
+                <span key={h} className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700">{h}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Academic-integrity guardrail for study help / tutoring */}
         {task.category === 'Study help' && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">

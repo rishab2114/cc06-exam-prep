@@ -27,6 +27,16 @@ export interface MockTask {
   // contactless: doorstep handoff (bag left outside), no room entry. Buddy sends
   // Grab-style status updates. Used for laundry.
   contactless: boolean;
+  // Structured study-help request — present only for Study help tasks. Replaces the
+  // generic job description so tutors can self-select accurately (no generic posts).
+  study?: {
+    module: string;
+    topics: string[];
+    level: string;
+    helpTypes: string[];
+    goal: string;
+    format: string;
+  };
 }
 
 export const MOCK_TASKS: MockTask[] = [
@@ -123,7 +133,7 @@ export const MOCK_TASKS: MockTask[] = [
   {
     id: 'study-help',
     icon: '📚',
-    title: 'Calculus II — exam prep session',
+    title: 'MH2100 Calculus II — midterm help',
     category: 'Study help',
     priceCents: 2500,
     hall: 'Library / online',
@@ -137,6 +147,14 @@ export const MOCK_TASKS: MockTask[] = [
     sameGenderOnly: false,
     presenceRequired: false,
     contactless: false,
+    study: {
+      module: 'MH2100 — Calculus II',
+      topics: ['Multiple integrals', 'Green’s theorem'],
+      level: 'Starting from basics',
+      helpTypes: ['💡 Explain concepts', '📄 Past-paper practice'],
+      goal: 'Pass the Week 8 midterm',
+      format: '📍 In person (library)',
+    },
   },
 ];
 

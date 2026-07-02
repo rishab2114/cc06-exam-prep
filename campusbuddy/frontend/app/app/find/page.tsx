@@ -20,12 +20,24 @@ export default function FindPage() {
           <div key={t.id} className="rounded-xl border bg-white p-3">
             <div className="flex justify-between">
               <span className="font-medium">{t.icon} {t.title}</span>
-              <span className="text-green-700">{formatSgd(t.priceCents)}</span>
+              <span className="text-green-700">{formatSgd(t.priceCents)}{t.study ? '/hr' : ''}</span>
             </div>
-            <p className="mt-1 text-sm text-slate-500">
-              {t.hall} · {t.when} · {t.distanceKm}km · cust ⭐{t.customerRating}
-            </p>
+            {t.study ? (
+              <div className="mt-1 text-sm text-slate-500">
+                <p>📖 {t.study.topics.join(' · ')}</p>
+                <p className="text-xs">
+                  {t.study.level} · goal: {t.study.goal} · {t.study.format} · {t.when}
+                </p>
+              </div>
+            ) : (
+              <p className="mt-1 text-sm text-slate-500">
+                {t.hall} · {t.when} · {t.distanceKm}km · cust ⭐{t.customerRating}
+              </p>
+            )}
             <div className="mt-1 flex flex-wrap gap-1">
+              {t.study?.helpTypes.map((h) => (
+                <span key={h} className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700">{h}</span>
+              ))}
               {t.category === 'Study help' && (
                 <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">📚 tutoring only</span>
               )}
