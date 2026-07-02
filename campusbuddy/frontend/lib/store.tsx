@@ -114,9 +114,4 @@ export function useStore(): StoreShape {
   return ctx;
 }
 
-/** Parse a user-typed SGD amount safely. Returns integer cents, clamped to [0, S$999]. */
-export function parseSgdToCents(raw: string): number {
-  const n = Number(String(raw).replace(/[^0-9.]/g, ''));
-  if (!Number.isFinite(n) || n <= 0) return 0;
-  return Math.min(Math.round(n * 100), 99900);
-}
+export { parseSgdToCents } from '@campusbuddy/shared';

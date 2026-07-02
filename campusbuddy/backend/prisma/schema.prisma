@@ -43,11 +43,35 @@ enum TaskStatus {
   DISPUTED
 }
 
-enum ApplicationStatus {
-  APPLIED
+// Negotiation: one Offer row per (task, provider) thread; `round` increments on
+// each counter and history is written to TaskEvent. State machine lives in
+// @campusbuddy/shared (offers.ts) — DB enum must mirror it exactly.
+enum OfferState {
+  PENDING
+  COUNTERED
+  ACCEPTED
+  DECLINED
   WITHDRAWN
-  SELECTED
-  REJECTED
+  EXPIRED
+}
+
+enum OfferActor {
+  CUSTOMER
+  PROVIDER
+}
+
+enum MediaKind {
+  VERIFICATION
+  TASK_PHOTO
+  AVATAR
+  MESSAGE_ATTACHMENT
+}
+
+enum ScanStatus {
+  PENDING
+  CLEAN
+  INFECTED
+  SKIPPED
 }
 
 enum PaymentStatus {
@@ -91,9 +115,28 @@ enum DisputeStatus {
   REJECTED
 }
 
+// ---------- Tenancy ----------
+// Shared-schema multi-tenancy: every user and task belongs to exactly one campus
+// and ALL queries are campus-scoped (enforced in services; RLS optional later).
+model Campus {
+  id           String   @id @default(uuid())
+  code         String   @unique // e.g. NTU, NUS, SUTD
+  name         String
+  emailDomains String[] // verified sign-up domains for this campus
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  users User[]
+  tasks Task[]
+
+  @@map("campuses")
+}
+
 // ---------- Users & identity ----------
 model User {
   id              String     @id @default(uuid())
+  campusId        String
+  campus          Campus     @relation(fields: [campusId], references: [id])
   email           String     @unique
   emailVerifiedAt DateTime?
   fullName        String
@@ -112,7 +155,10 @@ model User {
   verifications   Verification[]
   tasksAsCustomer Task[]          @relation("CustomerTasks")
   tasksAsProvider Task[]          @relation("ProviderTasks")
-  applications    Application[]
+  offers          Offer[]
+  savedProviders  SavedProvider[] @relation("Saver")
+  savedByOthers   SavedProvider[] @relation("Saved")
+  media           Media[]
   reviewsWritten  Review[]        @relation("RaterReviews")
   reviewsReceived Review[]        @relation("RateeReviews")
   payouts         Payout[]
@@ -124,6 +170,7 @@ model User {
   blocksMade      UserBlock[]     @relation("Blocker")
   blocksAgainst   UserBlock[]     @relation("Blocked")
 
+  @@index([campusId])
   @@map("users")
 }
 
@@ -138,7 +185,22 @@ model ProviderProfile {
   workEligibilityAck Boolean  @default(false)
   createdAt          DateTime @default(now())
 
+  availability AvailabilityWindow[]
+
   @@map("provider_profiles")
+}
+
+// Weekly recurring availability (minutes from midnight, campus-local time).
+model AvailabilityWindow {
+  id        String          @id @default(uuid())
+  profileId String
+  profile   ProviderProfile @relation(fields: [profileId], references: [userId], onDelete: Cascade)
+  weekday   Int // 0=Sun .. 6=Sat
+  startMin  Int
+  endMin    Int
+
+  @@index([profileId])
+  @@map("availability_windows")
 }
 
 model Verification {
@@ -178,6 +240,8 @@ model ServiceCategory {
 // ---------- Tasks / bookings ----------
 model Task {
   id              String     @id @default(uuid())
+  campusId        String
+  campus          Campus     @relation(fields: [campusId], references: [id])
   customerId      String
   customer        User       @relation("CustomerTasks", fields: [customerId], references: [id])
   providerId      String?
@@ -200,8 +264,12 @@ model Task {
   closedAt        DateTime?
   cancelledAt     DateTime?
   cancelReason    String?
+  deletedAt       DateTime?
+  repeatOfId      String?
+  repeatOf        Task?      @relation("TaskRepeats", fields: [repeatOfId], references: [id])
+  repeats         Task[]     @relation("TaskRepeats")
 
-  applications Application[]
+  offers       Offer[]
   events       TaskEvent[]
   payment      Payment?
   reviews      Review[]
@@ -209,6 +277,7 @@ model Task {
   disputes     Dispute[]
   safetyEvents SafetyEvent[]
 
+  @@index([campusId, status, createdAt]) // the Explore feed query
   @@index([status, hall])
   @@index([categoryId])
   @@index([customerId])
@@ -216,19 +285,27 @@ model Task {
   @@map("tasks")
 }
 
-model Application {
-  id         String            @id @default(uuid())
-  taskId     String
-  task       Task              @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  providerId String
-  provider   User              @relation(fields: [providerId], references: [id])
-  message    String?
-  quoteCents Int?
-  status     ApplicationStatus @default(APPLIED)
-  createdAt  DateTime          @default(now())
+model Offer {
+  id          String     @id @default(uuid())
+  taskId      String
+  task        Task       @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  providerId  String
+  provider    User       @relation(fields: [providerId], references: [id])
+  amountCents Int // the live number on the table
+  round       Int        @default(1) // increments on each counter
+  state       OfferState @default(PENDING)
+  lastActor   OfferActor @default(PROVIDER) // whose number is on the table
+  message     String?
+  expiresAt   DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
+  // One negotiation thread per (task, provider); accepting is a serializable
+  // txn in offers.service that also assigns the task and declines siblings.
   @@unique([taskId, providerId])
-  @@map("applications")
+  @@index([taskId, state])
+  @@index([providerId, state])
+  @@map("offers")
 }
 
 model TaskEvent {
@@ -306,6 +383,7 @@ model Review {
   comment     String?
   isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
+  deletedAt   DateTime?
 
   @@unique([taskId, raterId])
   @@map("reviews")
@@ -362,6 +440,7 @@ model Message {
   body      String
   createdAt DateTime  @default(now())
   readAt    DateTime?
+  deletedAt DateTime?
 
   @@index([taskId, createdAt])
   @@map("messages")
@@ -379,6 +458,7 @@ model Notification {
   readAt    DateTime?
   createdAt DateTime  @default(now())
 
+  @@index([userId, readAt]) // unread badge query
   @@map("notifications")
 }
 
@@ -392,4 +472,35 @@ model PushSubscription {
 
   @@unique([userId, endpoint])
   @@map("push_subscriptions")
+}
+
+// ---------- Media ----------
+// Files live in S3, never the DB. Verification images get expiresAt (PDPA
+// retention: purge job deletes on schedule) and a private, KMS-encrypted bucket.
+model Media {
+  id         String     @id @default(uuid())
+  ownerId    String
+  owner      User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  kind       MediaKind
+  s3Key      String     @unique
+  mime       String
+  bytes      Int
+  scanStatus ScanStatus @default(PENDING)
+  expiresAt  DateTime?
+  createdAt  DateTime   @default(now())
+
+  @@index([ownerId, kind])
+  @@map("media")
+}
+
+// ---------- Retention primitives ----------
+model SavedProvider {
+  userId     String
+  user       User     @relation("Saver", fields: [userId], references: [id], onDelete: Cascade)
+  providerId String
+  provider   User     @relation("Saved", fields: [providerId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@id([userId, providerId])
+  @@map("saved_providers")
 }

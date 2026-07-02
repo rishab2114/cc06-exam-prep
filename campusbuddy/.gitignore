@@ -32,3 +32,6 @@ frontend/next-env.d.ts
 CampusBuddy-Docs.pdf
 CampusBuddy-Venture-Brief.pdf
 CampusBuddy-Million-Dollar-Plan.pdf
+
+# shared package build output
+shared/dist/

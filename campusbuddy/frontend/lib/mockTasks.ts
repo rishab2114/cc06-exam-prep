@@ -4,40 +4,12 @@
 //    belongings (cleaning, laundry) -> provider must be matric-verified.
 //  - sameGenderOnly: customer opted into a same-gender buddy for an intimate
 //    task (laundry / room cleaning). Framed as a comfort/safety PREFERENCE.
-export type TaskTier = 'T1' | 'T2';
+import type { Task } from '@campusbuddy/shared';
 
-export interface MockTask {
-  id: string;
-  icon: string;
-  title: string;
-  category: string;
-  priceCents: number;
-  hall: string;
-  when: string;
-  distanceKm: number;
-  customerName: string;
-  customerGender: 'M' | 'F';
-  customerRating: number;
-  tier: TaskTier;
-  requiresMatricVerification: boolean;
-  sameGenderOnly: boolean;
-  // presenceRequired: customer must be present the whole time — the buddy is never
-  // alone in the room. Default for in-room tasks like cleaning (safety redesign).
-  presenceRequired: boolean;
-  // contactless: doorstep handoff (bag left outside), no room entry. Buddy sends
-  // Grab-style status updates. Used for laundry.
-  contactless: boolean;
-  // Structured study-help request — present only for Study help tasks. Replaces the
-  // generic job description so tutors can self-select accurately (no generic posts).
-  study?: {
-    module: string;
-    topics: string[];
-    level: string;
-    helpTypes: string[];
-    goal: string;
-    format: string;
-  };
-}
+// The domain Task type lives in @campusbuddy/shared (single copy, shared with
+// the API). MockTask is kept as an alias so existing imports don't churn.
+export type MockTask = Task;
+export type { TaskTier, StudyRequest } from '@campusbuddy/shared';
 
 export const MOCK_TASKS: MockTask[] = [
   {

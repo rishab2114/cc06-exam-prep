@@ -50,7 +50,26 @@ const CATEGORIES: Cat[] = [
   { slug: 'basic-cooking', group: 'Student help', name: 'Basic cooking', tier: 'T3', min: 1500, max: 4000, active: false },
 ];
 
+const CAMPUSES = [
+  { code: 'SUTD', name: 'Singapore University of Technology and Design', domains: ['mymail.sutd.edu.sg', 'sutd.edu.sg'] },
+  { code: 'NTU', name: 'Nanyang Technological University', domains: ['e.ntu.edu.sg', 'ntu.edu.sg', 'staff.main.ntu.edu.sg'] },
+  { code: 'NUS', name: 'National University of Singapore', domains: ['u.nus.edu', 'nus.edu.sg'] },
+  { code: 'SMU', name: 'Singapore Management University', domains: ['smu.edu.sg'] },
+  { code: 'SIT', name: 'Singapore Institute of Technology', domains: ['singaporetech.edu.sg'] },
+  { code: 'SUSS', name: 'Singapore University of Social Sciences', domains: ['suss.edu.sg'] },
+];
+
 async function main() {
+  for (const c of CAMPUSES) {
+    await prisma.campus.upsert({
+      where: { code: c.code },
+      update: { name: c.name, emailDomains: c.domains },
+      create: { code: c.code, name: c.name, emailDomains: c.domains },
+    });
+  }
+  // eslint-disable-next-line no-console
+  console.log(`Seeded ${CAMPUSES.length} campuses.`);
+
   for (let i = 0; i < CATEGORIES.length; i++) {
     const c = CATEGORIES[i];
     await prisma.serviceCategory.upsert({
