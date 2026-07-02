@@ -4,15 +4,16 @@ import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { formatSgd } from '../../../../lib/format';
+import { useStore, parseSgdToCents } from '../../../../lib/store';
+import { CURRENT_PROVIDER, type MockTask } from '../../../../lib/mockTasks';
 
-// Create-task form (wireframe #3, docs/05). No min budget; buddies can also quote.
-// Study help gets its OWN structured form (module/topics/level/goal/help type) —
-// not the generic job fields — so tutors can self-select accurately.
+// Create-task form. Posting is FREE and actually creates the task (client store,
+// persisted): it appears on Home and in Explore immediately. Inputs are hardened —
+// budget parses safely (no NaN, clamped to S$999), study needs a module, and the
+// submit is guarded against double-posts.
 const CATEGORIES = ['Room cleaning', 'Laundry pickup', 'Spare home-cooked meal', 'Grocery shopping', 'Food delivery', 'Parcel collection', 'Room shift & storage', 'Study help / tutoring', 'Late-night food run'];
-// Stores for grocery/delivery runs — buddy shops/picks up from here.
 const STORES = ['Any store', '7-Eleven / Prime', 'FairPrice', 'Cheers', 'Amazon / Prime Now'];
 
-// Maps the home quick-post slugs to a category so the dropdown preselects correctly.
 const SLUG_TO_CATEGORY: Record<string, string> = {
   'room-cleaning': 'Room cleaning',
   'laundry-pickup': 'Laundry pickup',
@@ -25,6 +26,20 @@ const SLUG_TO_CATEGORY: Record<string, string> = {
   'late-night-food-run': 'Late-night food run',
 };
 
+// Maps form categories to marketplace categories/icons + safety flags, so posted
+// tasks slot into the Explore filters exactly like seeded ones.
+const CATEGORY_META: Record<string, { icon: string; feedCategory: string; presenceRequired: boolean; contactless: boolean; matric: boolean }> = {
+  'Room cleaning': { icon: '🧹', feedCategory: 'Hostel Services', presenceRequired: true, contactless: false, matric: true },
+  'Laundry pickup': { icon: '🧺', feedCategory: 'Laundry', presenceRequired: false, contactless: true, matric: true },
+  'Spare home-cooked meal': { icon: '🍱', feedCategory: 'Food', presenceRequired: false, contactless: false, matric: false },
+  'Grocery shopping': { icon: '🛒', feedCategory: 'Convenience', presenceRequired: false, contactless: false, matric: false },
+  'Food delivery': { icon: '🍜', feedCategory: 'Food', presenceRequired: false, contactless: false, matric: false },
+  'Parcel collection': { icon: '📦', feedCategory: 'Convenience', presenceRequired: false, contactless: false, matric: false },
+  'Room shift & storage': { icon: '🧳', feedCategory: 'Moving', presenceRequired: true, contactless: false, matric: false },
+  'Study help / tutoring': { icon: '📚', feedCategory: 'Study help', presenceRequired: false, contactless: false, matric: false },
+  'Late-night food run': { icon: '🍜', feedCategory: 'Food', presenceRequired: false, contactless: false, matric: false },
+};
+
 const LEVELS = ['Starting from basics', 'Intermediate', 'Advanced'] as const;
 const HELP_TYPES = [
   { key: 'concepts', label: '💡 Explain concepts' },
@@ -33,16 +48,9 @@ const HELP_TYPES = [
   { key: 'examplan', label: '🎯 Exam revision plan' },
 ] as const;
 const FORMATS = ['📍 In person (library)', '💻 Online'] as const;
+const WHENS = ['Today', 'This week', 'Flexible'] as const;
 
-function Chip({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
+function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
       type="button"
@@ -58,56 +66,105 @@ function Chip({
 
 function NewTaskForm() {
   const params = useSearchParams();
+  const { addTask, notify } = useStore();
   const initialCategory = SLUG_TO_CATEGORY[params.get('category') ?? ''] ?? CATEGORIES[0];
   const storeParam = params.get('store');
   const initialStore =
-    storeParam === 'convenience'
-      ? '7-Eleven / Prime'
-      : STORES.includes(storeParam ?? '')
-        ? (storeParam as string)
-        : 'Any store';
+    storeParam === 'convenience' ? '7-Eleven / Prime' : STORES.includes(storeParam ?? '') ? (storeParam as string) : 'Any store';
 
   const [category, setCategory] = useState(initialCategory);
   const [store, setStore] = useState(initialStore);
-  const [budget, setBudget] = useState(20);
+  const [budgetRaw, setBudgetRaw] = useState('20');
+  const [description, setDescription] = useState('');
+  const [where, setWhere] = useState('Hall 9, Blk 51');
+  const [when, setWhen] = useState('Today');
+  const [time, setTime] = useState('6–8pm');
 
-  // Study-help fields — one required typed field (module); the rest are chips
-  // with sensible defaults, plus a single optional details line.
+  // Study-help fields — one typed field (module), rest chips + optional details.
   const [module, setModule] = useState('');
   const [level, setLevel] = useState<(typeof LEVELS)[number]>('Intermediate');
   const [helpTypes, setHelpTypes] = useState<string[]>(['concepts']);
   const [format, setFormat] = useState<(typeof FORMATS)[number]>(FORMATS[0]);
-  const [studyWhen, setStudyWhen] = useState('This week');
+  const [studyWhen, setStudyWhen] = useState<(typeof WHENS)[number]>('This week');
   const [details, setDetails] = useState('');
   const [showDetails, setShowDetails] = useState(false);
 
-  const [posted, setPosted] = useState(false);
+  const [postedId, setPostedId] = useState<string | null>(null);
 
-  const cents = Math.round(budget * 100);
+  const cents = parseSgdToCents(budgetRaw);
   const isGrocery = category === 'Grocery shopping' || category === 'Food delivery';
   const isStudy = category === 'Study help / tutoring';
+  const missingModule = isStudy && module.trim() === '';
+  const invalidBudget = cents <= 0;
+  const canPost = !missingModule && !invalidBudget;
 
   function toggleHelpType(key: string) {
-    setHelpTypes((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
-    );
+    setHelpTypes((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
   }
 
-  if (posted) {
+  function post() {
+    if (!canPost || postedId) return; // double-submit guard
+    const meta = CATEGORY_META[category] ?? CATEGORY_META['Parcel collection'];
+    const id = `mine-${Date.now()}`;
+    const desc = description.trim();
+    const title = isStudy
+      ? `${module.trim().slice(0, 60)} — study help`
+      : desc
+        ? desc.slice(0, 60)
+        : category;
+
+    const task: MockTask = {
+      id,
+      icon: meta.icon,
+      title,
+      category: meta.feedCategory,
+      priceCents: cents,
+      hall: isStudy ? (format === '💻 Online' ? 'Online' : 'Library') : where.trim() || 'On campus',
+      when: isStudy ? studyWhen : `${when.trim() || 'Today'} ${time.trim()}`.trim(),
+      distanceKm: 0,
+      customerName: CURRENT_PROVIDER.name,
+      customerGender: CURRENT_PROVIDER.gender,
+      customerRating: CURRENT_PROVIDER.rating,
+      tier: 'T1',
+      requiresMatricVerification: meta.matric,
+      sameGenderOnly: false,
+      presenceRequired: meta.presenceRequired,
+      contactless: meta.contactless,
+      ...(isStudy
+        ? {
+            study: {
+              module: module.trim(),
+              topics: details.trim() ? [details.trim().slice(0, 80)] : ['See request'],
+              level,
+              helpTypes: HELP_TYPES.filter((h) => helpTypes.includes(h.key)).map((h) => h.label),
+              goal: details.trim() || '—',
+              format,
+            },
+          }
+        : {}),
+    };
+
+    addTask(task);
+    notify(`Your task “${title}” is live — buddies can now apply.`);
+    setPostedId(id);
+  }
+
+  if (postedId) {
     return (
       <div className="flex min-h-[70vh] flex-col items-center justify-center p-6 text-center">
         <div className="text-5xl">✅</div>
         <h1 className="mt-4 text-xl font-bold">Task posted — for free!</h1>
         <p className="mt-2 max-w-sm text-slate-600">
-          Verified buddies nearby can now apply and name their price. You only pay when you accept
-          one — we hold the agreed amount and refund anything unused to your balance.
+          It&apos;s live on the marketplace now. You only pay when you accept a buddy — we hold the
+          agreed amount and refund anything unused to your balance.
         </p>
         <Link
-          href="/app/applicants/room-cleaning"
+          href={`/app/applicants/${postedId}`}
           className="mt-8 rounded-xl bg-blue-700 px-6 py-3 font-medium text-white"
         >
-          See applicants &amp; bargain (demo) ›
+          View your task & applicants ›
         </Link>
+        <Link href="/app/find" className="mt-3 text-sm text-blue-700">See it in Explore</Link>
         <Link href="/app" className="mt-3 text-sm text-slate-500">Back to home</Link>
       </div>
     );
@@ -120,14 +177,10 @@ function NewTaskForm() {
         {isStudy ? 'Get study help' : 'New task'}
       </header>
 
-      <form className="space-y-4 p-4 text-sm" onSubmit={(e) => e.preventDefault()}>
+      <form className="space-y-4 p-4 text-sm" onSubmit={(e) => { e.preventDefault(); post(); }}>
         <label className="block">
           <span className="text-slate-500">Category</span>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="mt-1 w-full rounded-xl border px-3 py-2"
-          >
+          <select value={category} onChange={(e) => setCategory(e.target.value)} className="mt-1 w-full rounded-xl border px-3 py-2">
             {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
           </select>
         </label>
@@ -135,24 +188,20 @@ function NewTaskForm() {
         {isGrocery && (
           <label className="block">
             <span className="text-slate-500">Store</span>
-            <select
-              value={store}
-              onChange={(e) => setStore(e.target.value)}
-              className="mt-1 w-full rounded-xl border px-3 py-2"
-            >
+            <select value={store} onChange={(e) => setStore(e.target.value)} className="mt-1 w-full rounded-xl border px-3 py-2">
               {STORES.map((s) => <option key={s}>{s}</option>)}
             </select>
           </label>
         )}
 
         {isStudy ? (
-          /* ---------- Study request: ONE typed field, everything else chips ---------- */
           <>
             <label className="block">
               <span className="text-slate-500">Module & topic</span>
               <input
                 value={module}
                 onChange={(e) => setModule(e.target.value)}
+                maxLength={80}
                 placeholder="e.g. MH1810 Calculus — integration, limits"
                 className="mt-1 w-full rounded-xl border px-3 py-2"
                 autoFocus
@@ -163,9 +212,7 @@ function NewTaskForm() {
               <span className="text-slate-500">Where are you at?</span>
               <div className="mt-1 flex flex-wrap gap-2">
                 {LEVELS.map((l) => (
-                  <Chip key={l} active={level === l} onClick={() => setLevel(l)}>
-                    {l}
-                  </Chip>
+                  <Chip key={l} active={level === l} onClick={() => setLevel(l)}>{l}</Chip>
                 ))}
               </div>
             </div>
@@ -174,11 +221,7 @@ function NewTaskForm() {
               <span className="text-slate-500">Help needed (pick any)</span>
               <div className="mt-1 flex flex-wrap gap-2">
                 {HELP_TYPES.map((h) => (
-                  <Chip
-                    key={h.key}
-                    active={helpTypes.includes(h.key)}
-                    onClick={() => toggleHelpType(h.key)}
-                  >
+                  <Chip key={h.key} active={helpTypes.includes(h.key)} onClick={() => toggleHelpType(h.key)}>
                     {h.label}
                   </Chip>
                 ))}
@@ -189,15 +232,11 @@ function NewTaskForm() {
               <span className="text-slate-500">Where & when</span>
               <div className="mt-1 flex flex-wrap gap-2">
                 {FORMATS.map((f) => (
-                  <Chip key={f} active={format === f} onClick={() => setFormat(f)}>
-                    {f}
-                  </Chip>
+                  <Chip key={f} active={format === f} onClick={() => setFormat(f)}>{f}</Chip>
                 ))}
                 <span className="w-px bg-slate-200" />
-                {['Today', 'This week', 'Flexible'].map((w) => (
-                  <Chip key={w} active={studyWhen === w} onClick={() => setStudyWhen(w)}>
-                    {w}
-                  </Chip>
+                {WHENS.map((w) => (
+                  <Chip key={w} active={studyWhen === w} onClick={() => setStudyWhen(w)}>{w}</Chip>
                 ))}
               </div>
             </div>
@@ -208,16 +247,13 @@ function NewTaskForm() {
                 <input
                   value={details}
                   onChange={(e) => setDetails(e.target.value)}
+                  maxLength={120}
                   placeholder="Goal, specific questions, anything else…"
                   className="mt-1 w-full rounded-xl border px-3 py-2"
                 />
               </label>
             ) : (
-              <button
-                type="button"
-                onClick={() => setShowDetails(true)}
-                className="text-xs font-medium text-blue-700"
-              >
+              <button type="button" onClick={() => setShowDetails(true)} className="text-xs font-medium text-blue-700">
                 + Add details (goal, specific questions)
               </button>
             )}
@@ -227,38 +263,59 @@ function NewTaskForm() {
             </p>
           </>
         ) : (
-          /* ---------- Generic task fields ---------- */
           <>
             <label className="block">
               <span className="text-slate-500">What do you need?</span>
-              <textarea className="mt-1 w-full rounded-xl border px-3 py-2" rows={3} placeholder="Clean my room before block inspection..." />
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                maxLength={300}
+                className="mt-1 w-full rounded-xl border px-3 py-2"
+                rows={3}
+                placeholder="Clean my room before block inspection..."
+              />
             </label>
 
             <label className="block">
               <span className="text-slate-500">Where</span>
-              <input className="mt-1 w-full rounded-xl border px-3 py-2" defaultValue="Hall 9, Blk 51" />
+              <input
+                value={where}
+                onChange={(e) => setWhere(e.target.value)}
+                maxLength={60}
+                className="mt-1 w-full rounded-xl border px-3 py-2"
+              />
             </label>
-          </>
-        )}
 
-        {!isStudy && (
-          <div className="flex gap-2">
-            <label className="block flex-1"><span className="text-slate-500">When</span><input className="mt-1 w-full rounded-xl border px-3 py-2" defaultValue="Today" /></label>
-            <label className="block flex-1"><span className="text-slate-500">Time</span><input className="mt-1 w-full rounded-xl border px-3 py-2" defaultValue="6–8pm" /></label>
-          </div>
+            <div className="flex gap-2">
+              <label className="block flex-1">
+                <span className="text-slate-500">When</span>
+                <input value={when} onChange={(e) => setWhen(e.target.value)} maxLength={20} className="mt-1 w-full rounded-xl border px-3 py-2" />
+              </label>
+              <label className="block flex-1">
+                <span className="text-slate-500">Time</span>
+                <input value={time} onChange={(e) => setTime(e.target.value)} maxLength={20} className="mt-1 w-full rounded-xl border px-3 py-2" />
+              </label>
+            </div>
+          </>
         )}
 
         <label className="block">
           <span className="text-slate-500">{isStudy ? 'Budget (SGD per hour)' : 'Budget (SGD)'}</span>
           <input
             type="number"
+            inputMode="decimal"
             min={0}
-            value={budget}
-            onChange={(e) => setBudget(Number(e.target.value))}
+            max={999}
+            step="0.50"
+            value={budgetRaw}
+            onChange={(e) => setBudgetRaw(e.target.value)}
             className="mt-1 w-full rounded-xl border px-3 py-2"
+            aria-invalid={invalidBudget}
           />
           <span className="mt-1 block text-xs text-slate-400">
-            No minimum — set any budget. Buddies can also offer their own price.
+            {invalidBudget
+              ? 'Enter a budget above S$0 (max S$999). Buddies can also offer their own price.'
+              : 'No minimum — set any budget. Buddies can also offer their own price.'}
           </span>
         </label>
 
@@ -268,16 +325,17 @@ function NewTaskForm() {
         </div>
 
         <button
-          type="button"
-          onClick={() => setPosted(true)}
-          disabled={isStudy && module.trim() === ''}
+          type="submit"
+          disabled={!canPost}
           className="block w-full rounded-xl bg-blue-700 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isStudy
-            ? module.trim() === ''
-              ? 'Type your module to post'
-              : 'Post study request (free)'
-            : 'Post task (free)'}
+          {missingModule
+            ? 'Type your module to post'
+            : invalidBudget
+              ? 'Set a budget to post'
+              : isStudy
+                ? 'Post study request (free)'
+                : 'Post task (free)'}
         </button>
       </form>
     </div>

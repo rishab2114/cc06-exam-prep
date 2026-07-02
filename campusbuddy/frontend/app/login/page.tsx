@@ -15,17 +15,18 @@ export default function LoginPage() {
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!isCampusEmail(email)) {
+    const cleaned = email.trim().toLowerCase(); // paste-with-spaces & caps happen constantly
+    if (!isCampusEmail(cleaned)) {
       setError('Please use your university email (e.g. yourname@mymail.sutd.edu.sg).');
       return;
     }
-    if (campusForEmail(email)?.code !== campus) {
+    if (campusForEmail(cleaned)?.code !== campus) {
       setError(`That email doesn't look like a ${campus} address — pick the matching campus.`);
       return;
     }
     setError(null);
     // In the real app this calls signIn('email', { email }). Demo just advances.
-    router.push(`/verify?email=${encodeURIComponent(email)}`);
+    router.push(`/verify?email=${encodeURIComponent(cleaned)}`);
   }
 
   return (

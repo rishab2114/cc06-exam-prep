@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { getTask, CURRENT_PROVIDER } from '../../../../lib/mockTasks';
 import { feeBreakdown, formatSgd } from '../../../../lib/format';
+import { parseSgdToCents } from '../../../../lib/store';
 
 // Apply flow with the verification gate:
 //  1. Account must be matric-verified (done once at onboarding) for tasks that
@@ -36,8 +37,9 @@ export default function ApplyPage() {
   const needsIntegrity = task.category === 'Study help' && !integrityOk;
   const canApply = !genderBlocked && !needsMatric && !needsIntegrity;
   // Provider's own quote — defaults to the listed price until they change it.
-  const quoteCents =
-    quote.trim() === '' ? task.priceCents : Math.max(0, Math.round(Number(quote) * 100));
+  // Safe parse: empty -> listed price; junk/zero -> 0 (blocks submit below).
+  const quoteCents = quote.trim() === '' ? task.priceCents : parseSgdToCents(quote);
+  const invalidQuote = quote.trim() !== '' && quoteCents <= 0;
   const earnings = feeBreakdown(quoteCents).buddyGets;
 
   if (submitted) {
@@ -221,9 +223,10 @@ export default function ApplyPage() {
               placeholder={(task.priceCents / 100).toFixed(2)}
               className="mt-1 w-full rounded-xl border px-3 py-2"
             />
-            <span className="mt-1 block text-xs text-slate-400">
-              {task.customerName} listed {formatSgd(task.priceCents)} — offer your own price, higher
-              or lower. You earn <b>{formatSgd(earnings)}</b>.
+            <span className={`mt-1 block text-xs ${invalidQuote ? 'text-red-500' : 'text-slate-400'}`}>
+              {invalidQuote
+                ? 'That price doesn\u2019t look right — enter a number above S$0 (or clear it to use the listed price).'
+                : <>{task.customerName} listed {formatSgd(task.priceCents)} — offer your own price, higher or lower. You earn <b>{formatSgd(earnings)}</b>.</>}
             </span>
           </label>
         )}
@@ -245,7 +248,7 @@ export default function ApplyPage() {
         {/* Submit */}
         <button
           onClick={() => setSubmitted(true)}
-          disabled={!canApply}
+          disabled={!canApply || invalidQuote}
           className="block w-full rounded-xl bg-blue-700 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
           {genderBlocked
@@ -254,7 +257,9 @@ export default function ApplyPage() {
               ? 'Verify account to continue'
               : needsIntegrity
                 ? 'Tick the tutoring pledge to continue'
-                : `Send application · ${formatSgd(quoteCents)}`}
+                : invalidQuote
+                  ? 'Fix your price to continue'
+                  : `Send application · ${formatSgd(quoteCents)}`}
         </button>
       </div>
     </div>

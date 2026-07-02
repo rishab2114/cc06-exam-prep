@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { StoreProvider } from '../../lib/store';
 
 // Authenticated app shell. Mobile: bottom tab bar. Desktop (lg+): a real sidebar
 // layout with a wider content column — not a stretched phone UI. In production
@@ -13,6 +14,7 @@ const NAV = [
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
+    <StoreProvider>
     <div className="min-h-screen bg-slate-50">
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-56 flex-col border-r bg-white p-4 lg:flex">
@@ -51,5 +53,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         ))}
       </nav>
     </div>
+    </StoreProvider>
   );
 }

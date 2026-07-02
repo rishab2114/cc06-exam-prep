@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { getTask, applicantsFor } from '../../../../lib/mockTasks';
 import { formatSgd } from '../../../../lib/format';
+import { useStore, parseSgdToCents } from '../../../../lib/store';
 
 // Customer view: applicants + BARGAINING. Each buddy has a live number on the
 // table (starts at their quote). The customer can Accept it or Counter. A counter
@@ -16,7 +17,8 @@ type Nego = { current: number; phase: Phase; note?: string };
 
 export default function ApplicantsPage() {
   const { id } = useParams<{ id: string }>();
-  const task = getTask(id);
+  const { findTask, notify } = useStore();
+  const task = getTask(id) ?? findTask(id);
   const applicants = applicantsFor(id);
 
   const [nego, setNego] = useState<Record<string, Nego>>({});
@@ -41,20 +43,24 @@ export default function ApplicantsPage() {
     setCounterVal(String(Math.round((current / 100 + task!.priceCents / 100) / 2)));
   }
 
-  function submitCounter(aid: string, quote: number) {
+  function submitCounter(aid: string, quote: number, name: string) {
     const cur = stateFor(aid, quote).current;
-    const offerCents = Math.max(0, Math.round(Number(counterVal) * 100));
+    const offerCents = parseSgdToCents(counterVal);
+    if (offerCents <= 0) return; // invalid offer — button is disabled, belt & braces
     setCounterOpen(null);
     if (offerCents >= Math.round(cur * 0.9)) {
       setNego((n) => ({ ...n, [aid]: { current: offerCents, phase: 'agreed', note: 'accepted your offer 🎉' } }));
+      notify(`${name} accepted your offer of ${formatSgd(offerCents)} 🎉`);
     } else {
       const meet = Math.round((offerCents + cur) / 2);
       setNego((n) => ({ ...n, [aid]: { current: meet, phase: 'theyCountered', note: 'countered back' } }));
+      notify(`${name} countered at ${formatSgd(meet)} — your move.`);
     }
   }
 
-  function accept(aid: string, price: number) {
+  function accept(aid: string, price: number, name: string) {
     setNego((n) => ({ ...n, [aid]: { current: price, phase: 'agreed', note: 'deal 🤝' } }));
+    notify(`Deal! ${name} will do it for ${formatSgd(price)} 🤝`);
   }
 
   return (
@@ -121,8 +127,9 @@ export default function ApplicantsPage() {
                     autoFocus
                   />
                   <button
-                    onClick={() => submitCounter(a.id, a.quoteCents)}
-                    className="rounded-lg bg-blue-700 px-3 py-1.5 text-sm font-medium text-white"
+                    onClick={() => submitCounter(a.id, a.quoteCents, a.name)}
+                    disabled={parseSgdToCents(counterVal) <= 0}
+                    className="rounded-lg bg-blue-700 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
                   >
                     Send offer
                   </button>
@@ -131,7 +138,7 @@ export default function ApplicantsPage() {
               ) : (
                 <div className="mt-2 flex gap-2">
                   <button
-                    onClick={() => accept(a.id, s.current)}
+                    onClick={() => accept(a.id, s.current, a.name)}
                     className="flex-1 rounded-lg bg-blue-700 py-2 text-sm font-medium text-white"
                   >
                     Accept {formatSgd(s.current)}
@@ -149,7 +156,16 @@ export default function ApplicantsPage() {
         })}
 
         {ranked.length === 0 && (
-          <p className="py-10 text-center text-sm text-slate-500">No applicants yet — hang tight!</p>
+          <div className="rounded-xl border border-dashed bg-white p-8 text-center text-sm text-slate-500">
+            <p className="text-3xl">⏳</p>
+            <p className="mt-2 font-medium text-slate-700">No applicants yet</p>
+            <p className="mt-1">
+              Your post is live in Explore — we&apos;ll notify you the moment a buddy applies.
+            </p>
+            <Link href="/app/find" className="mt-3 block font-medium text-blue-700">
+              See it in Explore ›
+            </Link>
+          </div>
         )}
 
         <p className="rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700">
