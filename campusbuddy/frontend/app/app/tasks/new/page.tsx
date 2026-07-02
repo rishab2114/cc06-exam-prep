@@ -81,6 +81,8 @@ function NewTaskForm() {
   const [details, setDetails] = useState('');
   const [showDetails, setShowDetails] = useState(false);
 
+  const [posted, setPosted] = useState(false);
+
   const cents = Math.round(budget * 100);
   const isGrocery = category === 'Grocery shopping' || category === 'Food delivery';
   const isStudy = category === 'Study help / tutoring';
@@ -88,6 +90,26 @@ function NewTaskForm() {
   function toggleHelpType(key: string) {
     setHelpTypes((prev) =>
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
+    );
+  }
+
+  if (posted) {
+    return (
+      <div className="flex min-h-[70vh] flex-col items-center justify-center p-6 text-center">
+        <div className="text-5xl">✅</div>
+        <h1 className="mt-4 text-xl font-bold">Task posted — for free!</h1>
+        <p className="mt-2 max-w-sm text-slate-600">
+          Verified buddies nearby can now apply and name their price. You only pay when you accept
+          one — we hold the agreed amount and refund anything unused to your balance.
+        </p>
+        <Link
+          href="/app/applicants/room-cleaning"
+          className="mt-8 rounded-xl bg-blue-700 px-6 py-3 font-medium text-white"
+        >
+          See applicants &amp; bargain (demo) ›
+        </Link>
+        <Link href="/app" className="mt-3 text-sm text-slate-500">Back to home</Link>
+      </div>
     );
   }
 
@@ -240,19 +262,22 @@ function NewTaskForm() {
           </span>
         </label>
 
-        <div className="rounded-xl bg-blue-50 p-3 text-blue-800">
-          You pay <b>{formatSgd(cents)}{isStudy ? '/hr' : ''}</b>
+        <div className="rounded-xl bg-blue-50 p-3 text-sm text-blue-800">
+          <b>Free to post.</b> Budget {formatSgd(cents)}{isStudy ? '/hr' : ''} — you only pay when
+          you accept a buddy. We hold the agreed amount and refund anything unused.
         </div>
 
         <button
+          type="button"
+          onClick={() => setPosted(true)}
           disabled={isStudy && module.trim() === ''}
           className="block w-full rounded-xl bg-blue-700 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isStudy
             ? module.trim() === ''
               ? 'Type your module to post'
-              : 'Post study request'
-            : 'Continue to payment'}
+              : 'Post study request (free)'
+            : 'Post task (free)'}
         </button>
       </form>
     </div>

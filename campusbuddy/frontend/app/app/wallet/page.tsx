@@ -18,9 +18,16 @@ export default function WalletPage() {
           <p className="mt-1 text-sm text-blue-100">This month: {formatSgd(p.monthCents)}</p>
         </div>
 
-        <button className="w-full rounded-xl border bg-white py-3 text-sm font-medium">
-          💳 Manage payouts (Stripe) ›
-        </button>
+        <details className="group rounded-xl border bg-white px-4 py-3 text-sm">
+          <summary className="flex cursor-pointer list-none items-center justify-between font-medium">
+            <span>💳 Manage payouts</span>
+            <span className="text-slate-300 group-open:rotate-90">›</span>
+          </summary>
+          <p className="mt-2 text-xs text-slate-500">
+            Payouts run to your bank via Stripe. Connect your account to withdraw — coming with the
+            payments launch.
+          </p>
+        </details>
 
         {/* History */}
         <section>

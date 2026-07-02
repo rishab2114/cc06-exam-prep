@@ -5,11 +5,10 @@ import { formatSgd } from '../../../lib/format';
 // Provider/customer profile (docs/01). Mock data; verification badges reflect the
 // trust model. In production this reads the signed-in user.
 const SETTINGS = [
-  { label: 'Edit profile', icon: '✏️' },
-  { label: 'Notifications', icon: '🔔' },
-  { label: 'Safety & SOS', icon: '🛟' },
-  { label: 'Payment & payouts', icon: '💳' },
-  { label: 'Help & support', icon: '❓' },
+  { label: 'Edit profile', icon: '✏️', body: 'Change your name, hall, and services offered. Coming soon.' },
+  { label: 'Notifications', icon: '🔔', body: 'Choose push/email alerts for applications, chat, and payouts. Coming soon.' },
+  { label: 'Safety & SOS', icon: '🛟', body: 'In an emergency, call Campus Security or 999. In-app SOS + live-location share is coming soon.' },
+  { label: 'Help & support', icon: '❓', body: 'Reach us at hello@campusbuddy.sg — we reply within a day.' },
 ];
 
 export default function ProfilePage() {
@@ -66,11 +65,18 @@ export default function ProfilePage() {
         {/* Settings */}
         <section>
           <div className="divide-y overflow-hidden rounded-xl border bg-white">
+            <Link href="/app/wallet" className="flex w-full items-center justify-between px-4 py-3 text-left text-sm">
+              <span>💳 Payment &amp; payouts</span>
+              <span className="text-slate-300">›</span>
+            </Link>
             {SETTINGS.map((s) => (
-              <button key={s.label} className="flex w-full items-center justify-between px-4 py-3 text-left text-sm">
-                <span>{s.icon} {s.label}</span>
-                <span className="text-slate-300">›</span>
-              </button>
+              <details key={s.label} className="group px-4 py-3 text-sm">
+                <summary className="flex cursor-pointer list-none items-center justify-between">
+                  <span>{s.icon} {s.label}</span>
+                  <span className="text-slate-300 group-open:rotate-90">›</span>
+                </summary>
+                <p className="mt-2 text-xs text-slate-500">{s.body}</p>
+              </details>
             ))}
           </div>
         </section>

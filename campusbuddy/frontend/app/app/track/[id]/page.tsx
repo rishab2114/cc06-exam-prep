@@ -14,6 +14,10 @@ export default function TrackPage() {
   const { id } = useParams<{ id: string }>();
   const task = getTask(id);
   const [step, setStep] = useState(1); // start mid-flow so it looks "in progress"
+  const [stars, setStars] = useState(0);
+  const [rated, setRated] = useState(false);
+  const [msg, setMsg] = useState('');
+  const [msgSent, setMsgSent] = useState(false);
 
   const total = LAUNDRY_STEPS.length;
   useEffect(() => {
@@ -86,13 +90,49 @@ export default function TrackPage() {
         </div>
 
         {doneAll ? (
-          <button className="block w-full rounded-xl bg-blue-700 py-3 font-medium text-white">
-            Rate {BUDDY.name}
-          </button>
+          rated ? (
+            <p className="rounded-xl bg-green-50 py-3 text-center text-sm font-medium text-green-800">
+              Thanks — you rated {BUDDY.name} {stars}★
+            </p>
+          ) : (
+            <div className="rounded-xl border bg-white p-3 text-center">
+              <p className="text-sm text-slate-600">Rate {BUDDY.name}</p>
+              <div className="mt-2 flex justify-center gap-1 text-2xl">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => { setStars(n); setRated(true); }}
+                    className={n <= stars ? 'text-amber-400' : 'text-slate-300'}
+                    aria-label={`${n} stars`}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+            </div>
+          )
         ) : (
-          <button className="block w-full rounded-xl border border-slate-300 py-3 font-medium text-slate-600">
-            Message {BUDDY.name}
-          </button>
+          <div className="space-y-2">
+            {msgSent && (
+              <p className="rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-800">
+                📨 Sent to {BUDDY.name}: “{msg}”
+              </p>
+            )}
+            <div className="flex gap-2">
+              <input
+                value={msg}
+                onChange={(e) => setMsg(e.target.value)}
+                placeholder={`Message ${BUDDY.name}…`}
+                className="flex-1 rounded-xl border px-3 py-2 text-sm"
+              />
+              <button
+                onClick={() => { if (msg.trim()) setMsgSent(true); }}
+                className="rounded-xl bg-blue-700 px-4 text-sm font-medium text-white"
+              >
+                Send
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>
