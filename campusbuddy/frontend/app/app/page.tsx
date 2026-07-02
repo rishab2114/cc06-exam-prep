@@ -23,26 +23,7 @@ export default function AppHome() {
       </header>
 
       <div className="space-y-5 p-4">
-        <input
-          className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
-          placeholder="🔎 Search services..."
-        />
-
-        <section>
-          <p className="mb-2 text-xs font-semibold uppercase text-slate-500">Quick post</p>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            {QUICK.map((q) => (
-              <Link
-                key={q.slug}
-                href={`/app/tasks/new?category=${q.slug}`}
-                className="rounded-xl border bg-white py-3 text-center"
-              >
-                {q.label}
-              </Link>
-            ))}
-          </div>
-        </section>
-
+        {/* Hierarchy: active tasks first (returning users), then post, then browse */}
         <section className="space-y-2">
           <p className="mb-2 text-xs font-semibold uppercase text-slate-500">Your active tasks</p>
           <Link href="/app/applicants/room-cleaning" className="block rounded-xl border bg-white p-3">
@@ -61,14 +42,29 @@ export default function AppHome() {
           </Link>
         </section>
 
-        <SponsoredCard ad={adFor(0)} />
+        <section>
+          <p className="mb-2 text-xs font-semibold uppercase text-slate-500">Post a task</p>
+          <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
+            {QUICK.map((q) => (
+              <Link
+                key={q.slug}
+                href={`/app/tasks/new?category=${q.slug}`}
+                className="rounded-xl border bg-white py-3 text-center hover:border-blue-400"
+              >
+                {q.label}
+              </Link>
+            ))}
+          </div>
+        </section>
 
         <Link
-          href="/app/tasks/new"
-          className="block rounded-xl bg-blue-700 py-3 text-center font-medium text-white"
+          href="/app/find"
+          className="block rounded-xl border border-blue-200 bg-blue-50 py-3 text-center text-sm font-medium text-blue-700"
         >
-          + New task
+          🔎 Browse open tasks near you ›
         </Link>
+
+        <SponsoredCard ad={adFor(0)} />
       </div>
     </div>
   );

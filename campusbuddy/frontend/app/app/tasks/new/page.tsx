@@ -71,13 +71,15 @@ function NewTaskForm() {
   const [store, setStore] = useState(initialStore);
   const [budget, setBudget] = useState(20);
 
-  // Study-help fields
+  // Study-help fields — one required typed field (module); the rest are chips
+  // with sensible defaults, plus a single optional details line.
   const [module, setModule] = useState('');
-  const [topics, setTopics] = useState('');
   const [level, setLevel] = useState<(typeof LEVELS)[number]>('Intermediate');
   const [helpTypes, setHelpTypes] = useState<string[]>(['concepts']);
-  const [goal, setGoal] = useState('');
   const [format, setFormat] = useState<(typeof FORMATS)[number]>(FORMATS[0]);
+  const [studyWhen, setStudyWhen] = useState('This week');
+  const [details, setDetails] = useState('');
+  const [showDetails, setShowDetails] = useState(false);
 
   const cents = Math.round(budget * 100);
   const isGrocery = category === 'Grocery shopping' || category === 'Food delivery';
@@ -122,33 +124,21 @@ function NewTaskForm() {
         )}
 
         {isStudy ? (
-          /* ---------- Structured study-help request ---------- */
+          /* ---------- Study request: ONE typed field, everything else chips ---------- */
           <>
             <label className="block">
-              <span className="text-slate-500">Module</span>
+              <span className="text-slate-500">Module & topic</span>
               <input
                 value={module}
                 onChange={(e) => setModule(e.target.value)}
-                placeholder="e.g. MH1810 — Calculus I"
+                placeholder="e.g. MH1810 Calculus — integration, limits"
                 className="mt-1 w-full rounded-xl border px-3 py-2"
+                autoFocus
               />
-            </label>
-
-            <label className="block">
-              <span className="text-slate-500">Topic areas</span>
-              <input
-                value={topics}
-                onChange={(e) => setTopics(e.target.value)}
-                placeholder="e.g. Integration, limits, Taylor series"
-                className="mt-1 w-full rounded-xl border px-3 py-2"
-              />
-              <span className="mt-1 block text-xs text-slate-400">
-                Comma-separated — the more specific, the better the tutor match.
-              </span>
             </label>
 
             <div>
-              <span className="text-slate-500">Where are you at with it?</span>
+              <span className="text-slate-500">Where are you at?</span>
               <div className="mt-1 flex flex-wrap gap-2">
                 {LEVELS.map((l) => (
                   <Chip key={l} active={level === l} onClick={() => setLevel(l)}>
@@ -159,7 +149,7 @@ function NewTaskForm() {
             </div>
 
             <div>
-              <span className="text-slate-500">What kind of help? (pick any)</span>
+              <span className="text-slate-500">Help needed (pick any)</span>
               <div className="mt-1 flex flex-wrap gap-2">
                 {HELP_TYPES.map((h) => (
                   <Chip
@@ -171,32 +161,48 @@ function NewTaskForm() {
                   </Chip>
                 ))}
               </div>
-              <p className="mt-2 rounded-lg bg-amber-50 px-2 py-1 text-xs text-amber-700">
-                📚 Tutoring only — buddies explain and coach. They can&apos;t do assignments or
-                sit assessments for you.
-              </p>
             </div>
 
-            <label className="block">
-              <span className="text-slate-500">Your goal</span>
-              <input
-                value={goal}
-                onChange={(e) => setGoal(e.target.value)}
-                placeholder="e.g. Pass the Week 8 midterm / finally get recursion"
-                className="mt-1 w-full rounded-xl border px-3 py-2"
-              />
-            </label>
-
             <div>
-              <span className="text-slate-500">Format</span>
+              <span className="text-slate-500">Where & when</span>
               <div className="mt-1 flex flex-wrap gap-2">
                 {FORMATS.map((f) => (
                   <Chip key={f} active={format === f} onClick={() => setFormat(f)}>
                     {f}
                   </Chip>
                 ))}
+                <span className="w-px bg-slate-200" />
+                {['Today', 'This week', 'Flexible'].map((w) => (
+                  <Chip key={w} active={studyWhen === w} onClick={() => setStudyWhen(w)}>
+                    {w}
+                  </Chip>
+                ))}
               </div>
             </div>
+
+            {showDetails ? (
+              <label className="block">
+                <span className="text-slate-500">Details (optional)</span>
+                <input
+                  value={details}
+                  onChange={(e) => setDetails(e.target.value)}
+                  placeholder="Goal, specific questions, anything else…"
+                  className="mt-1 w-full rounded-xl border px-3 py-2"
+                />
+              </label>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowDetails(true)}
+                className="text-xs font-medium text-blue-700"
+              >
+                + Add details (goal, specific questions)
+              </button>
+            )}
+
+            <p className="rounded-lg bg-amber-50 px-2 py-1 text-xs text-amber-700">
+              📚 Tutoring only — buddies explain and coach, never do the work for you.
+            </p>
           </>
         ) : (
           /* ---------- Generic task fields ---------- */
@@ -213,10 +219,12 @@ function NewTaskForm() {
           </>
         )}
 
-        <div className="flex gap-2">
-          <label className="block flex-1"><span className="text-slate-500">When</span><input className="mt-1 w-full rounded-xl border px-3 py-2" defaultValue={isStudy ? 'This week' : 'Today'} /></label>
-          <label className="block flex-1"><span className="text-slate-500">Time</span><input className="mt-1 w-full rounded-xl border px-3 py-2" defaultValue={isStudy ? '1–2 hrs' : '6–8pm'} /></label>
-        </div>
+        {!isStudy && (
+          <div className="flex gap-2">
+            <label className="block flex-1"><span className="text-slate-500">When</span><input className="mt-1 w-full rounded-xl border px-3 py-2" defaultValue="Today" /></label>
+            <label className="block flex-1"><span className="text-slate-500">Time</span><input className="mt-1 w-full rounded-xl border px-3 py-2" defaultValue="6–8pm" /></label>
+          </div>
+        )}
 
         <label className="block">
           <span className="text-slate-500">{isStudy ? 'Budget (SGD per hour)' : 'Budget (SGD)'}</span>
@@ -236,8 +244,15 @@ function NewTaskForm() {
           You pay <b>{formatSgd(cents)}{isStudy ? '/hr' : ''}</b>
         </div>
 
-        <button className="block w-full rounded-xl bg-blue-700 py-3 font-medium text-white">
-          {isStudy ? 'Post study request' : 'Continue to payment'}
+        <button
+          disabled={isStudy && module.trim() === ''}
+          className="block w-full rounded-xl bg-blue-700 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isStudy
+            ? module.trim() === ''
+              ? 'Type your module to post'
+              : 'Post study request'
+            : 'Continue to payment'}
         </button>
       </form>
     </div>
