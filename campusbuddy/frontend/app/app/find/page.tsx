@@ -13,9 +13,9 @@ import { useStore } from '../../../lib/store';
 // same params become API query params once volume needs server paging.
 
 const SORTS = [
-  { key: 'nearest', label: 'Nearest' },
+  { key: 'recent', label: 'Recent' },
   { key: 'cheapest', label: 'Cheapest' },
-  { key: 'rating', label: 'Top rated' },
+  { key: 'priciest', label: 'Highest pay' },
 ] as const;
 type SortKey = (typeof SORTS)[number]['key'];
 
@@ -49,8 +49,7 @@ export default function FindPage() {
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [contactlessOnly, setContactlessOnly] = useState(false);
   const [presentOnly, setPresentOnly] = useState(false);
-  const [sameGenderOnly, setSameGenderOnly] = useState(false);
-  const [sort, setSort] = useState<SortKey>('nearest');
+  const [sort, setSort] = useState<SortKey>('recent');
 
   const categories = useMemo(
     () => ['All', ...Array.from(new Set(feed.map((t) => t.category)))],
@@ -63,24 +62,19 @@ export default function FindPage() {
         (category === 'All' || t.category === category) &&
         (!verifiedOnly || t.requiresMatricVerification) &&
         (!contactlessOnly || t.contactless) &&
-        (!presentOnly || t.presenceRequired) &&
-        (!sameGenderOnly || t.sameGenderOnly),
+        (!presentOnly || t.presenceRequired),
     );
-    return [...filtered].sort((a, b) =>
-      sort === 'nearest'
-        ? a.distanceKm - b.distanceKm
-        : sort === 'cheapest'
-          ? a.priceCents - b.priceCents
-          : b.customerRating - a.customerRating,
-    );
-  }, [feed, category, verifiedOnly, contactlessOnly, presentOnly, sameGenderOnly, sort]);
+    // feed arrives newest-first from the API, so 'recent' keeps that order.
+    if (sort === 'cheapest') return [...filtered].sort((a, b) => a.priceCents - b.priceCents);
+    if (sort === 'priciest') return [...filtered].sort((a, b) => b.priceCents - a.priceCents);
+    return filtered;
+  }, [feed, category, verifiedOnly, contactlessOnly, presentOnly, sort]);
 
   function clearFilters() {
     setCategory('All');
     setVerifiedOnly(false);
     setContactlessOnly(false);
     setPresentOnly(false);
-    setSameGenderOnly(false);
   }
 
   return (
@@ -122,16 +116,13 @@ export default function FindPage() {
           <FilterChip active={presentOnly} onClick={() => setPresentOnly(!presentOnly)}>
             👥 Customer present
           </FilterChip>
-          <FilterChip active={sameGenderOnly} onClick={() => setSameGenderOnly(!sameGenderOnly)}>
-            ♀♂ Same-gender
-          </FilterChip>
         </div>
       </div>
 
       <div className="space-y-3 p-4">
         <div className="flex items-center justify-between text-xs text-slate-500">
           <span>{tasks.length} task{tasks.length === 1 ? '' : 's'}</span>
-          {(category !== 'All' || verifiedOnly || contactlessOnly || presentOnly || sameGenderOnly) && (
+          {(category !== 'All' || verifiedOnly || contactlessOnly || presentOnly) && (
             <button onClick={clearFilters} className="text-blue-700">Clear filters</button>
           )}
         </div>
@@ -164,7 +155,7 @@ export default function FindPage() {
                   </div>
                 ) : (
                   <p className="mt-1 text-sm text-slate-500">
-                    {t.hall} · {t.when} · {t.distanceKm}km · cust ⭐{t.customerRating}
+                    {t.hall} · {t.when} · by {t.customerName}
                   </p>
                 )}
                 <div className="mt-1 flex flex-wrap gap-1">
@@ -175,12 +166,7 @@ export default function FindPage() {
                     <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">📚 tutoring only</span>
                   )}
                   {t.requiresMatricVerification && (
-                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">🪪 ID-verified</span>
-                  )}
-                  {t.sameGenderOnly && (
-                    <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-700">
-                      {t.customerGender === 'F' ? '♀ female buddies' : '♂ male buddies'}
-                    </span>
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">🪪 verify on arrival</span>
                   )}
                   {t.presenceRequired && (
                     <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700">👥 customer present</span>

@@ -165,13 +165,13 @@ export default function ApplyPage() {
           {task.requiresMatricVerification && (
             <div className="rounded-xl border bg-white p-3">
               <div className="flex items-center justify-between">
-                <span className="font-medium">🪪 Matric-verified task</span>
+                <span className="font-medium">🪪 Verify on arrival</span>
                 <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700">Campus email ✓</span>
               </div>
               <p className="mt-1 text-sm text-slate-500">
-                This task enters a room / handles belongings. On arrival you&apos;ll verify with your
-                campus pass or a live photo of your matric card, so {task.customerName} knows it&apos;s
-                really you — not someone sent in your place.
+                This task enters a room / handles belongings, so at the door you&apos;ll confirm your
+                identity with {task.customerName} — the buddy they accepted is the one who shows up.
+                (Live matric-card scan is coming with the verification launch.)
               </p>
             </div>
           )}

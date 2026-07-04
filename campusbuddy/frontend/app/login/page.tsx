@@ -1,10 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { isCampusEmail, campusForEmail, CAMPUSES } from '../../lib/ntu';
 import { api, ApiClientError } from '../../lib/api';
+
+interface DemoAccount {
+  email: string;
+  name: string;
+  campus: string;
+  hall: string | null;
+}
 
 // Sign-in / sign-up entry. The campus email gate is checked here for fast
 // feedback and enforced again server-side (the API refuses non-campus domains).
@@ -15,6 +22,30 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [demoAccounts, setDemoAccounts] = useState<DemoAccount[]>([]);
+  const [demoBusy, setDemoBusy] = useState<string | null>(null);
+
+  // Dev-only: fetch the seeded demo students for one-tap sign-in. Returns an
+  // empty list on any real (email-configured) deployment, so this stays hidden.
+  useEffect(() => {
+    api
+      .devAccounts()
+      .then((r) => setDemoAccounts(r.accounts))
+      .catch(() => setDemoAccounts([]));
+  }, []);
+
+  async function demoLogin(email: string) {
+    if (demoBusy) return;
+    setDemoBusy(email);
+    setError(null);
+    try {
+      await api.devLogin(email);
+      router.replace('/app');
+    } catch (err) {
+      setError(err instanceof ApiClientError ? err.message : 'Demo login failed — did you run the demo seed?');
+      setDemoBusy(null);
+    }
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -84,8 +115,36 @@ export default function LoginPage() {
       </form>
 
       <p className="mt-6 text-xs text-slate-400">
-        Only verified students can join. Accounts are verified by campus email + matric card.
+        Only verified students can join. Accounts are verified by your campus email.
       </p>
+
+      {demoAccounts.length > 0 && (
+        <div className="mt-8 rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-4">
+          <p className="text-sm font-semibold text-amber-800">🧪 Demo accounts (dev)</p>
+          <p className="mt-1 text-xs text-amber-700">
+            One tap to sign in as a seeded SUTD student. Log in as one to post, switch to another to
+            offer and bargain, then back to accept — you can play every role.
+          </p>
+          <div className="mt-3 space-y-2">
+            {demoAccounts.map((a) => (
+              <button
+                key={a.email}
+                onClick={() => demoLogin(a.email)}
+                disabled={demoBusy !== null}
+                className="flex w-full items-center justify-between rounded-xl border border-amber-200 bg-white px-3 py-2.5 text-left disabled:opacity-60"
+              >
+                <span>
+                  <span className="block text-sm font-medium">{a.name}</span>
+                  <span className="block text-xs text-slate-400">{a.campus}{a.hall ? ` · ${a.hall}` : ''}</span>
+                </span>
+                <span className="text-sm font-medium text-blue-700">
+                  {demoBusy === a.email ? 'Signing in…' : 'Sign in ›'}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </main>
   );
 }

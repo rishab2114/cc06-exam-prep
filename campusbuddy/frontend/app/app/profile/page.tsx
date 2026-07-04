@@ -1,6 +1,8 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useStore } from '../../../lib/store';
+import { api } from '../../../lib/api';
 
 // Profile — the signed-in user. Ratings, job counts, and services offered
 // arrive with the reviews + provider-profile work; identity and verification
@@ -14,6 +16,26 @@ const SETTINGS = [
 
 export default function ProfilePage() {
   const { me, myTasks, signOut } = useStore();
+  const [demoAccounts, setDemoAccounts] = useState<{ email: string; name: string }[]>([]);
+  const [switching, setSwitching] = useState<string | null>(null);
+
+  // Dev-only: lets you jump straight to another seeded student without signing
+  // out first, so you can drive both sides of a deal fast. Empty in production.
+  useEffect(() => {
+    api.devAccounts().then((r) => setDemoAccounts(r.accounts)).catch(() => setDemoAccounts([]));
+  }, []);
+
+  async function switchTo(email: string) {
+    if (switching) return;
+    setSwitching(email);
+    try {
+      await api.devLogin(email);
+      window.location.href = '/app'; // hard reload so the store re-hydrates as the new user
+    } catch {
+      setSwitching(null);
+    }
+  }
+
   if (!me) return null; // store redirects to /login before this renders
 
   return (
@@ -74,6 +96,31 @@ export default function ProfilePage() {
             ))}
           </div>
         </section>
+
+        {/* Dev-only fast identity switch for driving both sides of the marketplace */}
+        {demoAccounts.filter((a) => a.email !== me.email).length > 0 && (
+          <section className="rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-4">
+            <p className="text-sm font-semibold text-amber-800">🧪 Switch demo account (dev)</p>
+            <p className="mt-1 text-xs text-amber-700">
+              Jump to another student to offer, bargain, or accept from the other side.
+            </p>
+            <div className="mt-3 space-y-2">
+              {demoAccounts
+                .filter((a) => a.email !== me.email)
+                .map((a) => (
+                  <button
+                    key={a.email}
+                    onClick={() => void switchTo(a.email)}
+                    disabled={switching !== null}
+                    className="flex w-full items-center justify-between rounded-xl border border-amber-200 bg-white px-3 py-2.5 text-sm font-medium disabled:opacity-60"
+                  >
+                    <span>{a.name}</span>
+                    <span className="text-blue-700">{switching === a.email ? 'Switching…' : 'Switch ›'}</span>
+                  </button>
+                ))}
+            </div>
+          </section>
+        )}
 
         <button
           onClick={() => void signOut()}

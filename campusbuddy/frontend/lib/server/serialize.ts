@@ -63,10 +63,9 @@ export function taskToDto(
     priceCents: t.finalPriceCents ?? t.budgetCents,
     hall: t.hall ?? 'On campus',
     when: t.whenText ?? 'Flexible',
-    distanceKm: 0,
     customerName: t.customer.fullName,
-    customerGender: 'F', // profile gender lands with the verification flow
-    customerRating: 5.0, // real aggregate arrives with reviews
+    // distanceKm / customerGender / customerRating deliberately omitted — no geo,
+    // no profile gender, and no customer reviews yet. We don't fake trust signals.
     tier: t.category.riskTier,
     requiresMatricVerification: t.category.riskTier !== 'T1',
     sameGenderOnly: meta.sameGenderDefault,

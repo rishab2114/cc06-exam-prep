@@ -10,6 +10,16 @@ import { createHash, randomInt } from 'crypto';
 export const SESSION_COOKIE = 'cb_session';
 const SESSION_DAYS = 30;
 
+/**
+ * "Dev auth" mode: no real email provider is wired, so login codes are surfaced
+ * on-screen and the one-tap demo account switcher is enabled. This is exactly
+ * the condition under which sendLoginCode() returns the code, so the two stay in
+ * lockstep — the moment you set RESEND_API_KEY (i.e. real email), both turn off.
+ */
+export function isDevAuth(): boolean {
+  return !process.env.RESEND_API_KEY;
+}
+
 export interface Session {
   sub: string; // user id
   email: string;

@@ -4,11 +4,13 @@ import { StoreProvider } from '../../lib/store';
 // Authenticated app shell. Mobile: bottom tab bar. Desktop (lg+): a real sidebar
 // layout with a wider content column — not a stretched phone UI. In production
 // this layout verifies the session server-side and redirects to /login (docs/08).
+// Wallet is intentionally absent until real payments ship — we don't show a
+// balance we can't pay out.
 const NAV = [
   { href: '/app', icon: '🏠', label: 'Home' },
   { href: '/app/find', icon: '🔎', label: 'Explore' },
   { href: '/app/tasks/new', icon: '➕', label: 'Post' },
-  { href: '/app/wallet', icon: '💰', label: 'Wallet' },
+  { href: '/app/notifications', icon: '🔔', label: 'Activity' },
   { href: '/app/profile', icon: '👤', label: 'Profile' },
 ];
 

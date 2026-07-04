@@ -22,10 +22,12 @@ export interface Task {
   priceCents: number;
   hall: string;
   when: string;
-  distanceKm: number;
   customerName: string;
-  customerGender: 'M' | 'F';
-  customerRating: number;
+  // Real customer geo/gender/reputation don't exist until the profile +
+  // reviews flows land — these are optional so the API never fabricates them.
+  distanceKm?: number;
+  customerGender?: 'M' | 'F';
+  customerRating?: number | null;
   tier: TaskTier;
   requiresMatricVerification: boolean;
   sameGenderOnly: boolean;
