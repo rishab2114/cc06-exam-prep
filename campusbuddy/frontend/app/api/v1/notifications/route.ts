@@ -1,6 +1,9 @@
 import { db } from '../../../../lib/server/db';
 import { handler, ok } from '../../../../lib/server/http';
 
+// Reads the session cookie — never prerender.
+export const dynamic = 'force-dynamic';
+
 export const GET = handler(async (_req, { session }) => {
   const rows = await db().notification.findMany({
     where: { userId: session.sub },

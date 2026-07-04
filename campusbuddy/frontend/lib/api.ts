@@ -23,6 +23,26 @@ export interface ApiOffer {
   lastActor: string;
   message: string | null;
   yourTurn: boolean;
+  providerRating: number | null;
+  providerJobs: number;
+}
+
+export interface ApiMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  body: string;
+  at: number;
+  mine: boolean;
+}
+
+export interface ApiReview {
+  id: string;
+  raterId: string;
+  raterName: string;
+  stars: number;
+  comment: string | null;
+  mine: boolean;
 }
 
 export interface Me {
@@ -32,6 +52,8 @@ export interface Me {
   campus: string;
   hall: string | null;
   verifiedAt: string | null;
+  rating: number | null;
+  jobsDone: number;
 }
 
 export interface ApiNotification {
@@ -121,6 +143,20 @@ export const api = {
     call<{ offer: ApiOffer }>(`/offers/${offerId}/counter`, { method: 'POST', json: { amountCents } }),
   acceptOffer: (offerId: string) =>
     call<{ accepted: boolean; taskId: string }>(`/offers/${offerId}/accept`, { method: 'POST' }),
+
+  // --- chat (opens once assigned) ---
+  messages: (taskId: string) => call<{ messages: ApiMessage[] }>(`/tasks/${taskId}/messages`),
+  sendMessage: (taskId: string, body: string) =>
+    call<{ message: ApiMessage }>(`/tasks/${taskId}/messages`, { method: 'POST', json: { body } }),
+
+  // --- reviews (after completion) ---
+  reviews: (taskId: string) =>
+    call<{ reviews: ApiReview[]; canReview: boolean }>(`/tasks/${taskId}/reviews`),
+  review: (taskId: string, stars: number, comment?: string) =>
+    call<{ review: { id: string; stars: number; comment: string | null } }>(`/tasks/${taskId}/reviews`, {
+      method: 'POST',
+      json: { stars, ...(comment?.trim() ? { comment: comment.trim() } : {}) },
+    }),
 
   // --- notifications ---
   notifications: () => call<{ notifications: ApiNotification[]; unread: number }>('/notifications'),

@@ -44,14 +44,18 @@ export default function ProfilePage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-2 text-center">
+        <div className="grid grid-cols-3 gap-2 text-center">
           <div className="rounded-xl border bg-white p-3">
             <p className="text-lg font-bold">{myTasks.length}</p>
             <p className="text-xs text-slate-500">Active posts</p>
           </div>
           <div className="rounded-xl border bg-white p-3">
-            <p className="text-lg font-bold">⭐ New</p>
-            <p className="text-xs text-slate-500">Rating (after first reviews)</p>
+            <p className="text-lg font-bold">{me.jobsDone}</p>
+            <p className="text-xs text-slate-500">Jobs done</p>
+          </div>
+          <div className="rounded-xl border bg-white p-3">
+            <p className="text-lg font-bold">{me.rating !== null ? `⭐${me.rating}` : '⭐ New'}</p>
+            <p className="text-xs text-slate-500">Rating</p>
           </div>
         </div>
 

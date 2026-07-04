@@ -6,6 +6,8 @@ import { useParams } from 'next/navigation';
 import { formatSgd } from '../../../../lib/format';
 import { useStore, parseSgdToCents } from '../../../../lib/store';
 import { api, ApiClientError, type ApiTask, type ApiOffer } from '../../../../lib/api';
+import { TaskChat } from '../../../../components/TaskChat';
+import { RateCard } from '../../../../components/RateCard';
 
 // Customer view of one task: every offer thread, with REAL turn-taking
 // bargaining. Each buddy has a live number on the table; whoever moved last
@@ -111,6 +113,13 @@ export default function ApplicantsPage() {
           </div>
         )}
 
+        {accepted && task.status !== 'COMPLETED' && (
+          <TaskChat taskId={task.id} counterpartName={accepted.providerName} />
+        )}
+        {accepted && task.status === 'COMPLETED' && (
+          <RateCard taskId={task.id} counterpartName={accepted.providerName} />
+        )}
+
         {!assigned &&
           ranked.map((o) => {
             const diff = o.amountCents - task.priceCents;
@@ -121,7 +130,11 @@ export default function ApplicantsPage() {
                   <div>
                     <p className="font-medium">
                       {o.providerName}{' '}
-                      <span className="text-sm font-normal text-slate-500">🪪 campus-verified</span>
+                      <span className="text-sm font-normal text-slate-500">
+                        {o.providerRating !== null
+                          ? `⭐${o.providerRating} · ${o.providerJobs} job${o.providerJobs === 1 ? '' : 's'}`
+                          : '🪪 campus-verified · new buddy'}
+                      </span>
                     </p>
                     <p className="mt-1 text-xs text-slate-400">
                       round {o.round} · {o.yourTurn ? 'your move' : 'waiting for them'}

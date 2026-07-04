@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { db } from '../../../../../../lib/server/db';
 import { handler, ok, fail, parseBody } from '../../../../../../lib/server/http';
-import { offerToDto } from '../../../../../../lib/server/serialize';
+import { offerToDto, providerStatsFor } from '../../../../../../lib/server/serialize';
 
 // GET — the task owner sees every offer; a provider sees only their own thread.
 export const GET = handler(async (_req, { params, session }) => {
@@ -18,7 +18,10 @@ export const GET = handler(async (_req, { params, session }) => {
     include: { provider: true },
     orderBy: { amountCents: 'asc' },
   });
-  return ok({ offers: offers.map((o) => offerToDto(o, session.sub, task.customerId)) });
+  const stats = await providerStatsFor(db(), offers.map((o) => o.providerId));
+  return ok({
+    offers: offers.map((o) => offerToDto(o, session.sub, task.customerId, stats.get(o.providerId))),
+  });
 });
 
 const Body = z.object({

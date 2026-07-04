@@ -7,6 +7,8 @@ import { LAUNDRY_STEPS } from '../../../../lib/mockTasks';
 import { feeBreakdown, formatSgd } from '../../../../lib/format';
 import { parseSgdToCents } from '../../../../lib/store';
 import { api, ApiClientError, type ApiTask, type ApiOffer } from '../../../../lib/api';
+import { TaskChat } from '../../../../components/TaskChat';
+import { RateCard } from '../../../../components/RateCard';
 
 // Task page, provider side. Three phases against live data:
 //  1. NEGOTIATING — your offer thread with the poster: accept their counter or
@@ -205,6 +207,14 @@ export default function ActiveTaskPage() {
               Find more tasks
             </Link>
           </div>
+        )}
+        {task.status === 'COMPLETED' && myOffer?.state === 'ACCEPTED' && (
+          <RateCard taskId={task.id} counterpartName={task.customerName} />
+        )}
+
+        {/* Coordinate the handoff once the deal is made */}
+        {iAmAssigned && task.status !== 'COMPLETED' && (
+          <TaskChat taskId={task.id} counterpartName={task.customerName} />
         )}
 
         {/* ---------- Phase 2: assigned to me ---------- */}

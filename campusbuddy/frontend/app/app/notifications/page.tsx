@@ -23,6 +23,8 @@ const TYPE_ICON: Record<string, string> = {
   'task.assigned': '🤝',
   'task.completed': '✅',
   'task.cancelled': '🚫',
+  'message.new': '💬',
+  'review.new': '⭐',
 };
 
 export default function NotificationsPage() {

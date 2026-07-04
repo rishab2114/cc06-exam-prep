@@ -91,12 +91,49 @@ export interface OfferDto {
   lastActor: string;
   message: string | null;
   yourTurn: boolean;
+  providerRating: number | null;
+  providerJobs: number;
+}
+
+export interface ProviderStats {
+  rating: number | null; // avg published stars received, 1dp
+  jobs: number; // completed tasks as provider
+}
+
+/** Rating + jobs-done for a set of users, in two grouped queries. */
+export async function providerStatsFor(
+  dbc: { review: { groupBy: Function }; task: { groupBy: Function } },
+  userIds: string[],
+): Promise<Map<string, ProviderStats>> {
+  const map = new Map<string, ProviderStats>();
+  if (userIds.length === 0) return map;
+  const [ratings, jobs] = await Promise.all([
+    dbc.review.groupBy({
+      by: ['rateeId'],
+      where: { rateeId: { in: userIds }, isPublished: true, deletedAt: null },
+      _avg: { stars: true },
+    }) as Promise<{ rateeId: string; _avg: { stars: number | null } }[]>,
+    dbc.task.groupBy({
+      by: ['providerId'],
+      where: { providerId: { in: userIds }, status: 'COMPLETED' },
+      _count: { _all: true },
+    }) as Promise<{ providerId: string | null; _count: { _all: number } }[]>,
+  ]);
+  for (const id of userIds) map.set(id, { rating: null, jobs: 0 });
+  for (const r of ratings) {
+    map.get(r.rateeId)!.rating = r._avg.stars === null ? null : Math.round(r._avg.stars * 10) / 10;
+  }
+  for (const j of jobs) {
+    if (j.providerId) map.get(j.providerId)!.jobs = j._count._all;
+  }
+  return map;
 }
 
 export function offerToDto(
   o: Offer & { provider: User },
   viewerId: string,
   taskCustomerId: string,
+  stats?: ProviderStats,
 ): OfferDto {
   const open = o.state === 'PENDING' || o.state === 'COUNTERED';
   const viewerSide = viewerId === taskCustomerId ? 'CUSTOMER' : viewerId === o.providerId ? 'PROVIDER' : null;
@@ -111,5 +148,7 @@ export function offerToDto(
     lastActor: o.lastActor,
     message: o.message,
     yourTurn: open && viewerSide !== null && viewerSide !== o.lastActor,
+    providerRating: stats?.rating ?? null,
+    providerJobs: stats?.jobs ?? 0,
   };
 }
