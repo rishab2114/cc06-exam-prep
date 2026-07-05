@@ -1,6 +1,7 @@
 import { OfferState, OfferActor, canAct, assertOfferTransition } from '@campusbuddy/shared';
 import { db } from '../../../../../../lib/server/db';
 import { handler, ok, fail } from '../../../../../../lib/server/http';
+import { publishToUser } from '../../../../../../lib/server/events';
 
 // POST /api/v1/offers/:id/decline — the poster dismisses a single offer they
 // don't want (e.g. a lowball), without having to accept someone else. Terminal:
@@ -27,5 +28,6 @@ export const POST = handler(async (_req, { params, session }) => {
       data: { taskId: offer.taskId },
     },
   });
+  publishToUser(offer.providerId, { kind: 'task', taskId: offer.taskId });
   return ok({ declined: true });
 });

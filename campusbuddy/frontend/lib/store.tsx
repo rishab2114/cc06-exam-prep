@@ -5,12 +5,19 @@ import { useRouter } from 'next/navigation';
 import { api, ApiClientError, type ApiTask, type ApiNotification, type Me } from './api';
 
 /**
- * App store, backed by the real API. Mounted by the /app layout: it loads the
- * session (/me) and redirects to /login when there isn't one, then keeps the
- * campus feed, the user's own posts, and notifications fresh — a light poll
- * stands in for SSE until Phase 2. Pages read from here and call `refresh()`
- * after mutations so every screen agrees on the state.
+ * App store, backed by the real API + realtime SSE. Mounted by the /app layout:
+ * it loads the session (/me, redirect to /login on 401), keeps the campus feed,
+ * the user's own posts, and notifications fresh, and holds ONE EventSource to
+ * /api/v1/stream. Server nudges arrive instantly; pages subscribe via
+ * `subscribe()` to react to events for a specific task/chat. A slow interval
+ * remains only as a safety net (covers new campus posts that don't notify you,
+ * and SSE gaps).
  */
+export interface RealtimeEvent {
+  kind: 'task' | 'chat' | 'notification';
+  taskId?: string;
+}
+
 interface StoreShape {
   me: Me | null;
   ready: boolean;
@@ -23,11 +30,13 @@ interface StoreShape {
   unread: number;
   markAllRead: () => Promise<void>;
   signOut: () => Promise<void>;
+  /** Subscribe to realtime events; returns an unsubscribe fn. */
+  subscribe: (fn: (ev: RealtimeEvent) => void) => () => void;
 }
 
 const StoreContext = createContext<StoreShape | null>(null);
 
-const POLL_MS = 20_000; // notifications + feed freshness until SSE lands
+const FALLBACK_MS = 45_000; // safety net only — SSE does the real-time work
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -38,9 +47,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState<ApiNotification[]>([]);
   const [unread, setUnread] = useState(0);
   const alive = useRef(true);
+  const listeners = useRef(new Set<(ev: RealtimeEvent) => void>());
 
   const refresh = useCallback(async () => {
-    // Fire together; each is independent so one failure doesn't blank the rest.
     const [feedR, mineR, notifR] = await Promise.allSettled([
       api.feed(),
       api.myTasks(),
@@ -55,9 +64,41 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const refreshNotifications = useCallback(async () => {
+    try {
+      const r = await api.notifications();
+      if (!alive.current) return;
+      setNotifications(r.notifications);
+      setUnread(r.unread);
+    } catch {
+      /* fallback poll will recover */
+    }
+  }, []);
+
+  const subscribe = useCallback((fn: (ev: RealtimeEvent) => void) => {
+    listeners.current.add(fn);
+    return () => listeners.current.delete(fn);
+  }, []);
+
   useEffect(() => {
     alive.current = true;
     let timer: ReturnType<typeof setInterval> | undefined;
+    let es: EventSource | undefined;
+
+    const onEvent = (ev: RealtimeEvent) => {
+      // Bell always reflects the change; task-level events also refresh the
+      // feed/my-tasks so lists stay live. Then fan out to page subscribers.
+      if (ev.kind === 'task') void refresh();
+      else void refreshNotifications();
+      listeners.current.forEach((fn) => {
+        try {
+          fn(ev);
+        } catch {
+          /* a page listener throwing must not kill the stream */
+        }
+      });
+    };
+
     (async () => {
       try {
         const { user } = await api.me();
@@ -70,23 +111,38 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         await refresh();
         if (!alive.current) return;
         setReady(true);
+
+        es = new EventSource('/api/v1/stream');
+        es.onmessage = (e) => {
+          if (!e.data) return;
+          try {
+            onEvent(JSON.parse(e.data) as RealtimeEvent);
+          } catch {
+            /* ignore malformed frames */
+          }
+        };
+        // On error the browser auto-reconnects (we sent `retry:`); refresh once
+        // reconnected so we don't miss anything that happened while offline.
+        es.onopen = () => void refresh();
+
         timer = setInterval(() => {
           if (document.visibilityState === 'visible') void refresh();
-        }, POLL_MS);
+        }, FALLBACK_MS);
       } catch (e) {
         if (e instanceof ApiClientError && e.status === 401) {
           router.replace('/login');
           return;
         }
-        // network hiccup — show the shell, the poll will recover
         if (alive.current) setReady(true);
       }
     })();
+
     return () => {
       alive.current = false;
       if (timer) clearInterval(timer);
+      es?.close();
     };
-  }, [router, refresh]);
+  }, [router, refresh, refreshNotifications]);
 
   const findTask = useCallback(
     (id: string) => myTasks.find((t) => t.id === id) ?? feed.find((t) => t.id === id),
@@ -102,12 +158,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   );
 
   const markAllRead = useCallback(async () => {
-    setUnread(0); // optimistic — reads are cheap to lose
+    setUnread(0);
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     try {
       await api.markNotificationsRead();
     } catch {
-      /* poll will reconcile */
+      /* SSE/poll will reconcile */
     }
   }, []);
 
@@ -132,7 +188,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <StoreContext.Provider
-      value={{ me, ready, feed, myTasks, findTask, refresh, cancelTask, notifications, unread, markAllRead, signOut }}
+      value={{ me, ready, feed, myTasks, findTask, refresh, cancelTask, notifications, unread, markAllRead, signOut, subscribe }}
     >
       {children}
     </StoreContext.Provider>

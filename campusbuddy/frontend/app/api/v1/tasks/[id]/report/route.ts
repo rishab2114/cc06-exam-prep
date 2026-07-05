@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { db } from '../../../../../../lib/server/db';
 import { handler, ok, fail, parseBody } from '../../../../../../lib/server/http';
+import { publishToUser } from '../../../../../../lib/server/events';
 
 // POST /api/v1/tasks/:id/report — either party flags a problem on a task they're
 // involved in (no-show, felt unsafe, work not as agreed, payment issue). Raises
@@ -49,5 +50,6 @@ export const POST = handler(async (req, { params, session }) => {
       },
     });
   });
+  publishToUser(session.sub, { kind: 'task', taskId: task.id });
   return ok({ reported: true });
 });

@@ -1,6 +1,7 @@
 import { db } from '../../../../../lib/server/db';
 import { handler, ok, fail } from '../../../../../lib/server/http';
 import { taskToDto } from '../../../../../lib/server/serialize';
+import { publishToUser } from '../../../../../lib/server/events';
 
 // GET /api/v1/tasks/:id — campus-scoped (you can never fetch another campus's task).
 export const GET = handler(async (_req, { params, session }) => {
@@ -22,11 +23,11 @@ export const DELETE = handler(async (_req, { params, session }) => {
   if (task.customerId !== session.sub) fail(403, 'FORBIDDEN', 'Only the poster can cancel this task');
   if (task.status !== 'OPEN') fail(409, 'BAD_STATE', 'Only open tasks can be cancelled');
 
+  const openOffers = await db().offer.findMany({
+    where: { taskId: task.id, state: { in: ['PENDING', 'COUNTERED'] } },
+    select: { providerId: true },
+  });
   await db().$transaction(async (tx) => {
-    const openOffers = await tx.offer.findMany({
-      where: { taskId: task.id, state: { in: ['PENDING', 'COUNTERED'] } },
-      select: { providerId: true },
-    });
     await tx.offer.updateMany({
       where: { taskId: task.id, state: { in: ['PENDING', 'COUNTERED'] } },
       data: { state: 'DECLINED' },
@@ -49,5 +50,6 @@ export const DELETE = handler(async (_req, { params, session }) => {
       });
     }
   });
+  for (const o of openOffers) publishToUser(o.providerId, { kind: 'task', taskId: task.id });
   return ok({ cancelled: true });
 });

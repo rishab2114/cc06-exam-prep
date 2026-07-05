@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, ApiClientError, type ApiMessage } from '../lib/api';
+import { useStore } from '../lib/store';
 
 // Chat between the poster and their buddy — opens once the deal is made, so
 // they can coordinate handoff ("bag's outside", "running 5 min late"). Polls
 // while visible; SSE replaces the poll in a later phase.
 export function TaskChat({ taskId, counterpartName }: { taskId: string; counterpartName: string }) {
+  const { subscribe } = useStore();
   const [messages, setMessages] = useState<ApiMessage[]>([]);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
@@ -25,11 +27,18 @@ export function TaskChat({ taskId, counterpartName }: { taskId: string; counterp
 
   useEffect(() => {
     void load();
+    // Realtime: a new message on this task pushes a 'chat' event to us.
+    const off = subscribe((ev) => {
+      if (ev.taskId === taskId && (ev.kind === 'chat' || ev.kind === 'task')) void load();
+    });
     const timer = setInterval(() => {
       if (document.visibilityState === 'visible') void load();
-    }, 5_000);
-    return () => clearInterval(timer);
-  }, [load]);
+    }, 30_000); // safety net
+    return () => {
+      off();
+      clearInterval(timer);
+    };
+  }, [load, subscribe, taskId]);
 
   useEffect(() => {
     if (messages.length > count.current) {

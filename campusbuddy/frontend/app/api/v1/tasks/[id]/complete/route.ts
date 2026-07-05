@@ -1,5 +1,6 @@
 import { db } from '../../../../../../lib/server/db';
 import { handler, ok, fail } from '../../../../../../lib/server/http';
+import { publishToUser } from '../../../../../../lib/server/events';
 
 // POST /api/v1/tasks/:id/complete — the assigned buddy marks the job done.
 // Walks ASSIGNED -> IN_PROGRESS -> COMPLETED (both edges audited).
@@ -36,5 +37,6 @@ export const POST = handler(async (_req, { params, session }) => {
       },
     });
   });
+  publishToUser(task.customerId, { kind: 'task', taskId: task.id });
   return ok({ completed: true });
 });

@@ -3,6 +3,7 @@ import { OfferState, OfferActor, canAct, assertOfferTransition } from '@campusbu
 import { db } from '../../../../../../lib/server/db';
 import { handler, ok, fail, parseBody } from '../../../../../../lib/server/http';
 import { offerToDto } from '../../../../../../lib/server/serialize';
+import { publishToUser } from '../../../../../../lib/server/events';
 
 const Body = z.object({ amountCents: z.number().int().min(1).max(99900) });
 
@@ -44,5 +45,6 @@ export const POST = handler(async (req, { params, session }) => {
       data: { taskId: offer.taskId, offerId: offer.id },
     },
   });
+  publishToUser(counterparty, { kind: 'task', taskId: offer.taskId });
   return ok({ offer: offerToDto(updated, session.sub, offer.task.customerId) });
 });

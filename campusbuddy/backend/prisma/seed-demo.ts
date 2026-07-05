@@ -68,6 +68,8 @@ async function main() {
   await prisma.notification.deleteMany({ where: { userId: { in: userIds } } });
   await prisma.message.deleteMany({ where: { taskId: { in: allTaskIds } } });
   await prisma.review.deleteMany({ where: { taskId: { in: allTaskIds } } });
+  await prisma.dispute.deleteMany({ where: { taskId: { in: allTaskIds } } });
+  await prisma.safetyEvent.deleteMany({ where: { taskId: { in: allTaskIds } } });
   await prisma.taskEvent.deleteMany({ where: { taskId: { in: allTaskIds } } });
   await prisma.offer.deleteMany({ where: { taskId: { in: allTaskIds } } });
   await prisma.task.deleteMany({ where: { id: { in: allTaskIds } } });

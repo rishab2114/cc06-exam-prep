@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import { OfferState, OfferActor, canAct } from '@campusbuddy/shared';
 import { db } from '../../../../../../lib/server/db';
 import { handler, ok, fail } from '../../../../../../lib/server/http';
+import { publishToUser } from '../../../../../../lib/server/events';
 
 // POST /api/v1/offers/:id/accept — the deal moment. One serializable
 // transaction: offer -> ACCEPTED, sibling offers -> DECLINED, task -> ASSIGNED
@@ -84,5 +85,13 @@ export const POST = handler(async (_req, { params, session }) => {
     }
     throw e;
   }
+  // Tell both sides + every out-bid buddy (their sibling offer just closed).
+  publishToUser(offer.providerId, { kind: 'task', taskId: offer.taskId });
+  publishToUser(offer.task.customerId, { kind: 'task', taskId: offer.taskId });
+  const siblings = await db().offer.findMany({
+    where: { taskId: offer.taskId, id: { not: offer.id } },
+    select: { providerId: true },
+  });
+  for (const s of siblings) publishToUser(s.providerId, { kind: 'task', taskId: offer.taskId });
   return ok({ accepted: true, taskId: offer.taskId });
 });

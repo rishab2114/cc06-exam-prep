@@ -1,6 +1,7 @@
 import { OfferState, OfferActor, canAct, assertOfferTransition } from '@campusbuddy/shared';
 import { db } from '../../../../../../lib/server/db';
 import { handler, ok, fail } from '../../../../../../lib/server/http';
+import { publishToUser } from '../../../../../../lib/server/events';
 
 // POST /api/v1/offers/:id/withdraw — the provider pulls their own offer out of a
 // live negotiation (before it's accepted). Terminal: PENDING/COUNTERED → WITHDRAWN.
@@ -25,5 +26,6 @@ export const POST = handler(async (_req, { params, session }) => {
       data: { taskId: offer.taskId },
     },
   });
+  publishToUser(offer.task.customerId, { kind: 'task', taskId: offer.taskId });
   return ok({ withdrawn: true });
 });

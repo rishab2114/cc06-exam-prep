@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { LAUNDRY_STEPS } from '../../../../lib/mockTasks';
 import { feeBreakdown, formatSgd } from '../../../../lib/format';
-import { parseSgdToCents } from '../../../../lib/store';
+import { parseSgdToCents, useStore } from '../../../../lib/store';
 import { api, ApiClientError, type ApiTask, type ApiOffer } from '../../../../lib/api';
 import { TaskChat } from '../../../../components/TaskChat';
 import { RateCard } from '../../../../components/RateCard';
@@ -23,6 +23,7 @@ import { ProblemActions } from '../../../../components/ProblemActions';
 export default function ActiveTaskPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { subscribe } = useStore();
 
   const [task, setTask] = useState<ApiTask | null>(null);
   const [myOffer, setMyOffer] = useState<ApiOffer | null>(null);
@@ -59,11 +60,17 @@ export default function ActiveTaskPage() {
 
   useEffect(() => {
     void load();
+    const off = subscribe((ev) => {
+      if (ev.taskId === id) void load();
+    });
     const timer = setInterval(() => {
       if (document.visibilityState === 'visible') void load();
-    }, 8_000);
-    return () => clearInterval(timer);
-  }, [load]);
+    }, 30_000); // safety net
+    return () => {
+      off();
+      clearInterval(timer);
+    };
+  }, [load, subscribe, id]);
 
   async function act(fn: () => Promise<unknown>) {
     if (busy) return;

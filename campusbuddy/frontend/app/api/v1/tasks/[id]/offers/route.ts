@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { db } from '../../../../../../lib/server/db';
 import { handler, ok, fail, parseBody } from '../../../../../../lib/server/http';
 import { offerToDto, providerStatsFor } from '../../../../../../lib/server/serialize';
+import { publishToUser } from '../../../../../../lib/server/events';
 
 // GET — the task owner sees every offer; a provider sees only their own thread.
 export const GET = handler(async (_req, { params, session }) => {
@@ -68,5 +69,6 @@ export const POST = handler(async (req, { params, session }) => {
       data: { taskId: task.id, offerId: offer.id },
     },
   });
+  publishToUser(task.customerId, { kind: 'task', taskId: task.id });
   return ok({ offer: offerToDto(offer, session.sub, task.customerId) }, 201);
 });

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { db } from '../../../../../../lib/server/db';
 import { handler, ok, fail, parseBody } from '../../../../../../lib/server/http';
+import { publishToUser } from '../../../../../../lib/server/events';
 
 // POST /api/v1/tasks/:id/cancel-assignment — either the poster or the assigned
 // buddy calls off a deal that's already been struck (change of plans, no-show,
@@ -47,5 +48,6 @@ export const POST = handler(async (req, { params, session }) => {
       },
     });
   });
+  publishToUser(other, { kind: 'task', taskId: task.id });
   return ok({ cancelled: true });
 });

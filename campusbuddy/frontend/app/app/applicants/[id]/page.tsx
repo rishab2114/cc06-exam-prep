@@ -17,7 +17,7 @@ import { ProblemActions } from '../../../../components/ProblemActions';
 // declined. Polls while open so the other side's counters appear live.
 export default function ApplicantsPage() {
   const { id } = useParams<{ id: string }>();
-  const { refresh } = useStore();
+  const { refresh, subscribe } = useStore();
 
   const [task, setTask] = useState<ApiTask | null>(null);
   const [offers, setOffers] = useState<ApiOffer[]>([]);
@@ -43,11 +43,18 @@ export default function ApplicantsPage() {
 
   useEffect(() => {
     void load();
+    // Realtime: refetch the instant an offer/counter/withdraw/decline lands.
+    const off = subscribe((ev) => {
+      if (ev.taskId === id) void load();
+    });
     const timer = setInterval(() => {
       if (document.visibilityState === 'visible') void load();
-    }, 8_000);
-    return () => clearInterval(timer);
-  }, [load]);
+    }, 30_000); // safety net
+    return () => {
+      off();
+      clearInterval(timer);
+    };
+  }, [load, subscribe, id]);
 
   async function act(offerId: string, fn: () => Promise<unknown>) {
     if (acting) return;

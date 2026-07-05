@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { db } from '../../../../../../lib/server/db';
 import { handler, ok, fail, parseBody } from '../../../../../../lib/server/http';
+import { publishToUser } from '../../../../../../lib/server/events';
 
 // Task chat: customer ↔ assigned buddy, opens once the deal is made. Before
 // that, offer messages carry the pre-deal context. Campus-scoped like
@@ -74,6 +75,7 @@ export const POST = handler(async (req, { params, session }) => {
       },
     });
   }
+  publishToUser(counterparty, { kind: 'chat', taskId: task.id });
   return ok(
     {
       message: {
