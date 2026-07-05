@@ -19,6 +19,7 @@ export default function ApplyPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [quote, setQuote] = useState('');
+  const [custom, setCustom] = useState(false); // false = one-tap at asking price
   const [integrityOk, setIntegrityOk] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -51,12 +52,16 @@ export default function ApplyPage() {
   const invalidQuote = quote.trim() !== '' && quoteCents <= 0;
   const earnings = feeBreakdown(quoteCents).buddyGets;
 
-  async function submit() {
-    if (!canApply || invalidQuote || submitting || !task) return;
+  // One-tap passes the asking price explicitly; the custom form passes nothing
+  // and uses the typed quote. Message only rides along in custom mode.
+  async function submit(cents?: number) {
+    if (!canApply || submitting || !task) return;
+    const amount = cents ?? quoteCents;
+    if (amount <= 0) return;
     setSubmitting(true);
     setError(null);
     try {
-      await api.makeOffer(task.id, quoteCents, message);
+      await api.makeOffer(task.id, amount, custom ? message : undefined);
       setSubmitted(true);
     } catch (e) {
       setError(e instanceof ApiClientError ? e.message : 'Could not send your offer — try again.');
@@ -203,61 +208,91 @@ export default function ApplyPage() {
           )}
         </div>
 
-        {/* Your quote — open bidding */}
-        {canApply && (
-          <label className="block text-sm">
-            <span className="text-slate-500">Your price (SGD)</span>
-            <input
-              type="number"
-              inputMode="decimal"
-              value={quote}
-              onChange={(e) => setQuote(e.target.value)}
-              placeholder={(task.priceCents / 100).toFixed(2)}
-              className="mt-1 w-full rounded-xl border px-3 py-2"
-            />
-            <span className={`mt-1 block text-xs ${invalidQuote ? 'text-red-500' : 'text-slate-400'}`}>
-              {invalidQuote
-                ? 'That price doesn’t look right — enter a number above S$0 (or clear it to use the listed price).'
-                : <>{task.customerName} listed {formatSgd(task.priceCents)} — offer your own price, higher or lower. You earn <b>{formatSgd(earnings)}</b>.</>}
-            </span>
-          </label>
+        {/* Primary path: one tap to offer at the asking price. Haggling is a
+            deliberate second step so the common case is frictionless. */}
+        {canApply && !custom && (
+          <div className="space-y-2">
+            <button
+              onClick={() => void submit(task.priceCents)}
+              disabled={submitting}
+              className="block w-full rounded-xl bg-blue-700 py-3 font-medium text-white disabled:opacity-50"
+            >
+              {submitting ? 'Sending offer…' : `Offer to help — ${formatSgd(task.priceCents)}`}
+            </button>
+            <p className="text-center text-xs text-slate-400">
+              You earn <b>{formatSgd(feeBreakdown(task.priceCents).buddyGets)}</b> · {task.customerName}’s asking price
+            </p>
+            {error && <p className="text-sm text-red-600">{error}</p>}
+            <button
+              onClick={() => { setCustom(true); setQuote((task.priceCents / 100).toFixed(2)); }}
+              className="block w-full py-1 text-center text-sm font-medium text-blue-700"
+            >
+              or name your own price ›
+            </button>
+          </div>
         )}
 
-        {/* Message to the poster */}
-        {canApply && (
-          <label className="block text-sm">
-            <span className="text-slate-500">Message to {task.customerName} (optional)</span>
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              rows={2}
-              maxLength={300}
-              placeholder="Hi! I can do this right after my 4pm class."
-              className="mt-1 w-full rounded-xl border px-3 py-2"
-            />
-          </label>
+        {/* Secondary path: custom price + a note to the poster */}
+        {canApply && custom && (
+          <div className="space-y-4">
+            <label className="block text-sm">
+              <span className="text-slate-500">Your price (SGD)</span>
+              <input
+                type="number"
+                inputMode="decimal"
+                value={quote}
+                onChange={(e) => setQuote(e.target.value)}
+                placeholder={(task.priceCents / 100).toFixed(2)}
+                className="mt-1 w-full rounded-xl border px-3 py-2"
+                autoFocus
+              />
+              <span className={`mt-1 block text-xs ${invalidQuote ? 'text-red-500' : 'text-slate-400'}`}>
+                {invalidQuote
+                  ? 'That price doesn’t look right — enter a number above S$0.'
+                  : <>{task.customerName} listed {formatSgd(task.priceCents)} — offer higher or lower. You earn <b>{formatSgd(earnings)}</b>.</>}
+              </span>
+            </label>
+
+            <label className="block text-sm">
+              <span className="text-slate-500">Message to {task.customerName} (optional)</span>
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                rows={2}
+                maxLength={300}
+                placeholder="Hi! I can do this right after my 4pm class."
+                className="mt-1 w-full rounded-xl border px-3 py-2"
+              />
+            </label>
+
+            {error && <p className="text-sm text-red-600">{error}</p>}
+
+            <button
+              onClick={() => void submit()}
+              disabled={invalidQuote || submitting}
+              className="block w-full rounded-xl bg-blue-700 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {submitting ? 'Sending offer…' : invalidQuote ? 'Fix your price to continue' : `Send offer · ${formatSgd(quoteCents)}`}
+            </button>
+            <button onClick={() => setCustom(false)} className="block w-full text-center text-xs text-slate-400">
+              ‹ Back to one-tap at {formatSgd(task.priceCents)}
+            </button>
+          </div>
         )}
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
-
-        {/* Submit */}
-        <button
-          onClick={() => void submit()}
-          disabled={!canApply || invalidQuote || submitting}
-          className="block w-full rounded-xl bg-blue-700 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {ownTask
-            ? 'This is your own task'
-            : notOpen
-              ? 'No longer taking offers'
-              : needsIntegrity
-                ? 'Tick the tutoring pledge to continue'
-                : invalidQuote
-                  ? 'Fix your price to continue'
-                  : submitting
-                    ? 'Sending offer…'
-                    : `Send offer · ${formatSgd(quoteCents)}`}
-        </button>
+        {/* Can't offer (own task / closed / integrity pledge) */}
+        {!canApply && (
+          <button
+            disabled
+            className="block w-full rounded-xl bg-blue-700 py-3 font-medium text-white opacity-50"
+          >
+            {ownTask
+              ? 'This is your own task'
+              : notOpen
+                ? 'No longer taking offers'
+                : 'Tick the tutoring pledge to continue'}
+          </button>
+        )}
       </div>
     </div>
   );

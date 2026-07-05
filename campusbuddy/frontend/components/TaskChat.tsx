@@ -5,11 +5,13 @@ import { api, ApiClientError, type ApiMessage } from '../lib/api';
 import { useStore } from '../lib/store';
 
 // Chat between the poster and their buddy — opens once the deal is made, so
-// they can coordinate handoff ("bag's outside", "running 5 min late"). Polls
-// while visible; SSE replaces the poll in a later phase.
+// they can coordinate handoff ("bag's outside", "running 5 min late"). Realtime
+// via SSE; sends are optimistic so the bubble appears the instant you hit send.
+type ChatMessage = ApiMessage & { pending?: boolean };
+
 export function TaskChat({ taskId, counterpartName }: { taskId: string; counterpartName: string }) {
   const { subscribe } = useStore();
-  const [messages, setMessages] = useState<ApiMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +21,8 @@ export function TaskChat({ taskId, counterpartName }: { taskId: string; counterp
   const load = useCallback(async () => {
     try {
       const r = await api.messages(taskId);
-      setMessages(r.messages);
+      // Keep any still-in-flight optimistic bubbles until their ack replaces them.
+      setMessages((prev) => [...r.messages, ...prev.filter((m) => m.pending)]);
     } catch {
       /* poll retries */
     }
@@ -51,13 +54,29 @@ export function TaskChat({ taskId, counterpartName }: { taskId: string; counterp
     e.preventDefault();
     const body = draft.trim();
     if (!body || sending) return;
-    setSending(true);
+
+    // Optimistic: show the bubble immediately, clear the box, reconcile on ack.
+    const tempId = `temp-${Date.now()}`;
+    const optimistic: ChatMessage = {
+      id: tempId,
+      senderId: 'me',
+      senderName: 'You',
+      body,
+      at: Date.now(),
+      mine: true,
+      pending: true,
+    };
+    setMessages((prev) => [...prev, optimistic]);
+    setDraft('');
     setError(null);
+    setSending(true);
     try {
       const r = await api.sendMessage(taskId, body);
-      setMessages((prev) => [...prev, r.message]);
-      setDraft('');
+      setMessages((prev) => prev.map((m) => (m.id === tempId ? r.message : m)));
     } catch (err) {
+      // Roll back the bubble and hand the text back so nothing is lost.
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
+      setDraft((d) => d || body);
       setError(err instanceof ApiClientError ? err.message : 'Message didn’t send — try again.');
     } finally {
       setSending(false);
@@ -79,7 +98,7 @@ export function TaskChat({ taskId, counterpartName }: { taskId: string; counterp
             <div
               className={`max-w-[80%] rounded-2xl px-3 py-1.5 text-sm ${
                 m.mine ? 'rounded-br-sm bg-blue-600 text-white' : 'rounded-bl-sm bg-slate-100 text-slate-800'
-              }`}
+              } ${m.pending ? 'opacity-60' : ''}`}
             >
               {m.body}
             </div>
