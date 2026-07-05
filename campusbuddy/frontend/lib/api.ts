@@ -66,6 +66,16 @@ export interface ApiNotification {
   at: number;
 }
 
+export type ReportReason = 'no_show' | 'unsafe' | 'not_as_agreed' | 'payment' | 'other';
+
+export const REPORT_REASONS: { key: ReportReason; label: string }[] = [
+  { key: 'no_show', label: 'They didn’t show up' },
+  { key: 'not_as_agreed', label: 'Work wasn’t as agreed' },
+  { key: 'unsafe', label: 'I felt unsafe' },
+  { key: 'payment', label: 'Payment problem' },
+  { key: 'other', label: 'Something else' },
+];
+
 export interface CreateTaskInput {
   category: string;
   description?: string;
@@ -154,6 +164,22 @@ export const api = {
     call<{ offer: ApiOffer }>(`/offers/${offerId}/counter`, { method: 'POST', json: { amountCents } }),
   acceptOffer: (offerId: string) =>
     call<{ accepted: boolean; taskId: string }>(`/offers/${offerId}/accept`, { method: 'POST' }),
+  withdrawOffer: (offerId: string) =>
+    call<{ withdrawn: boolean }>(`/offers/${offerId}/withdraw`, { method: 'POST' }),
+  declineOffer: (offerId: string) =>
+    call<{ declined: boolean }>(`/offers/${offerId}/decline`, { method: 'POST' }),
+
+  // --- deal off-ramps ---
+  cancelAssignment: (taskId: string, reason?: string) =>
+    call<{ cancelled: boolean }>(`/tasks/${taskId}/cancel-assignment`, {
+      method: 'POST',
+      json: { ...(reason?.trim() ? { reason: reason.trim() } : {}) },
+    }),
+  reportTask: (taskId: string, reason: ReportReason, details?: string) =>
+    call<{ reported: boolean }>(`/tasks/${taskId}/report`, {
+      method: 'POST',
+      json: { reason, ...(details?.trim() ? { details: details.trim() } : {}) },
+    }),
 
   // --- chat (opens once assigned) ---
   messages: (taskId: string) => call<{ messages: ApiMessage[] }>(`/tasks/${taskId}/messages`),

@@ -25,6 +25,9 @@ const TYPE_ICON: Record<string, string> = {
   'task.cancelled': '🚫',
   'message.new': '💬',
   'review.new': '⭐',
+  'offer.withdrawn': '↩️',
+  'offer.declined': '🙅',
+  'report.filed': '🚩',
 };
 
 export default function NotificationsPage() {

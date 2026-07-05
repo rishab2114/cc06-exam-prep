@@ -9,6 +9,7 @@ import { parseSgdToCents } from '../../../../lib/store';
 import { api, ApiClientError, type ApiTask, type ApiOffer } from '../../../../lib/api';
 import { TaskChat } from '../../../../components/TaskChat';
 import { RateCard } from '../../../../components/RateCard';
+import { ProblemActions } from '../../../../components/ProblemActions';
 
 // Task page, provider side. Three phases against live data:
 //  1. NEGOTIATING — your offer thread with the poster: accept their counter or
@@ -187,6 +188,16 @@ export default function ActiveTaskPage() {
                 ⏳ We&apos;ll notify you when {task.customerName} accepts or counters.
               </p>
             )}
+
+            {(myOffer.state === 'PENDING' || myOffer.state === 'COUNTERED') && !counterOpen && (
+              <button
+                onClick={() => void act(() => api.withdrawOffer(myOffer.id))}
+                disabled={busy}
+                className="mt-2 text-xs text-slate-400 hover:text-red-500"
+              >
+                Withdraw my offer
+              </button>
+            )}
           </div>
         )}
 
@@ -215,6 +226,13 @@ export default function ActiveTaskPage() {
         {/* Coordinate the handoff once the deal is made */}
         {iAmAssigned && task.status !== 'COMPLETED' && (
           <TaskChat taskId={task.id} counterpartName={task.customerName} />
+        )}
+        {iAmAssigned && (
+          <ProblemActions
+            taskId={task.id}
+            canCancel={task.status === 'ASSIGNED' || task.status === 'IN_PROGRESS'}
+            onChanged={async () => { await load(); }}
+          />
         )}
 
         {/* ---------- Phase 2: assigned to me ---------- */}

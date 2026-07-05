@@ -8,6 +8,7 @@ import { useStore, parseSgdToCents } from '../../../../lib/store';
 import { api, ApiClientError, type ApiTask, type ApiOffer } from '../../../../lib/api';
 import { TaskChat } from '../../../../components/TaskChat';
 import { RateCard } from '../../../../components/RateCard';
+import { ProblemActions } from '../../../../components/ProblemActions';
 
 // Customer view of one task: every offer thread, with REAL turn-taking
 // bargaining. Each buddy has a live number on the table; whoever moved last
@@ -119,6 +120,13 @@ export default function ApplicantsPage() {
         {accepted && task.status === 'COMPLETED' && (
           <RateCard taskId={task.id} counterpartName={accepted.providerName} />
         )}
+        {accepted && (
+          <ProblemActions
+            taskId={task.id}
+            canCancel={task.status === 'ASSIGNED' || task.status === 'IN_PROGRESS'}
+            onChanged={async () => { await Promise.all([load(), refresh()]); }}
+          />
+        )}
 
         {!assigned &&
           ranked.map((o) => {
@@ -201,6 +209,16 @@ export default function ApplicantsPage() {
                     ⏳ You countered {formatSgd(o.amountCents)} — waiting for {o.providerName} to accept
                     or counter back.
                   </p>
+                )}
+
+                {counterOpen !== o.id && (
+                  <button
+                    onClick={() => void act(o.id, () => api.declineOffer(o.id))}
+                    disabled={busy}
+                    className="mt-2 text-xs text-slate-400 hover:text-red-500"
+                  >
+                    Decline this offer
+                  </button>
                 )}
               </div>
             );
