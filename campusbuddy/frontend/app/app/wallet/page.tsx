@@ -5,7 +5,7 @@ import Link from 'next/link';
 // exists only so old bookmarks land somewhere honest.
 export default function WalletPage() {
   return (
-    <div>
+    <div className="lg:mx-auto lg:max-w-2xl">
       <header className="border-b bg-white px-4 py-3 font-semibold">Earnings</header>
 
       <div className="space-y-4 p-4">

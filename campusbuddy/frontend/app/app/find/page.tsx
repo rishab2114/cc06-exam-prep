@@ -83,7 +83,8 @@ export default function FindPage() {
         <span className="font-semibold">
           Explore <span className="text-green-500">●</span>
         </span>
-        <label className="text-sm text-slate-500">
+        {/* Sort — mobile only; on desktop it lives in the filter rail */}
+        <label className="text-sm text-slate-500 lg:hidden">
           Sort:{' '}
           <select
             value={sort}
@@ -97,8 +98,8 @@ export default function FindPage() {
         </label>
       </header>
 
-      {/* Filters: categories, then trust toggles */}
-      <div className="space-y-2 border-b bg-white px-4 py-3">
+      {/* Mobile filters: horizontal chip scrollers */}
+      <div className="space-y-2 border-b bg-white px-4 py-3 lg:hidden">
         <div className="flex gap-2 overflow-x-auto pb-1">
           {categories.map((c) => (
             <FilterChip key={c} active={category === c} onClick={() => setCategory(c)}>
@@ -119,15 +120,67 @@ export default function FindPage() {
         </div>
       </div>
 
-      <div className="space-y-3 p-4">
-        <div className="flex items-center justify-between text-xs text-slate-500">
-          <span>{tasks.length} task{tasks.length === 1 ? '' : 's'}</span>
-          {(category !== 'All' || verifiedOnly || contactlessOnly || presentOnly) && (
-            <button onClick={clearFilters} className="text-blue-700">Clear filters</button>
-          )}
-        </div>
+      {/* Desktop: sticky filter rail + wide grid */}
+      <div className="lg:flex lg:gap-6 lg:p-4">
+        <aside className="hidden shrink-0 lg:block lg:w-56">
+          <div className="sticky top-4 space-y-5 rounded-2xl border bg-white p-4">
+            <div>
+              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">Sort</p>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as SortKey)}
+                className="w-full rounded-lg border px-2 py-1.5 text-sm"
+              >
+                {SORTS.map((s) => (
+                  <option key={s.key} value={s.key}>{s.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">Category</p>
+              <div className="space-y-0.5">
+                {categories.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setCategory(c)}
+                    className={`block w-full rounded-lg px-3 py-1.5 text-left text-sm ${
+                      category === c ? 'bg-blue-50 font-medium text-blue-700' : 'text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">Trust &amp; safety</p>
+              <div className="space-y-2 text-sm text-slate-600">
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={verifiedOnly} onChange={() => setVerifiedOnly(!verifiedOnly)} /> 🪪 Verified
+                </label>
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={contactlessOnly} onChange={() => setContactlessOnly(!contactlessOnly)} /> 📦 Contactless
+                </label>
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={presentOnly} onChange={() => setPresentOnly(!presentOnly)} /> 👥 Customer present
+                </label>
+              </div>
+            </div>
+            {(category !== 'All' || verifiedOnly || contactlessOnly || presentOnly) && (
+              <button onClick={clearFilters} className="text-sm font-medium text-blue-700">Clear all filters</button>
+            )}
+          </div>
+        </aside>
 
-        <SponsoredCard ad={adFor(2)} />
+        <div className="flex-1 space-y-3 p-4 lg:p-0">
+          <div className="flex items-center justify-between text-xs text-slate-500">
+            <span>{tasks.length} task{tasks.length === 1 ? '' : 's'}</span>
+            {(category !== 'All' || verifiedOnly || contactlessOnly || presentOnly) && (
+              <button onClick={clearFilters} className="text-blue-700 lg:hidden">Clear filters</button>
+            )}
+          </div>
+
+          <SponsoredCard ad={adFor(2)} />
 
         {tasks.length === 0 ? (
           <div className="rounded-xl border border-dashed bg-white p-8 text-center text-sm text-slate-500">
@@ -137,7 +190,7 @@ export default function FindPage() {
             </button>
           </div>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {tasks.map((t) => (
               <div key={t.id} className="flex flex-col rounded-xl border bg-white p-3">
                 <div className="flex justify-between">
@@ -196,6 +249,7 @@ export default function FindPage() {
             ))}
           </div>
         )}
+        </div>
       </div>
     </div>
   );

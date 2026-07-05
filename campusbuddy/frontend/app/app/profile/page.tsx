@@ -39,7 +39,7 @@ export default function ProfilePage() {
   if (!me) return null; // store redirects to /login before this renders
 
   return (
-    <div>
+    <div className="lg:mx-auto lg:max-w-2xl">
       <header className="border-b bg-white px-4 py-3 font-semibold">Profile</header>
 
       <div className="space-y-4 p-4">

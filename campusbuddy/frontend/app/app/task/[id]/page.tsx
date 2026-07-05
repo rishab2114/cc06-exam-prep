@@ -110,7 +110,7 @@ export default function ActiveTaskPage() {
         : { label: task.status.replace('_', ' '), cls: 'bg-blue-100 text-blue-700' };
 
   return (
-    <div>
+    <div className="lg:mx-auto lg:max-w-2xl">
       <header className="border-b bg-white px-4 py-3">
         <div className="flex items-center justify-between">
           <span className="font-semibold">

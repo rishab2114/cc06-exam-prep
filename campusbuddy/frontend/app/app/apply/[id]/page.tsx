@@ -87,7 +87,7 @@ export default function ApplyPage() {
   }
 
   return (
-    <div>
+    <div className="lg:mx-auto lg:max-w-2xl">
       <header className="border-b bg-white px-4 py-3 font-semibold">
         <Link href="/app/find" className="text-slate-500">‹ </Link> Offer to help
       </header>

@@ -147,7 +147,7 @@ function NewTaskForm() {
   }
 
   return (
-    <div>
+    <div className="lg:mx-auto lg:max-w-2xl">
       <header className="border-b bg-white px-4 py-3 font-semibold">
         <Link href="/app" className="text-slate-500">‹ </Link>
         {isStudy ? 'Get study help' : 'New task'}

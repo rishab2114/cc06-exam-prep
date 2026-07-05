@@ -94,7 +94,7 @@ export default function ApplicantsPage() {
   }
 
   return (
-    <div>
+    <div className="lg:mx-auto lg:max-w-3xl">
       <header className="border-b bg-white px-4 py-3">
         <span className="font-semibold">
           <Link href="/app" className="text-slate-500">‹ </Link>
