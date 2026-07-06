@@ -11,13 +11,23 @@ import { TaskChat } from '../../../../components/TaskChat';
 import { RateCard } from '../../../../components/RateCard';
 import { ProblemActions } from '../../../../components/ProblemActions';
 
+// Grab-style status steps for a shopping / fetch-&-deliver run (grocery, 7-Eleven /
+// Prime, parcels, food). The chat handles anything out of stock — agree a swap
+// before buying — so this is just the live "where's my stuff" timeline.
+const RUN_STEPS = [
+  { label: 'Heading to the store', text: 'On my way to grab your stuff 🏃' },
+  { label: 'At the store — picking up', text: 'At the store now, picking up your items 🛒' },
+  { label: 'On the way to you', text: 'Got everything, heading to you 🛵' },
+  { label: 'Dropped off', text: 'Delivered — enjoy! ✅' },
+];
+
 // Task page, provider side. Three phases against live data:
-//  1. NEGOTIATING — your offer thread with the poster: accept their counter or
-//     counter back (turn-taking, enforced server-side). Polls so their moves
-//     appear live.
-//  2. ASSIGNED — you got the deal. Contactless tasks walk the Grab-style status
-//     timeline; in-person tasks do the arrival check-in. Both end in the real
-//     complete call.
+//  1. NEGOTIATING — your offer thread with the poster (turn-taking, live).
+//  2. ASSIGNED — you got the deal. The flow adapts to the task type: contactless
+//     laundry walks a status timeline; store runs get a shopping timeline with
+//     chat for out-of-stock swaps; in-room jobs (cleaning) do an arrival
+//     check-in; meet-ups (study help) just coordinate over chat. All end in the
+//     real complete call.
 //  3. COMPLETED — earnings recap.
 // If the viewer is the poster, they're redirected to their offers view.
 export default function ActiveTaskPage() {
@@ -99,8 +109,13 @@ export default function ActiveTaskPage() {
   const iAmAssigned = task.status !== 'OPEN' && myOffer?.state === 'ACCEPTED';
   const agreedCents = myOffer?.state === 'ACCEPTED' ? myOffer.amountCents : task.priceCents;
   const earnings = feeBreakdown(agreedCents).buddyGets;
-  const laundryDone = step >= LAUNDRY_STEPS.length;
-  const lastSent = step > 0 ? LAUNDRY_STEPS[step - 1].text : null;
+
+  // Which assigned-flow this task uses.
+  const isRun = task.category === 'Convenience' || task.category === 'Food'; // grocery / 7-11 / parcel / food
+  const isStudy = task.category === 'Study help';
+  const activeSteps = task.contactless ? LAUNDRY_STEPS : isRun ? RUN_STEPS : [];
+  const stepsDone = step >= activeSteps.length;
+  const lastSent = step > 0 ? activeSteps[step - 1]?.text : null;
 
   const chip =
     task.status === 'OPEN'
@@ -230,28 +245,24 @@ export default function ActiveTaskPage() {
           <RateCard taskId={task.id} counterpartName={task.customerName} />
         )}
 
-        {/* Coordinate the handoff once the deal is made */}
+        {/* ---------- Phase 2: assigned to me — flow adapts to the task type ---------- */}
         {iAmAssigned && task.status !== 'COMPLETED' && (
-          <TaskChat taskId={task.id} counterpartName={task.customerName} />
-        )}
-        {iAmAssigned && (
-          <ProblemActions
-            taskId={task.id}
-            canCancel={task.status === 'ASSIGNED' || task.status === 'IN_PROGRESS'}
-            onChanged={async () => { await load(); }}
-          />
-        )}
-
-        {/* ---------- Phase 2: assigned to me ---------- */}
-        {iAmAssigned && task.status !== 'COMPLETED' && (
-          task.contactless ? (
-            /* Contactless: Grab-style status updates, ends in the real complete call */
+          task.contactless || isRun ? (
+            /* Grab-style status timeline: contactless laundry, or a store/food run */
             <div className="rounded-xl border bg-white p-4">
-              <p className="font-medium">📦 Contactless task</p>
+              <p className="font-medium">{task.contactless ? '📦 Contactless laundry' : '🛒 Shopping run'}</p>
               <p className="mt-1 text-sm text-slate-500">
-                {task.customerName} leaves the bag outside the door — no room entry. Tap each step to
-                update them live, like Grab.
+                {task.contactless
+                  ? `${task.customerName} leaves the bag outside the door — no room entry. Tap each step to update them live, like Grab.`
+                  : `Grab ${task.customerName}'s items and tap each step so they can follow along, like Grab.`}
               </p>
+
+              {isRun && (
+                <div className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                  🛒 <b>Something out of stock?</b> Message {task.customerName} in the chat below and
+                  agree a swap <b>before</b> you buy it.
+                </div>
+              )}
 
               {lastSent && (
                 <div className="mt-3 rounded-lg bg-blue-50 p-3 text-sm text-blue-800">
@@ -260,7 +271,7 @@ export default function ActiveTaskPage() {
               )}
 
               <ol className="mt-4 space-y-3">
-                {LAUNDRY_STEPS.map((s, i) => {
+                {activeSteps.map((s, i) => {
                   const state = i < step ? 'done' : i === step ? 'current' : 'todo';
                   return (
                     <li key={s.label} className="flex items-center gap-3">
@@ -275,20 +286,18 @@ export default function ActiveTaskPage() {
                       >
                         {state === 'done' ? '✓' : i + 1}
                       </span>
-                      <span className={state === 'todo' ? 'text-slate-400' : 'font-medium'}>
-                        {s.label}
-                      </span>
+                      <span className={state === 'todo' ? 'text-slate-400' : 'font-medium'}>{s.label}</span>
                     </li>
                   );
                 })}
               </ol>
 
-              {!laundryDone ? (
+              {!stepsDone ? (
                 <button
                   onClick={() => setStep(step + 1)}
                   className="mt-4 block w-full rounded-xl bg-blue-700 py-3 font-medium text-white"
                 >
-                  Update: {LAUNDRY_STEPS[step].label}
+                  Update: {activeSteps[step].label}
                 </button>
               ) : (
                 <button
@@ -300,8 +309,8 @@ export default function ActiveTaskPage() {
                 </button>
               )}
             </div>
-          ) : (
-            /* In-person: arrival check-in, then the real complete call */
+          ) : task.presenceRequired ? (
+            /* In-room job (cleaning, moving): arrival check-in, then complete */
             <>
               <div className="rounded-xl border bg-white p-4">
                 <p className="font-medium">📍 Arrival check-in</p>
@@ -338,7 +347,35 @@ export default function ActiveTaskPage() {
                 {busy ? 'Finishing…' : checkedIn ? 'Mark task complete' : 'Check in to start the task'}
               </button>
             </>
+          ) : (
+            /* Meet-up (study help, spare meal, etc.): coordinate over chat, then complete */
+            <div className="rounded-xl border bg-white p-4">
+              <p className="font-medium">{isStudy ? '📚 Study session' : '🤝 Meet-up'}</p>
+              <p className="mt-1 text-sm text-slate-500">
+                Sort out the where &amp; when with {task.customerName} in the chat below, then mark it
+                complete once you&apos;re done.
+              </p>
+              <button
+                onClick={() => void act(() => api.completeTask(task.id))}
+                disabled={busy}
+                className="mt-3 block w-full rounded-xl bg-green-600 py-3 font-medium text-white disabled:opacity-60"
+              >
+                {busy ? 'Finishing…' : `Mark complete — you earn ${formatSgd(earnings)}`}
+              </button>
+            </div>
           )
+        )}
+
+        {/* Chat + off-ramps, shown directly under the active flow */}
+        {iAmAssigned && task.status !== 'COMPLETED' && (
+          <TaskChat taskId={task.id} counterpartName={task.customerName} />
+        )}
+        {iAmAssigned && (
+          <ProblemActions
+            taskId={task.id}
+            canCancel={task.status === 'ASSIGNED' || task.status === 'IN_PROGRESS'}
+            onChanged={async () => { await load(); }}
+          />
         )}
 
         {/* Assigned, but to someone else */}
