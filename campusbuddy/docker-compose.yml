@@ -1,7 +1,6 @@
-version: "3.9"
-
 # Local infra for CampusBuddy NTU development.
 # Postgres (with PostGIS) for the relational store + Redis for BullMQ jobs/cache/rate-limit.
+# Host port 5433 (not 5432) so it never clashes with any Postgres you already run locally.
 services:
   postgres:
     image: postgis/postgis:16-3.4
@@ -11,7 +10,7 @@ services:
       POSTGRES_PASSWORD: campusbuddy
       POSTGRES_DB: campusbuddy
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
