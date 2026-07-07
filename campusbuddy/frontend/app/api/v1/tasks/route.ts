@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { db } from '../../../../lib/server/db';
 import { handler, ok, fail, parseBody } from '../../../../lib/server/http';
 import { taskToDto, FORM_CATEGORY_TO_SLUG } from '../../../../lib/server/serialize';
+import { publishToCampus } from '../../../../lib/server/events';
 
 // GET /api/v1/tasks — campus-scoped feed. ?mine=1 for the caller's own posts.
 // Pilot scale: fetch the campus's open tasks (≤100) and let the client filter;
@@ -71,5 +72,6 @@ export const POST = handler(async (req, { session }) => {
     },
     include: { category: true, customer: true, offers: { select: { id: true } } },
   });
+  publishToCampus(session.campusId, { kind: 'task', taskId: task.id }); // fresh post hits every Explore live
   return ok({ task: taskToDto(task, session.sub) }, 201);
 });

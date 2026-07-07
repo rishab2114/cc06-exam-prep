@@ -33,7 +33,7 @@ const RUN_STEPS = [
 export default function ActiveTaskPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { subscribe } = useStore();
+  const { subscribe, refresh } = useStore();
 
   const [task, setTask] = useState<ApiTask | null>(null);
   const [myOffer, setMyOffer] = useState<ApiOffer | null>(null);
@@ -88,7 +88,7 @@ export default function ActiveTaskPage() {
     setError(null);
     try {
       await fn();
-      await load();
+      await Promise.all([load(), refresh()]); // refresh: my accept/complete updates Explore/Home too
     } catch (e) {
       setError(e instanceof ApiClientError ? e.message : 'That didn’t go through — try again.');
       await load();
@@ -351,10 +351,40 @@ export default function ActiveTaskPage() {
             /* Meet-up (study help, spare meal, etc.): coordinate over chat, then complete */
             <div className="rounded-xl border bg-white p-4">
               <p className="font-medium">{isStudy ? '📚 Study session' : '🤝 Meet-up'}</p>
-              <p className="mt-1 text-sm text-slate-500">
-                Sort out the where &amp; when with {task.customerName} in the chat below, then mark it
-                complete once you&apos;re done.
-              </p>
+
+              {isStudy && task.study ? (
+                <>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Here&apos;s exactly what {task.customerName} needs — use the chat below to dig into
+                    specifics, agree what to cover, share materials, and set a time &amp; place.
+                  </p>
+                  <div className="mt-3 rounded-lg bg-slate-50 p-3 text-sm">
+                    <p className="font-medium">📖 {task.study.module}</p>
+                    <div className="mt-2 space-y-1 text-slate-600">
+                      <p><span className="text-slate-400">Topics:</span> {task.study.topics.join(', ')}</p>
+                      <p><span className="text-slate-400">Level:</span> {task.study.level}</p>
+                      <p><span className="text-slate-400">Goal:</span> {task.study.goal}</p>
+                      <p><span className="text-slate-400">Format:</span> {task.study.format}</p>
+                    </div>
+                    {task.study.helpTypes.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {task.study.helpTypes.map((h) => (
+                          <span key={h} className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700">{h}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                    📚 Tutoring only — explain and coach; don&apos;t do the work for them.
+                  </p>
+                </>
+              ) : (
+                <p className="mt-1 text-sm text-slate-500">
+                  Sort out the where &amp; when with {task.customerName} in the chat below, then mark it
+                  complete once you&apos;re done.
+                </p>
+              )}
+
               <button
                 onClick={() => void act(() => api.completeTask(task.id))}
                 disabled={busy}

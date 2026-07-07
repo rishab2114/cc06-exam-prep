@@ -29,7 +29,9 @@ export async function GET(req: Request) {
       send('retry: 3000\n\n'); // client auto-reconnect backoff
       send('event: ready\ndata: {}\n\n');
 
-      unsubscribe = subscribeUser(session.sub, (ev) => send(`data: ${JSON.stringify(ev)}\n\n`));
+      unsubscribe = subscribeUser(session.sub, session.campusId, (ev) =>
+        send(`data: ${JSON.stringify(ev)}\n\n`),
+      );
       heartbeat = setInterval(() => send(': ping\n\n'), 25_000);
 
       // Client navigated away / closed the tab.

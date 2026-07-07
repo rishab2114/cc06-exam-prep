@@ -27,7 +27,23 @@ export function publishToUser(userId: string, ev: RealtimeEvent): void {
   bus.emit(userId, ev);
 }
 
-export function subscribeUser(userId: string, handler: (ev: RealtimeEvent) => void): () => void {
+/**
+ * Campus-wide channel: feed-shape changes (task posted / taken / closed) go to
+ * everyone on the campus so Explore never shows a task that's already gone.
+ */
+export function publishToCampus(campusId: string, ev: RealtimeEvent): void {
+  bus.emit(`campus:${campusId}`, ev);
+}
+
+export function subscribeUser(
+  userId: string,
+  campusId: string,
+  handler: (ev: RealtimeEvent) => void,
+): () => void {
   bus.on(userId, handler);
-  return () => bus.off(userId, handler);
+  bus.on(`campus:${campusId}`, handler);
+  return () => {
+    bus.off(userId, handler);
+    bus.off(`campus:${campusId}`, handler);
+  };
 }

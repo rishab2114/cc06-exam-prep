@@ -1,7 +1,7 @@
 import { db } from '../../../../../lib/server/db';
 import { handler, ok, fail } from '../../../../../lib/server/http';
 import { taskToDto } from '../../../../../lib/server/serialize';
-import { publishToUser } from '../../../../../lib/server/events';
+import { publishToUser, publishToCampus } from '../../../../../lib/server/events';
 
 // GET /api/v1/tasks/:id — campus-scoped (you can never fetch another campus's task).
 export const GET = handler(async (_req, { params, session }) => {
@@ -51,5 +51,6 @@ export const DELETE = handler(async (_req, { params, session }) => {
     }
   });
   for (const o of openOffers) publishToUser(o.providerId, { kind: 'task', taskId: task.id });
+  publishToCampus(session.campusId, { kind: 'task', taskId: task.id });
   return ok({ cancelled: true });
 });

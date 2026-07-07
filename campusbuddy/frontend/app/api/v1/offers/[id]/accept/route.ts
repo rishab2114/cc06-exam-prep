@@ -2,7 +2,7 @@ import { Prisma } from '@prisma/client';
 import { OfferState, OfferActor, canAct } from '@campusbuddy/shared';
 import { db } from '../../../../../../lib/server/db';
 import { handler, ok, fail } from '../../../../../../lib/server/http';
-import { publishToUser } from '../../../../../../lib/server/events';
+import { publishToUser, publishToCampus } from '../../../../../../lib/server/events';
 
 // POST /api/v1/offers/:id/accept — the deal moment. One serializable
 // transaction: offer -> ACCEPTED, sibling offers -> DECLINED, task -> ASSIGNED
@@ -93,5 +93,6 @@ export const POST = handler(async (_req, { params, session }) => {
     select: { providerId: true },
   });
   for (const s of siblings) publishToUser(s.providerId, { kind: 'task', taskId: offer.taskId });
+  publishToCampus(session.campusId, { kind: 'task', taskId: offer.taskId }); // gone from every Explore
   return ok({ accepted: true, taskId: offer.taskId });
 });
