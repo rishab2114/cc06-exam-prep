@@ -25,9 +25,25 @@ const STATUS_CHIP: Record<string, { label: string; cls: string }> = {
   IN_PROGRESS: { label: 'IN PROGRESS', cls: 'bg-blue-100 text-blue-700' },
 };
 
+// Turn-state chips for the "Your offers" dashboard.
+const OFFER_CHIP: Record<string, { label: string; cls: string }> = {
+  yourTurn: { label: 'YOUR MOVE', cls: 'bg-green-100 text-green-700' },
+  waiting: { label: 'WAITING', cls: 'bg-amber-100 text-amber-700' },
+  won: { label: 'YOU GOT IT', cls: 'bg-blue-100 text-blue-700' },
+  closed: { label: 'CLOSED', cls: 'bg-slate-100 text-slate-500' },
+};
+
 export default function AppHome() {
-  const { me, myTasks, cancelTask, unread } = useStore();
+  const { me, myTasks, myOffers, cancelTask, unread } = useStore();
   const firstName = me?.name.split(' ')[0] ?? 'there';
+
+  // Show live negotiations + deals in progress; hide old closed threads.
+  const activeOffers = myOffers.filter(
+    (o) =>
+      o.state === 'PENDING' ||
+      o.state === 'COUNTERED' ||
+      (o.won && (o.taskStatus === 'ASSIGNED' || o.taskStatus === 'IN_PROGRESS')),
+  );
 
   return (
     <div>
@@ -94,6 +110,40 @@ export default function AppHome() {
                 <p className="mt-1">Nothing active — post a task and offers roll in.</p>
               </div>
             )}
+
+            {/* Buddy side: every negotiation you're in, with whose move it is */}
+            {activeOffers.length > 0 && (
+              <div className="mt-6">
+                <p className="mb-2 text-xs font-semibold uppercase text-slate-500">Your offers</p>
+                <div className="grid gap-2 lg:grid-cols-2">
+                  {activeOffers.map((o) => {
+                    const chip = o.won
+                      ? OFFER_CHIP.won
+                      : o.yourTurn
+                        ? OFFER_CHIP.yourTurn
+                        : OFFER_CHIP.waiting;
+                    return (
+                      <Link key={o.id} href={`/app/task/${o.taskId}`} className="block rounded-xl border bg-white p-3">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{o.taskTitle}</span>
+                          <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs ${chip.cls}`}>{chip.label}</span>
+                        </div>
+                        <p className="mt-1 text-sm text-slate-500">
+                          Your number: {formatSgd(o.amountCents)} · round {o.round}
+                        </p>
+                        <p className="mt-1 text-sm text-blue-700">
+                          {o.won ? 'Deal on — get it done ›' : o.yourTurn ? 'They responded — act now ›' : 'Waiting for their reply ›'}
+                        </p>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <Link href="/app/history" className="mt-4 block text-sm font-medium text-blue-700">
+              🕘 Past tasks & reviews ›
+            </Link>
           </section>
 
           {/* Aside: quick-post + browse + sponsored */}

@@ -9,6 +9,7 @@ import { api, ApiClientError, type ApiTask, type ApiOffer } from '../../../../li
 import { TaskChat } from '../../../../components/TaskChat';
 import { RateCard } from '../../../../components/RateCard';
 import { ProblemActions } from '../../../../components/ProblemActions';
+import { EditTask } from '../../../../components/EditTask';
 
 // Customer view of one task: every offer thread, with REAL turn-taking
 // bargaining. Each buddy has a live number on the table; whoever moved last
@@ -110,6 +111,14 @@ export default function ApplicantsPage() {
 
       <div className="space-y-3 p-4">
         {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+
+        {!assigned && (
+          <EditTask
+            key={`${task.priceCents}-${task.hall}-${task.when}-${task.description ?? ''}`}
+            task={task}
+            onSaved={async () => { await Promise.all([load(), refresh()]); }}
+          />
+        )}
 
         {accepted && (
           <div className="rounded-xl border border-green-300 bg-white p-3">

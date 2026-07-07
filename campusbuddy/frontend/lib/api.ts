@@ -9,7 +9,20 @@ export interface ApiTask extends SharedTask {
   status: string;
   customerId: string;
   isMine: boolean;
+  isProvider: boolean;
   offerCount: number;
+}
+
+export interface MyOffer {
+  id: string;
+  taskId: string;
+  taskTitle: string;
+  taskStatus: string;
+  amountCents: number;
+  round: number;
+  state: string;
+  yourTurn: boolean;
+  won: boolean;
 }
 
 export interface ApiOffer {
@@ -148,7 +161,11 @@ export const api = {
   // --- tasks ---
   feed: () => call<{ tasks: ApiTask[] }>('/tasks'),
   myTasks: () => call<{ tasks: ApiTask[] }>('/tasks?mine=1'),
+  historyTasks: () => call<{ tasks: ApiTask[] }>('/tasks?scope=history'),
+  myOffers: () => call<{ offers: MyOffer[] }>('/offers/mine'),
   createTask: (input: CreateTaskInput) => call<{ task: ApiTask }>('/tasks', { method: 'POST', json: input }),
+  updateTask: (id: string, input: Partial<Pick<CreateTaskInput, 'description' | 'hall' | 'when' | 'priceCents'>>) =>
+    call<{ task: ApiTask }>(`/tasks/${id}`, { method: 'PATCH', json: input }),
   task: (id: string) => call<{ task: ApiTask }>(`/tasks/${id}`),
   cancelTask: (id: string) => call<{ cancelled: boolean }>(`/tasks/${id}`, { method: 'DELETE' }),
   completeTask: (id: string) => call<{ completed: boolean }>(`/tasks/${id}/complete`, { method: 'POST' }),

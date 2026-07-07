@@ -23,6 +23,7 @@ export interface Task {
   hall: string;
   when: string;
   customerName: string;
+  description?: string;
   // Real customer geo/gender/reputation don't exist until the profile +
   // reviews flows land — these are optional so the API never fabricates them.
   distanceKm?: number;

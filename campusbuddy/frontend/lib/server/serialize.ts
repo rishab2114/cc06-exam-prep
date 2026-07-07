@@ -47,6 +47,7 @@ export type ApiTask = SharedTask & {
   status: string;
   customerId: string;
   isMine: boolean;
+  isProvider: boolean;
   offerCount: number;
 };
 
@@ -64,6 +65,7 @@ export function taskToDto(
     hall: t.hall ?? 'On campus',
     when: t.whenText ?? 'Flexible',
     customerName: t.customer.fullName,
+    description: t.description ?? undefined,
     // distanceKm / customerGender / customerRating deliberately omitted — no geo,
     // no profile gender, and no customer reviews yet. We don't fake trust signals.
     tier: t.category.riskTier,
@@ -75,6 +77,7 @@ export function taskToDto(
     status: t.status,
     customerId: t.customerId,
     isMine: t.customerId === viewerId,
+    isProvider: t.providerId === viewerId,
     offerCount: t.offers?.length ?? 0,
   };
 }

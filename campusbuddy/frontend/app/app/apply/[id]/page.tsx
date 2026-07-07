@@ -107,6 +107,9 @@ export default function ApplyPage() {
           <p className="mt-1 text-sm text-slate-500">
             {task.hall} · {task.when} · {task.customerName}
           </p>
+          {task.description && task.description !== task.title && (
+            <p className="mt-2 rounded-lg bg-slate-50 px-2 py-1.5 text-sm text-slate-600">“{task.description}”</p>
+          )}
           <p className="mt-2 rounded-lg bg-green-50 px-2 py-1 text-sm text-green-800">
             You earn <b>{formatSgd(earnings)}</b>
           </p>

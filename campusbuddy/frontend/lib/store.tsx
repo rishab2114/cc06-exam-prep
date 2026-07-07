@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { api, ApiClientError, type ApiTask, type ApiNotification, type Me } from './api';
+import { api, ApiClientError, type ApiTask, type ApiNotification, type Me, type MyOffer } from './api';
 
 /**
  * App store, backed by the real API + realtime SSE. Mounted by the /app layout:
@@ -23,6 +23,7 @@ interface StoreShape {
   ready: boolean;
   feed: ApiTask[];
   myTasks: ApiTask[];
+  myOffers: MyOffer[];
   findTask: (id: string) => ApiTask | undefined;
   refresh: () => Promise<void>;
   cancelTask: (id: string) => Promise<void>;
@@ -44,20 +45,23 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const [feed, setFeed] = useState<ApiTask[]>([]);
   const [myTasks, setMyTasks] = useState<ApiTask[]>([]);
+  const [myOffers, setMyOffers] = useState<MyOffer[]>([]);
   const [notifications, setNotifications] = useState<ApiNotification[]>([]);
   const [unread, setUnread] = useState(0);
   const alive = useRef(true);
   const listeners = useRef(new Set<(ev: RealtimeEvent) => void>());
 
   const refresh = useCallback(async () => {
-    const [feedR, mineR, notifR] = await Promise.allSettled([
+    const [feedR, mineR, offersR, notifR] = await Promise.allSettled([
       api.feed(),
       api.myTasks(),
+      api.myOffers(),
       api.notifications(),
     ]);
     if (!alive.current) return;
     if (feedR.status === 'fulfilled') setFeed(feedR.value.tasks);
     if (mineR.status === 'fulfilled') setMyTasks(mineR.value.tasks);
+    if (offersR.status === 'fulfilled') setMyOffers(offersR.value.offers);
     if (notifR.status === 'fulfilled') {
       setNotifications(notifR.value.notifications);
       setUnread(notifR.value.unread);
@@ -188,7 +192,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <StoreContext.Provider
-      value={{ me, ready, feed, myTasks, findTask, refresh, cancelTask, notifications, unread, markAllRead, signOut, subscribe }}
+      value={{ me, ready, feed, myTasks, myOffers, findTask, refresh, cancelTask, notifications, unread, markAllRead, signOut, subscribe }}
     >
       {children}
     </StoreContext.Provider>

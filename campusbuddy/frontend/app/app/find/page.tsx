@@ -50,15 +50,29 @@ export default function FindPage() {
   const [contactlessOnly, setContactlessOnly] = useState(false);
   const [presentOnly, setPresentOnly] = useState(false);
   const [sort, setSort] = useState<SortKey>('recent');
+  const [query, setQuery] = useState('');
 
   const categories = useMemo(
     () => ['All', ...Array.from(new Set(feed.map((t) => t.category)))],
     [feed],
   );
 
+  const q = query.trim().toLowerCase();
   const tasks = useMemo(() => {
+    // Search matches what a student would type: title, details, module/topics,
+    // poster, and location. Client-side over the fetched feed (≤100 tasks) —
+    // instant as-you-type; server FTS takes over at real volume.
+    const matches = (t: (typeof feed)[number]) =>
+      !q ||
+      t.title.toLowerCase().includes(q) ||
+      (t.description ?? '').toLowerCase().includes(q) ||
+      (t.study ? `${t.study.module} ${t.study.topics.join(' ')}`.toLowerCase().includes(q) : false) ||
+      t.customerName.toLowerCase().includes(q) ||
+      t.hall.toLowerCase().includes(q) ||
+      t.category.toLowerCase().includes(q);
     const filtered = feed.filter(
       (t) =>
+        matches(t) &&
         (category === 'All' || t.category === category) &&
         (!verifiedOnly || t.requiresMatricVerification) &&
         (!contactlessOnly || t.contactless) &&
@@ -68,9 +82,10 @@ export default function FindPage() {
     if (sort === 'cheapest') return [...filtered].sort((a, b) => a.priceCents - b.priceCents);
     if (sort === 'priciest') return [...filtered].sort((a, b) => b.priceCents - a.priceCents);
     return filtered;
-  }, [feed, category, verifiedOnly, contactlessOnly, presentOnly, sort]);
+  }, [feed, q, category, verifiedOnly, contactlessOnly, presentOnly, sort]);
 
   function clearFilters() {
+    setQuery('');
     setCategory('All');
     setVerifiedOnly(false);
     setContactlessOnly(false);
@@ -97,6 +112,30 @@ export default function FindPage() {
           </select>
         </label>
       </header>
+
+      {/* Search — the fastest path to the right task */}
+      <div className="border-b bg-white px-4 py-2">
+        <div className="relative">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔎</span>
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search tasks — laundry, MH1810, parcel…"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm focus:border-blue-400 focus:bg-white focus:outline-none"
+            aria-label="Search tasks"
+          />
+          {query && (
+            <button
+              onClick={() => setQuery('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-1.5 text-slate-400 hover:text-slate-600"
+              aria-label="Clear search"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Mobile filters: horizontal chip scrollers */}
       <div className="space-y-2 border-b bg-white px-4 py-3 lg:hidden">
@@ -166,7 +205,7 @@ export default function FindPage() {
                 </label>
               </div>
             </div>
-            {(category !== 'All' || verifiedOnly || contactlessOnly || presentOnly) && (
+            {(q !== '' || category !== 'All' || verifiedOnly || contactlessOnly || presentOnly) && (
               <button onClick={clearFilters} className="text-sm font-medium text-blue-700">Clear all filters</button>
             )}
           </div>
@@ -184,7 +223,7 @@ export default function FindPage() {
 
         {tasks.length === 0 ? (
           <div className="rounded-xl border border-dashed bg-white p-8 text-center text-sm text-slate-500">
-            No tasks match these filters.
+            {q ? <>No tasks match “{query.trim()}”.</> : <>No tasks match these filters.</>}
             <button onClick={clearFilters} className="mt-2 block w-full font-medium text-blue-700">
               Clear filters
             </button>

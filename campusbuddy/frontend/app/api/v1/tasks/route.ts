@@ -10,14 +10,21 @@ import { publishToCampus } from '../../../../lib/server/events';
 export const GET = handler(async (req, { session }) => {
   const url = new URL(req.url);
   const mine = url.searchParams.get('mine') === '1';
+  const history = url.searchParams.get('scope') === 'history';
 
   const tasks = await db().task.findMany({
     where: {
       campusId: session.campusId,
-      deletedAt: null,
-      ...(mine
-        ? { customerId: session.sub, status: { in: ['OPEN', 'ASSIGNED', 'IN_PROGRESS'] } }
-        : { status: 'OPEN' }),
+      ...(history
+        ? {
+            // Past tasks I was part of, either side. Includes soft-deleted
+            // (cancelled) rows — history is exactly where those belong.
+            OR: [{ customerId: session.sub }, { providerId: session.sub }],
+            status: { in: ['COMPLETED', 'CANCELLED', 'DISPUTED'] },
+          }
+        : mine
+          ? { deletedAt: null, customerId: session.sub, status: { in: ['OPEN', 'ASSIGNED', 'IN_PROGRESS'] } }
+          : { deletedAt: null, status: 'OPEN' }),
     },
     include: { category: true, customer: true, offers: { select: { id: true } } },
     orderBy: { createdAt: 'desc' },

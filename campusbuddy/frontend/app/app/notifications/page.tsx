@@ -28,6 +28,7 @@ const TYPE_ICON: Record<string, string> = {
   'offer.withdrawn': '↩️',
   'offer.declined': '🙅',
   'report.filed': '🚩',
+  'task.updated': '✏️',
 };
 
 export default function NotificationsPage() {
