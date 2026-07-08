@@ -39,9 +39,11 @@ function VerifyForm() {
     setBusy(true);
     setError(null);
     try {
-      await api.verify(email, code, name.trim() || undefined);
+      const { isNewUser } = await api.verify(email, code, name.trim() || undefined);
       sessionStorage.removeItem('cb.devCode');
-      router.replace('/app');
+      // First-timers land on live inventory (proof the marketplace is active)
+      // instead of an empty personal dashboard; returning users go straight home.
+      router.replace(isNewUser ? '/app/find?welcome=1' : '/app');
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : 'Could not reach the server — try again.');
       setBusy(false);

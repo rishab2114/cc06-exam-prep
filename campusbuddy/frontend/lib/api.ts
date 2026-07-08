@@ -40,6 +40,17 @@ export interface ApiOffer {
   providerJobs: number;
 }
 
+export interface MessageThread {
+  taskId: string;
+  taskTitle: string;
+  taskStatus: string;
+  counterpartName: string;
+  lastMessage: string | null;
+  lastMessageAt: number;
+  lastMessageMine: boolean;
+  unread: number;
+}
+
 export interface ApiMessage {
   id: string;
   senderId: string;
@@ -140,7 +151,7 @@ export const api = {
       json: { email },
     }),
   verify: (email: string, code: string, name?: string) =>
-    call<{ user: { id: string; name: string; email: string; campus: string } }>('/auth/verify', {
+    call<{ user: { id: string; name: string; email: string; campus: string }; isNewUser: boolean }>('/auth/verify', {
       method: 'POST',
       json: { email, code, ...(name ? { name } : {}) },
     }),
@@ -162,6 +173,9 @@ export const api = {
   feed: () => call<{ tasks: ApiTask[] }>('/tasks'),
   myTasks: () => call<{ tasks: ApiTask[] }>('/tasks?mine=1'),
   historyTasks: () => call<{ tasks: ApiTask[] }>('/tasks?scope=history'),
+  savedTasks: () => call<{ tasks: ApiTask[] }>('/tasks/saved'),
+  saveTask: (id: string) => call<{ saved: boolean }>(`/tasks/${id}/save`, { method: 'POST' }),
+  unsaveTask: (id: string) => call<{ saved: boolean }>(`/tasks/${id}/save`, { method: 'DELETE' }),
   myOffers: () => call<{ offers: MyOffer[] }>('/offers/mine'),
   createTask: (input: CreateTaskInput) => call<{ task: ApiTask }>('/tasks', { method: 'POST', json: input }),
   updateTask: (id: string, input: Partial<Pick<CreateTaskInput, 'description' | 'hall' | 'when' | 'priceCents'>>) =>
@@ -199,6 +213,7 @@ export const api = {
     }),
 
   // --- chat (opens once assigned) ---
+  messageThreads: () => call<{ threads: MessageThread[]; totalUnread: number }>('/messages/threads'),
   messages: (taskId: string) => call<{ messages: ApiMessage[] }>(`/tasks/${taskId}/messages`),
   sendMessage: (taskId: string, body: string) =>
     call<{ message: ApiMessage }>(`/tasks/${taskId}/messages`, { method: 'POST', json: { body } }),

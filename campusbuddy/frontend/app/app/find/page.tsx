@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useMemo, useState } from 'react';
+import { WelcomeCard } from '../../../components/WelcomeCard';
 import { formatSgd } from '../../../lib/format';
 import { SponsoredCard } from '../../../components/Sponsored';
 import { adFor } from '../../../lib/ads';
@@ -43,8 +45,10 @@ function FilterChip({
   );
 }
 
-export default function FindPage() {
-  const { feed } = useStore();
+function FindPageInner() {
+  const params = useSearchParams();
+  const forceWelcome = params.get('welcome') === '1';
+  const { feed, savedIds, toggleSave } = useStore();
   const [category, setCategory] = useState('All');
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [contactlessOnly, setContactlessOnly] = useState(false);
@@ -135,6 +139,10 @@ export default function FindPage() {
             </button>
           )}
         </div>
+      </div>
+
+      <div className="px-4 pt-3 lg:px-4">
+        <WelcomeCard forceShow={forceWelcome} />
       </div>
 
       {/* Mobile filters: horizontal chip scrollers */}
@@ -231,8 +239,18 @@ export default function FindPage() {
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {tasks.map((t) => (
-              <div key={t.id} className="flex flex-col rounded-xl border bg-white p-3">
-                <div className="flex justify-between">
+              <div key={t.id} className="relative flex flex-col rounded-xl border bg-white p-3">
+                {!t.isMine && (
+                  <button
+                    onClick={() => void toggleSave(t.id)}
+                    aria-label={savedIds.has(t.id) ? 'Remove bookmark' : 'Save task'}
+                    aria-pressed={savedIds.has(t.id)}
+                    className={`absolute right-2 top-2 text-lg ${savedIds.has(t.id) ? 'text-amber-500' : 'text-slate-300 hover:text-slate-400'}`}
+                  >
+                    🔖
+                  </button>
+                )}
+                <div className="flex justify-between pr-6">
                   <span className="font-medium">{t.icon} {t.title}</span>
                   <span className="shrink-0 text-green-700">
                     {formatSgd(t.priceCents)}{t.study ? '/hr' : ''}
@@ -291,5 +309,13 @@ export default function FindPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function FindPage() {
+  return (
+    <Suspense>
+      <FindPageInner />
+    </Suspense>
   );
 }

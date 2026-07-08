@@ -24,6 +24,10 @@ interface StoreShape {
   feed: ApiTask[];
   myTasks: ApiTask[];
   myOffers: MyOffer[];
+  messageUnread: number;
+  savedTasks: ApiTask[];
+  savedIds: Set<string>;
+  toggleSave: (taskId: string) => Promise<void>;
   findTask: (id: string) => ApiTask | undefined;
   refresh: () => Promise<void>;
   cancelTask: (id: string) => Promise<void>;
@@ -46,22 +50,28 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [feed, setFeed] = useState<ApiTask[]>([]);
   const [myTasks, setMyTasks] = useState<ApiTask[]>([]);
   const [myOffers, setMyOffers] = useState<MyOffer[]>([]);
+  const [messageUnread, setMessageUnread] = useState(0);
+  const [savedTasks, setSavedTasks] = useState<ApiTask[]>([]);
   const [notifications, setNotifications] = useState<ApiNotification[]>([]);
   const [unread, setUnread] = useState(0);
   const alive = useRef(true);
   const listeners = useRef(new Set<(ev: RealtimeEvent) => void>());
 
   const refresh = useCallback(async () => {
-    const [feedR, mineR, offersR, notifR] = await Promise.allSettled([
+    const [feedR, mineR, offersR, threadsR, savedR, notifR] = await Promise.allSettled([
       api.feed(),
       api.myTasks(),
       api.myOffers(),
+      api.messageThreads(),
+      api.savedTasks(),
       api.notifications(),
     ]);
     if (!alive.current) return;
     if (feedR.status === 'fulfilled') setFeed(feedR.value.tasks);
     if (mineR.status === 'fulfilled') setMyTasks(mineR.value.tasks);
     if (offersR.status === 'fulfilled') setMyOffers(offersR.value.offers);
+    if (threadsR.status === 'fulfilled') setMessageUnread(threadsR.value.totalUnread);
+    if (savedR.status === 'fulfilled') setSavedTasks(savedR.value.tasks);
     if (notifR.status === 'fulfilled') {
       setNotifications(notifR.value.notifications);
       setUnread(notifR.value.unread);
@@ -153,6 +163,26 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [myTasks, feed],
   );
 
+  const toggleSave = useCallback(
+    async (taskId: string) => {
+      const already = savedTasks.some((t) => t.id === taskId);
+      const task = feed.find((t) => t.id === taskId) ?? myTasks.find((t) => t.id === taskId);
+      // Optimistic: flip locally first so the bookmark icon responds instantly.
+      setSavedTasks((prev) =>
+        already ? prev.filter((t) => t.id !== taskId) : task ? [task, ...prev] : prev,
+      );
+      try {
+        if (already) await api.unsaveTask(taskId);
+        else await api.saveTask(taskId);
+      } catch {
+        setSavedTasks((prev) =>
+          already ? (task ? [task, ...prev] : prev) : prev.filter((t) => t.id !== taskId),
+        );
+      }
+    },
+    [savedTasks, feed, myTasks],
+  );
+
   const cancelTask = useCallback(
     async (id: string) => {
       await api.cancelTask(id);
@@ -192,7 +222,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <StoreContext.Provider
-      value={{ me, ready, feed, myTasks, myOffers, findTask, refresh, cancelTask, notifications, unread, markAllRead, signOut, subscribe }}
+      value={{ me, ready, feed, myTasks, myOffers, messageUnread, savedTasks, savedIds: new Set(savedTasks.map((t) => t.id)), toggleSave, findTask, refresh, cancelTask, notifications, unread, markAllRead, signOut, subscribe }}
     >
       {children}
     </StoreContext.Provider>

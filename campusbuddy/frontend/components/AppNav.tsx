@@ -5,18 +5,25 @@ import { usePathname } from 'next/navigation';
 import { useStore } from '../lib/store';
 
 // Single source of truth for app navigation, rendered as a desktop sidebar and a
-// mobile bottom tab bar. Active route is highlighted and the Activity item
-// carries a live unread badge. Wallet stays out until real payments ship.
+// mobile bottom tab bar. Active route is highlighted; Activity and Chats each
+// carry a live unread badge. Wallet stays out until real payments ship.
 const NAV = [
   { href: '/app', icon: '🏠', label: 'Home' },
   { href: '/app/find', icon: '🔎', label: 'Explore' },
   { href: '/app/tasks/new', icon: '➕', label: 'Post' },
+  { href: '/app/messages', icon: '💬', label: 'Chats' },
   { href: '/app/notifications', icon: '🔔', label: 'Activity' },
   { href: '/app/profile', icon: '👤', label: 'Profile' },
 ];
 
 function isActive(pathname: string, href: string): boolean {
   return href === '/app' ? pathname === '/app' : pathname.startsWith(href);
+}
+
+function badgeCountFor(label: string, unread: number, messageUnread: number): number {
+  if (label === 'Activity') return unread;
+  if (label === 'Chats') return messageUnread;
+  return 0;
 }
 
 function Badge({ count }: { count: number }) {
@@ -30,28 +37,29 @@ function Badge({ count }: { count: number }) {
 
 export function AppNav({ variant }: { variant: 'sidebar' | 'tabs' }) {
   const pathname = usePathname();
-  const { me, unread } = useStore();
+  const { me, unread, messageUnread } = useStore();
 
   if (variant === 'tabs') {
     return (
-      <nav className="fixed inset-x-0 bottom-0 z-10 flex justify-around border-t bg-white py-2 text-center text-xs lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-10 grid grid-cols-6 border-t bg-white py-1.5 text-center text-[10px] lg:hidden">
         {NAV.map((n) => {
           const active = isActive(pathname, n.href);
+          const badge = badgeCountFor(n.label, unread, messageUnread);
           return (
             <Link
               key={n.href}
               href={n.href}
-              className={`relative px-3 ${active ? 'text-blue-700' : 'text-slate-500'}`}
+              className={`flex flex-col items-center justify-center gap-0.5 ${active ? 'text-blue-700' : 'text-slate-500'}`}
             >
-              <span className="relative inline-block">
+              <span className="relative text-base leading-none">
                 {n.icon}
-                {n.label === 'Activity' && unread > 0 && (
+                {badge > 0 && (
                   <span className="absolute -right-2 -top-1 rounded-full bg-red-500 px-1 text-[9px] font-bold leading-3 text-white">
-                    {unread > 9 ? '9+' : unread}
+                    {badge > 9 ? '9+' : badge}
                   </span>
                 )}
               </span>
-              <div className={active ? 'font-medium' : ''}>{n.label}</div>
+              <span className={active ? 'font-medium' : ''}>{n.label}</span>
             </Link>
           );
         })}
@@ -67,6 +75,7 @@ export function AppNav({ variant }: { variant: 'sidebar' | 'tabs' }) {
       <nav className="space-y-1">
         {NAV.map((n) => {
           const active = isActive(pathname, n.href);
+          const badge = badgeCountFor(n.label, unread, messageUnread);
           return (
             <Link
               key={n.href}
@@ -77,7 +86,7 @@ export function AppNav({ variant }: { variant: 'sidebar' | 'tabs' }) {
             >
               <span>{n.icon}</span>
               <span>{n.label}</span>
-              {n.label === 'Activity' && <Badge count={unread} />}
+              <Badge count={badge} />
             </Link>
           );
         })}

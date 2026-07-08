@@ -34,7 +34,7 @@ const OFFER_CHIP: Record<string, { label: string; cls: string }> = {
 };
 
 export default function AppHome() {
-  const { me, myTasks, myOffers, cancelTask, unread } = useStore();
+  const { me, myTasks, myOffers, savedTasks, cancelTask, unread } = useStore();
   const firstName = me?.name.split(' ')[0] ?? 'there';
 
   // Show live negotiations + deals in progress; hide old closed threads.
@@ -141,9 +141,14 @@ export default function AppHome() {
               </div>
             )}
 
-            <Link href="/app/history" className="mt-4 block text-sm font-medium text-blue-700">
-              🕘 Past tasks & reviews ›
-            </Link>
+            <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1">
+              <Link href="/app/history" className="text-sm font-medium text-blue-700">
+                🕘 Past tasks & reviews ›
+              </Link>
+              <Link href="/app/saved" className="text-sm font-medium text-blue-700">
+                🔖 Saved tasks{savedTasks.length > 0 ? ` (${savedTasks.length})` : ''} ›
+              </Link>
+            </div>
           </section>
 
           {/* Aside: quick-post + browse + sponsored */}

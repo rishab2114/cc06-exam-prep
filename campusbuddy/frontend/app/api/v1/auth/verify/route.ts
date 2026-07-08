@@ -33,6 +33,7 @@ export const POST = handler(
     const campusRow = await db().campus.findUnique({ where: { code: campus.code } });
     if (!campusRow) fail(500, 'CAMPUS_MISSING', 'Campus not provisioned — contact support');
 
+    const existed = await db().user.findUnique({ where: { email: cleaned }, select: { id: true } });
     const fallbackName = cleaned.split('@')[0].replace(/[._-]+/g, ' ').trim() || 'Student';
     const user = await db().user.upsert({
       where: { email: cleaned },
@@ -53,7 +54,10 @@ export const POST = handler(
       campusId: user.campusId,
       campusCode: campusRow.code,
     });
-    return ok({ user: { id: user.id, name: user.fullName, email: user.email, campus: campusRow.code } });
+    return ok({
+      user: { id: user.id, name: user.fullName, email: user.email, campus: campusRow.code },
+      isNewUser: !existed,
+    });
   },
   { auth: false },
 );
