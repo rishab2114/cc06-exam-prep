@@ -46,7 +46,7 @@ export default function HistoryPage() {
           return (
             <Link key={t.id} href={href} className="block rounded-xl border bg-white p-3">
               <div className="flex items-center justify-between">
-                <span className="font-medium">{t.icon} {t.title}</span>
+                <span className="font-medium"><span aria-hidden="true">{t.icon}</span> {t.title}</span>
                 <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs ${chip.cls}`}>{chip.label}</span>
               </div>
               <p className="mt-1 text-sm text-slate-500">

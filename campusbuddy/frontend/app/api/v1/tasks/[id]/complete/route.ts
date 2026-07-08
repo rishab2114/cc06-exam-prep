@@ -1,6 +1,7 @@
 import { db } from '../../../../../../lib/server/db';
 import { handler, ok, fail } from '../../../../../../lib/server/http';
-import { publishToUser, publishToCampus } from '../../../../../../lib/server/events';
+import { publishToCampus } from '../../../../../../lib/server/events';
+import { notifyUser } from '../../../../../../lib/server/notify';
 
 // POST /api/v1/tasks/:id/complete — the assigned buddy marks the job done.
 // Walks ASSIGNED -> IN_PROGRESS -> COMPLETED (both edges audited).
@@ -27,17 +28,14 @@ export const POST = handler(async (_req, { params, session }) => {
     await tx.taskEvent.create({
       data: { taskId: task.id, actorId: session.sub, fromStatus: 'IN_PROGRESS', toStatus: 'COMPLETED' },
     });
-    await tx.notification.create({
-      data: {
-        userId: task.customerId,
-        type: 'task.completed',
-        title: `“${task.title}” is done ✅`,
-        body: 'Rate your buddy when you have a sec.',
-        data: { taskId: task.id },
-      },
-    });
   });
-  publishToUser(task.customerId, { kind: 'task', taskId: task.id });
+  await notifyUser({
+    userId: task.customerId,
+    type: 'task.completed',
+    title: `“${task.title}” is done ✅`,
+    body: 'Rate your buddy when you have a sec.',
+    taskId: task.id,
+  });
   publishToCampus(session.campusId, { kind: 'task', taskId: task.id });
   return ok({ completed: true });
 });

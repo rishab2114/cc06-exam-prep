@@ -28,6 +28,8 @@ interface StoreShape {
   savedTasks: ApiTask[];
   savedIds: Set<string>;
   toggleSave: (taskId: string) => Promise<void>;
+  feedHasMore: boolean;
+  loadMoreFeed: () => Promise<void>;
   findTask: (id: string) => ApiTask | undefined;
   refresh: () => Promise<void>;
   cancelTask: (id: string) => Promise<void>;
@@ -52,6 +54,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [myOffers, setMyOffers] = useState<MyOffer[]>([]);
   const [messageUnread, setMessageUnread] = useState(0);
   const [savedTasks, setSavedTasks] = useState<ApiTask[]>([]);
+  const [feedCursor, setFeedCursor] = useState<string | null>(null);
+  const loadingMore = useRef(false);
   const [notifications, setNotifications] = useState<ApiNotification[]>([]);
   const [unread, setUnread] = useState(0);
   const alive = useRef(true);
@@ -67,7 +71,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       api.notifications(),
     ]);
     if (!alive.current) return;
-    if (feedR.status === 'fulfilled') setFeed(feedR.value.tasks);
+    if (feedR.status === 'fulfilled') {
+      setFeed(feedR.value.tasks);
+      setFeedCursor(feedR.value.nextCursor);
+    }
     if (mineR.status === 'fulfilled') setMyTasks(mineR.value.tasks);
     if (offersR.status === 'fulfilled') setMyOffers(offersR.value.offers);
     if (threadsR.status === 'fulfilled') setMessageUnread(threadsR.value.totalUnread);
@@ -89,6 +96,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const refreshMessageUnread = useCallback(async () => {
+    try {
+      const r = await api.messageThreads();
+      if (!alive.current) return;
+      setMessageUnread(r.totalUnread);
+    } catch {
+      /* fallback poll will recover */
+    }
+  }, []);
+
   const subscribe = useCallback((fn: (ev: RealtimeEvent) => void) => {
     listeners.current.add(fn);
     return () => listeners.current.delete(fn);
@@ -100,10 +117,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     let es: EventSource | undefined;
 
     const onEvent = (ev: RealtimeEvent) => {
-      // Bell always reflects the change; task-level events also refresh the
-      // feed/my-tasks so lists stay live. Then fan out to page subscribers.
+      // Bell/feed/my-tasks refresh on 'task'; the Chats badge refreshes on
+      // 'chat' too (a message alone doesn't change the feed, just unread
+      // counts). Then fan out to page subscribers.
       if (ev.kind === 'task') void refresh();
-      else void refreshNotifications();
+      else if (ev.kind === 'chat') {
+        void refreshNotifications();
+        void refreshMessageUnread();
+      } else void refreshNotifications();
       listeners.current.forEach((fn) => {
         try {
           fn(ev);
@@ -156,7 +177,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       if (timer) clearInterval(timer);
       es?.close();
     };
-  }, [router, refresh, refreshNotifications]);
+  }, [router, refresh, refreshNotifications, refreshMessageUnread]);
 
   const findTask = useCallback(
     (id: string) => myTasks.find((t) => t.id === id) ?? feed.find((t) => t.id === id),
@@ -182,6 +203,21 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     },
     [savedTasks, feed, myTasks],
   );
+
+  const loadMoreFeed = useCallback(async () => {
+    if (loadingMore.current || !feedCursor) return;
+    loadingMore.current = true;
+    try {
+      const r = await api.feed(feedCursor);
+      if (!alive.current) return;
+      setFeed((prev) => [...prev, ...r.tasks]);
+      setFeedCursor(r.nextCursor);
+    } catch {
+      /* leave the cursor as-is — user can tap "Load more" again */
+    } finally {
+      loadingMore.current = false;
+    }
+  }, [feedCursor]);
 
   const cancelTask = useCallback(
     async (id: string) => {
@@ -222,7 +258,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <StoreContext.Provider
-      value={{ me, ready, feed, myTasks, myOffers, messageUnread, savedTasks, savedIds: new Set(savedTasks.map((t) => t.id)), toggleSave, findTask, refresh, cancelTask, notifications, unread, markAllRead, signOut, subscribe }}
+      value={{ me, ready, feed, myTasks, myOffers, messageUnread, savedTasks, savedIds: new Set(savedTasks.map((t) => t.id)), toggleSave, feedHasMore: feedCursor !== null, loadMoreFeed, findTask, refresh, cancelTask, notifications, unread, markAllRead, signOut, subscribe }}
     >
       {children}
     </StoreContext.Provider>

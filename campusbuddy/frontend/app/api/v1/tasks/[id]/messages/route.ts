@@ -2,6 +2,8 @@ import { z } from 'zod';
 import { db } from '../../../../../../lib/server/db';
 import { handler, ok, fail, parseBody } from '../../../../../../lib/server/http';
 import { publishToUser } from '../../../../../../lib/server/events';
+import { rateLimit } from '../../../../../../lib/server/rateLimit';
+import { notifyUser } from '../../../../../../lib/server/notify';
 
 // Task chat: customer ↔ assigned buddy, opens once the deal is made. Before
 // that, offer messages carry the pre-deal context. Campus-scoped like
@@ -50,6 +52,7 @@ const Body = z.object({ body: z.string().trim().min(1).max(1000) });
 // notification per task, so rapid-fire messages don't flood their bell.
 export const POST = handler(async (req, { params, session }) => {
   const { body } = await parseBody(req, Body);
+  rateLimit(`message:create:${session.sub}`, 60, 60_000);
   const task = await chatTask(params.id, session.campusId, session.sub);
 
   const message = await db().message.create({
@@ -66,13 +69,14 @@ export const POST = handler(async (req, { params, session }) => {
     },
   });
   if (!alreadyPinged) {
-    await db().notification.create({
-      data: {
-        userId: counterparty,
-        type: 'message.new',
-        title: `${session.name} messaged you about “${task.title}”`,
-        data: { taskId: task.id },
-      },
+    // notifyUser also fires web push — exactly what you want for a first
+    // unread message; the chat-kind publish below covers live re-renders for
+    // every message after that, pinged or not.
+    await notifyUser({
+      userId: counterparty,
+      type: 'message.new',
+      title: `${session.name} messaged you about “${task.title}”`,
+      taskId: task.id,
     });
   }
   publishToUser(counterparty, { kind: 'chat', taskId: task.id });

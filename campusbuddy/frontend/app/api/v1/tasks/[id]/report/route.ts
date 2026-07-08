@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { db } from '../../../../../../lib/server/db';
 import { handler, ok, fail, parseBody } from '../../../../../../lib/server/http';
-import { publishToUser } from '../../../../../../lib/server/events';
+import { rateLimit } from '../../../../../../lib/server/rateLimit';
+import { notifyUser } from '../../../../../../lib/server/notify';
 
 // POST /api/v1/tasks/:id/report — either party flags a problem on a task they're
 // involved in (no-show, felt unsafe, work not as agreed, payment issue). Raises
@@ -16,6 +17,7 @@ const Body = z.object({
 
 export const POST = handler(async (req, { params, session }) => {
   const { reason, details } = await parseBody(req, Body);
+  rateLimit(`report:create:${session.sub}`, 5, 60_000);
   const task = await db().task.findFirst({
     where: { id: params.id, campusId: session.campusId },
   });
@@ -40,16 +42,13 @@ export const POST = handler(async (req, { params, session }) => {
         data: { taskId: task.id, actorId: session.sub, fromStatus: task.status, toStatus: 'DISPUTED', meta: { reason } },
       });
     }
-    await tx.notification.create({
-      data: {
-        userId: session.sub,
-        type: 'report.filed',
-        title: `Report received on “${task.title}”`,
-        body: 'Thanks — our team will review this and follow up. Contact hello@campusbuddy.sg for anything urgent.',
-        data: { taskId: task.id },
-      },
-    });
   });
-  publishToUser(session.sub, { kind: 'task', taskId: task.id });
+  await notifyUser({
+    userId: session.sub,
+    type: 'report.filed',
+    title: `Report received on “${task.title}”`,
+    body: 'Thanks — our team will review this and follow up. Contact hello@campusbuddy.sg for anything urgent.',
+    taskId: task.id,
+  });
   return ok({ reported: true });
 });

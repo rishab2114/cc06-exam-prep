@@ -2,7 +2,8 @@ import { z } from 'zod';
 import { db } from '../../../../../lib/server/db';
 import { handler, ok, fail, parseBody } from '../../../../../lib/server/http';
 import { taskToDto } from '../../../../../lib/server/serialize';
-import { publishToUser, publishToCampus } from '../../../../../lib/server/events';
+import { publishToCampus } from '../../../../../lib/server/events';
+import { notifyUser } from '../../../../../lib/server/notify';
 
 // GET /api/v1/tasks/:id — campus-scoped (you can never fetch another campus's task).
 export const GET = handler(async (_req, { params, session }) => {
@@ -58,18 +59,17 @@ export const PATCH = handler(async (req, { params, session }) => {
     where: { taskId: task.id, state: { in: ['PENDING', 'COUNTERED'] } },
     select: { providerId: true },
   });
-  if (openOffers.length > 0) {
-    await db().notification.createMany({
-      data: openOffers.map((o) => ({
+  await Promise.all(
+    openOffers.map((o) =>
+      notifyUser({
         userId: o.providerId,
         type: 'task.updated',
         title: `“${updated.title}” was updated by ${session.name}`,
         body: 'Check the latest details before you continue.',
-        data: { taskId: task.id },
-      })),
-    });
-    for (const o of openOffers) publishToUser(o.providerId, { kind: 'task', taskId: task.id });
-  }
+        taskId: task.id,
+      }),
+    ),
+  );
   publishToCampus(session.campusId, { kind: 'task', taskId: task.id });
   return ok({ task: taskToDto(updated, session.sub) });
 });
@@ -100,18 +100,17 @@ export const DELETE = handler(async (_req, { params, session }) => {
     await tx.taskEvent.create({
       data: { taskId: task.id, actorId: session.sub, fromStatus: 'OPEN', toStatus: 'CANCELLED' },
     });
-    if (openOffers.length > 0) {
-      await tx.notification.createMany({
-        data: openOffers.map((o) => ({
-          userId: o.providerId,
-          type: 'task.cancelled',
-          title: `“${task.title}” was cancelled by the poster`,
-          data: { taskId: task.id },
-        })),
-      });
-    }
   });
-  for (const o of openOffers) publishToUser(o.providerId, { kind: 'task', taskId: task.id });
+  await Promise.all(
+    openOffers.map((o) =>
+      notifyUser({
+        userId: o.providerId,
+        type: 'task.cancelled',
+        title: `“${task.title}” was cancelled by the poster`,
+        taskId: task.id,
+      }),
+    ),
+  );
   publishToCampus(session.campusId, { kind: 'task', taskId: task.id });
   return ok({ cancelled: true });
 });

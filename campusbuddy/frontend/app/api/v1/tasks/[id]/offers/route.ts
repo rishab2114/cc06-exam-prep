@@ -2,7 +2,8 @@ import { z } from 'zod';
 import { db } from '../../../../../../lib/server/db';
 import { handler, ok, fail, parseBody } from '../../../../../../lib/server/http';
 import { offerToDto, providerStatsFor } from '../../../../../../lib/server/serialize';
-import { publishToUser } from '../../../../../../lib/server/events';
+import { rateLimit } from '../../../../../../lib/server/rateLimit';
+import { notifyUser } from '../../../../../../lib/server/notify';
 
 // GET — the task owner sees every offer; a provider sees only their own thread.
 export const GET = handler(async (_req, { params, session }) => {
@@ -34,6 +35,7 @@ const Body = z.object({
 // by the DB unique). Their quote becomes the live number on the table.
 export const POST = handler(async (req, { params, session }) => {
   const { amountCents, message } = await parseBody(req, Body);
+  rateLimit(`offer:create:${session.sub}`, 15, 60_000);
   const task = await db().task.findFirst({
     where: { id: params.id, campusId: session.campusId, deletedAt: null },
     include: { customer: true },
@@ -60,15 +62,13 @@ export const POST = handler(async (req, { params, session }) => {
         include: { provider: true },
       });
 
-  await db().notification.create({
-    data: {
-      userId: task.customerId,
-      type: 'offer.new',
-      title: `${session.name} offered on “${task.title}”`,
-      body: `They quoted S$${(amountCents / 100).toFixed(2)} — accept or bargain.`,
-      data: { taskId: task.id, offerId: offer.id },
-    },
+  await notifyUser({
+    userId: task.customerId,
+    type: 'offer.new',
+    title: `${session.name} offered on “${task.title}”`,
+    body: `They quoted S$${(amountCents / 100).toFixed(2)} — accept or bargain.`,
+    taskId: task.id,
+    offerId: offer.id,
   });
-  publishToUser(task.customerId, { kind: 'task', taskId: task.id });
   return ok({ offer: offerToDto(offer, session.sub, task.customerId) }, 201);
 });

@@ -99,7 +99,7 @@ export default function ApplicantsPage() {
       <header className="border-b bg-white px-4 py-3">
         <span className="font-semibold">
           <Link href="/app" className="text-slate-500">‹ </Link>
-          {task.icon} {task.title}
+          <span aria-hidden="true">{task.icon}</span> {task.title}
         </span>
         <p className="mt-1 text-sm text-slate-500">
           You listed {formatSgd(task.priceCents)}{task.study ? '/hr' : ''} ·{' '}

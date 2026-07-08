@@ -101,7 +101,7 @@ export default function ApplyPage() {
         {/* Task summary */}
         <div className="rounded-xl border bg-white p-3">
           <div className="flex justify-between">
-            <span className="font-medium">{task.icon} {task.title}</span>
+            <span className="font-medium"><span aria-hidden="true">{task.icon}</span> {task.title}</span>
             <span className="text-green-700">{formatSgd(task.priceCents)}{task.study ? '/hr' : ''}</span>
           </div>
           <p className="mt-1 text-sm text-slate-500">

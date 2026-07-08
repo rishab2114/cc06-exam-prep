@@ -3,14 +3,22 @@ import { db } from '../../../../lib/server/db';
 import { handler, ok, fail, parseBody } from '../../../../lib/server/http';
 import { taskToDto, FORM_CATEGORY_TO_SLUG } from '../../../../lib/server/serialize';
 import { publishToCampus } from '../../../../lib/server/events';
+import { rateLimit } from '../../../../lib/server/rateLimit';
 
-// GET /api/v1/tasks — campus-scoped feed. ?mine=1 for the caller's own posts.
-// Pilot scale: fetch the campus's open tasks (≤100) and let the client filter;
-// server-side filters/cursors land with real volume.
+const MAX_PAGE = 50;
+const DEFAULT_PAGE = 24;
+
+// GET /api/v1/tasks — campus-scoped feed. ?mine=1 for the caller's own posts,
+// ?scope=history for past tasks either side. The default (open) feed supports
+// cursor pagination — ?cursor=<taskId>&limit=<n> — since it's the one that
+// grows unbounded with real campus volume; mine/history stay single-page
+// (they're inherently bounded to what one student is involved in).
 export const GET = handler(async (req, { session }) => {
   const url = new URL(req.url);
   const mine = url.searchParams.get('mine') === '1';
   const history = url.searchParams.get('scope') === 'history';
+  const cursor = url.searchParams.get('cursor');
+  const limit = Math.min(MAX_PAGE, Math.max(1, Number(url.searchParams.get('limit')) || DEFAULT_PAGE));
 
   const tasks = await db().task.findMany({
     where: {
@@ -28,9 +36,19 @@ export const GET = handler(async (req, { session }) => {
     },
     include: { category: true, customer: true, offers: { select: { id: true } } },
     orderBy: { createdAt: 'desc' },
-    take: 100,
+    take: history || mine ? 100 : limit + 1,
+    ...(cursor && !history && !mine ? { cursor: { id: cursor }, skip: 1 } : {}),
   });
-  return ok({ tasks: tasks.map((t) => taskToDto(t, session.sub)) });
+
+  if (history || mine) {
+    return ok({ tasks: tasks.map((t) => taskToDto(t, session.sub)), nextCursor: null });
+  }
+  const hasMore = tasks.length > limit;
+  const page = hasMore ? tasks.slice(0, limit) : tasks;
+  return ok({
+    tasks: page.map((t) => taskToDto(t, session.sub)),
+    nextCursor: hasMore ? page[page.length - 1].id : null,
+  });
 });
 
 const CreateBody = z.object({
@@ -55,6 +73,7 @@ const CreateBody = z.object({
 // POST /api/v1/tasks — free to post; task goes live on the caller's campus.
 export const POST = handler(async (req, { session }) => {
   const body = await parseBody(req, CreateBody);
+  rateLimit(`task:create:${session.sub}`, 8, 60_000);
   const slug = FORM_CATEGORY_TO_SLUG[body.category];
   const category = await db().serviceCategory.findUnique({ where: { slug } });
   if (!category || !category.isActive) fail(400, 'BAD_CATEGORY', 'That service is not available');

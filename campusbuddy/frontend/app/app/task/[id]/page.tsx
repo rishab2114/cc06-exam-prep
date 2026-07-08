@@ -130,7 +130,7 @@ export default function ActiveTaskPage() {
         <div className="flex items-center justify-between">
           <span className="font-semibold">
             <Link href="/app/find" className="text-slate-500">‹ </Link>
-            {task.icon} {task.title}
+            <span aria-hidden="true">{task.icon}</span> {task.title}
           </span>
           <span className={`rounded-full px-2 py-0.5 text-xs ${chip.cls}`}>{chip.label}</span>
         </div>

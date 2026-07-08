@@ -1,7 +1,7 @@
 import { OfferState, OfferActor, canAct, assertOfferTransition } from '@campusbuddy/shared';
 import { db } from '../../../../../../lib/server/db';
 import { handler, ok, fail } from '../../../../../../lib/server/http';
-import { publishToUser } from '../../../../../../lib/server/events';
+import { notifyUser } from '../../../../../../lib/server/notify';
 
 // POST /api/v1/offers/:id/withdraw — the provider pulls their own offer out of a
 // live negotiation (before it's accepted). Terminal: PENDING/COUNTERED → WITHDRAWN.
@@ -18,14 +18,11 @@ export const POST = handler(async (_req, { params, session }) => {
   assertOfferTransition(offer.state as OfferState, OfferState.WITHDRAWN);
 
   await db().offer.update({ where: { id: offer.id }, data: { state: 'WITHDRAWN' } });
-  await db().notification.create({
-    data: {
-      userId: offer.task.customerId,
-      type: 'offer.withdrawn',
-      title: `${session.name} withdrew their offer on “${offer.task.title}”`,
-      data: { taskId: offer.taskId },
-    },
+  await notifyUser({
+    userId: offer.task.customerId,
+    type: 'offer.withdrawn',
+    title: `${session.name} withdrew their offer on “${offer.task.title}”`,
+    taskId: offer.taskId,
   });
-  publishToUser(offer.task.customerId, { kind: 'task', taskId: offer.taskId });
   return ok({ withdrawn: true });
 });

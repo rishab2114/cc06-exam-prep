@@ -48,7 +48,18 @@ function FilterChip({
 function FindPageInner() {
   const params = useSearchParams();
   const forceWelcome = params.get('welcome') === '1';
-  const { feed, savedIds, toggleSave } = useStore();
+  const { feed, savedIds, toggleSave, feedHasMore, loadMoreFeed } = useStore();
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  async function handleLoadMore() {
+    if (loadingMore) return;
+    setLoadingMore(true);
+    try {
+      await loadMoreFeed();
+    } finally {
+      setLoadingMore(false);
+    }
+  }
   const [category, setCategory] = useState('All');
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [contactlessOnly, setContactlessOnly] = useState(false);
@@ -251,7 +262,7 @@ function FindPageInner() {
                   </button>
                 )}
                 <div className="flex justify-between pr-6">
-                  <span className="font-medium">{t.icon} {t.title}</span>
+                  <span className="font-medium"><span aria-hidden="true">{t.icon}</span> {t.title}</span>
                   <span className="shrink-0 text-green-700">
                     {formatSgd(t.priceCents)}{t.study ? '/hr' : ''}
                   </span>
@@ -305,6 +316,18 @@ function FindPageInner() {
               </div>
             ))}
           </div>
+        )}
+
+        {/* Search/filters apply only to what's loaded so far; load more before
+            expecting a search to cover the whole campus feed. */}
+        {feedHasMore && !q && category === 'All' && (
+          <button
+            onClick={() => void handleLoadMore()}
+            disabled={loadingMore}
+            className="block w-full rounded-xl border border-slate-200 bg-white py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60"
+          >
+            {loadingMore ? 'Loading…' : 'Load more tasks'}
+          </button>
         )}
         </div>
       </div>

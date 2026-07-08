@@ -3,16 +3,72 @@
 import { useEffect, useState } from 'react';
 import { useStore } from '../../../lib/store';
 import { api } from '../../../lib/api';
+import { disablePush, enablePush, getExistingSubscription, pushSupported } from '../../../lib/push';
 
 // Profile — the signed-in user. Ratings, job counts, and services offered
 // arrive with the reviews + provider-profile work; identity and verification
 // state are real today.
 const SETTINGS = [
   { label: 'Edit profile', icon: '✏️', body: 'Change your name, hall, and services offered. Coming soon.' },
-  { label: 'Notifications', icon: '🔔', body: 'Choose push/email alerts for offers, deals, and payouts. Coming soon.' },
   { label: 'Safety & SOS', icon: '🛟', body: 'In an emergency, call Campus Security or 999. In-app SOS + live-location share is coming soon.' },
   { label: 'Help & support', icon: '❓', body: 'Reach us at hello@campusbuddy.sg — we reply within a day.' },
 ];
+
+function PushToggle() {
+  const [supported, setSupported] = useState(false);
+  const [enabled, setEnabled] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSupported(pushSupported());
+    getExistingSubscription().then((sub) => setEnabled(!!sub));
+  }, []);
+
+  async function toggle() {
+    if (busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      if (enabled) {
+        await disablePush();
+        setEnabled(false);
+      } else {
+        await enablePush();
+        setEnabled(true);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not update push notifications');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="px-4 py-3">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium">🔔 Push notifications</span>
+        {supported ? (
+          <button
+            onClick={() => void toggle()}
+            disabled={busy}
+            className={`rounded-full px-3 py-1 text-xs font-medium disabled:opacity-60 ${
+              enabled ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
+            }`}
+          >
+            {busy ? '…' : enabled ? 'On — tap to disable' : 'Off — tap to enable'}
+          </button>
+        ) : (
+          <span className="text-xs text-slate-400">Not supported here</span>
+        )}
+      </div>
+      <p className="mt-1 text-xs text-slate-500">
+        Get an alert on this device the moment someone offers, counters, messages, or accepts.
+      </p>
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+    </div>
+  );
+}
 
 export default function ProfilePage() {
   const { me, myTasks, signOut } = useStore();
@@ -85,6 +141,7 @@ export default function ProfilePage() {
         <section>
           <p className="mb-2 text-xs font-semibold uppercase text-slate-500">Settings</p>
           <div className="divide-y rounded-xl border bg-white">
+            <PushToggle />
             {SETTINGS.map((s) => (
               <details key={s.label} className="group px-4 py-3">
                 <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium">

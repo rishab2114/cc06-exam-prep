@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { db } from '../../../../../../lib/server/db';
 import { handler, ok, fail, parseBody } from '../../../../../../lib/server/http';
+import { rateLimit } from '../../../../../../lib/server/rateLimit';
+import { notifyUser } from '../../../../../../lib/server/notify';
 
 // Two-sided reviews on a completed task: the poster rates the buddy, the buddy
 // rates the poster. One review per side (DB unique). Published immediately for
@@ -39,6 +41,7 @@ const Body = z.object({
 
 export const POST = handler(async (req, { params, session }) => {
   const { stars, comment } = await parseBody(req, Body);
+  rateLimit(`review:create:${session.sub}`, 20, 60_000);
   const task = await db().task.findFirst({
     where: { id: params.id, campusId: session.campusId },
   });
@@ -64,14 +67,12 @@ export const POST = handler(async (req, { params, session }) => {
       isPublished: true,
     },
   });
-  await db().notification.create({
-    data: {
-      userId: rateeId,
-      type: 'review.new',
-      title: `${session.name} rated you ${'⭐'.repeat(stars)} on “${task.title}”`,
-      ...(comment ? { body: `“${comment}”` } : {}),
-      data: { taskId: task.id },
-    },
+  await notifyUser({
+    userId: rateeId,
+    type: 'review.new',
+    title: `${session.name} rated you ${'⭐'.repeat(stars)} on “${task.title}”`,
+    ...(comment ? { body: `“${comment}”` } : {}),
+    taskId: task.id,
   });
   return ok({ review: { id: review.id, stars: review.stars, comment: review.comment } }, 201);
 });

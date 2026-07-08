@@ -3,6 +3,7 @@ import { OfferState, OfferActor, canAct } from '@campusbuddy/shared';
 import { db } from '../../../../../../lib/server/db';
 import { handler, ok, fail } from '../../../../../../lib/server/http';
 import { publishToUser, publishToCampus } from '../../../../../../lib/server/events';
+import { notifyUser } from '../../../../../../lib/server/notify';
 
 // POST /api/v1/offers/:id/accept — the deal moment. One serializable
 // transaction: offer -> ACCEPTED, sibling offers -> DECLINED, task -> ASSIGNED
@@ -58,23 +59,6 @@ export const POST = handler(async (_req, { params, session }) => {
             meta: { offerId: fresh.id, amountCents: fresh.amountCents },
           },
         });
-        const price = `S$${(fresh.amountCents / 100).toFixed(2)}`;
-        await tx.notification.createMany({
-          data: [
-            {
-              userId: fresh.providerId,
-              type: 'offer.accepted',
-              title: `Deal! You got “${fresh.task.title}” at ${price} 🤝`,
-              data: { taskId: fresh.taskId },
-            },
-            {
-              userId: fresh.task.customerId,
-              type: 'task.assigned',
-              title: `“${fresh.task.title}” is assigned at ${price}`,
-              data: { taskId: fresh.taskId },
-            },
-          ],
-        });
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
     );
@@ -85,9 +69,20 @@ export const POST = handler(async (_req, { params, session }) => {
     }
     throw e;
   }
-  // Tell both sides + every out-bid buddy (their sibling offer just closed).
-  publishToUser(offer.providerId, { kind: 'task', taskId: offer.taskId });
-  publishToUser(offer.task.customerId, { kind: 'task', taskId: offer.taskId });
+  // Tell both sides (with push) + every out-bid buddy (their sibling offer just closed).
+  const price = `S$${(offer.amountCents / 100).toFixed(2)}`;
+  await notifyUser({
+    userId: offer.providerId,
+    type: 'offer.accepted',
+    title: `Deal! You got “${offer.task.title}” at ${price} 🤝`,
+    taskId: offer.taskId,
+  });
+  await notifyUser({
+    userId: offer.task.customerId,
+    type: 'task.assigned',
+    title: `“${offer.task.title}” is assigned at ${price}`,
+    taskId: offer.taskId,
+  });
   const siblings = await db().offer.findMany({
     where: { taskId: offer.taskId, id: { not: offer.id } },
     select: { providerId: true },

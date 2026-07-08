@@ -3,7 +3,8 @@ import { OfferState, OfferActor, canAct, assertOfferTransition } from '@campusbu
 import { db } from '../../../../../../lib/server/db';
 import { handler, ok, fail, parseBody } from '../../../../../../lib/server/http';
 import { offerToDto } from '../../../../../../lib/server/serialize';
-import { publishToUser } from '../../../../../../lib/server/events';
+import { rateLimit } from '../../../../../../lib/server/rateLimit';
+import { notifyUser } from '../../../../../../lib/server/notify';
 
 const Body = z.object({ amountCents: z.number().int().min(1).max(99900) });
 
@@ -11,6 +12,7 @@ const Body = z.object({ amountCents: z.number().int().min(1).max(99900) });
 // did NOT move last may counter (enforced by the shared state machine).
 export const POST = handler(async (req, { params, session }) => {
   const { amountCents } = await parseBody(req, Body);
+  rateLimit(`offer:counter:${session.sub}`, 20, 60_000);
   const offer = await db().offer.findUnique({
     where: { id: params.id },
     include: { task: true, provider: true },
@@ -36,15 +38,13 @@ export const POST = handler(async (req, { params, session }) => {
   });
 
   const counterparty = side === OfferActor.CUSTOMER ? offer.providerId : offer.task.customerId;
-  await db().notification.create({
-    data: {
-      userId: counterparty,
-      type: 'offer.countered',
-      title: `${session.name} countered at S$${(amountCents / 100).toFixed(2)}`,
-      body: `On “${offer.task.title}” — your move.`,
-      data: { taskId: offer.taskId, offerId: offer.id },
-    },
+  await notifyUser({
+    userId: counterparty,
+    type: 'offer.countered',
+    title: `${session.name} countered at S$${(amountCents / 100).toFixed(2)}`,
+    body: `On “${offer.task.title}” — your move.`,
+    taskId: offer.taskId,
+    offerId: offer.id,
   });
-  publishToUser(counterparty, { kind: 'task', taskId: offer.taskId });
   return ok({ offer: offerToDto(updated, session.sub, offer.task.customerId) });
 });

@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { db } from '../../../../../../lib/server/db';
 import { handler, ok, fail, parseBody } from '../../../../../../lib/server/http';
-import { publishToUser, publishToCampus } from '../../../../../../lib/server/events';
+import { publishToCampus } from '../../../../../../lib/server/events';
+import { notifyUser } from '../../../../../../lib/server/notify';
 
 // POST /api/v1/tasks/:id/cancel-assignment — either the poster or the assigned
 // buddy calls off a deal that's already been struck (change of plans, no-show,
@@ -38,17 +39,14 @@ export const POST = handler(async (req, { params, session }) => {
         meta: reason ? { reason } : undefined,
       },
     });
-    await tx.notification.create({
-      data: {
-        userId: other,
-        type: 'task.cancelled',
-        title: `“${task.title}” was cancelled by ${who}`,
-        body: reason ? `Reason: ${reason}` : undefined,
-        data: { taskId: task.id },
-      },
-    });
   });
-  publishToUser(other, { kind: 'task', taskId: task.id });
+  await notifyUser({
+    userId: other,
+    type: 'task.cancelled',
+    title: `“${task.title}” was cancelled by ${who}`,
+    body: reason ? `Reason: ${reason}` : undefined,
+    taskId: task.id,
+  });
   publishToCampus(session.campusId, { kind: 'task', taskId: task.id });
   return ok({ cancelled: true });
 });

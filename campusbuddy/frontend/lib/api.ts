@@ -170,7 +170,8 @@ export const api = {
     }),
 
   // --- tasks ---
-  feed: () => call<{ tasks: ApiTask[] }>('/tasks'),
+  feed: (cursor?: string) =>
+    call<{ tasks: ApiTask[]; nextCursor: string | null }>(`/tasks${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`),
   myTasks: () => call<{ tasks: ApiTask[] }>('/tasks?mine=1'),
   historyTasks: () => call<{ tasks: ApiTask[] }>('/tasks?scope=history'),
   savedTasks: () => call<{ tasks: ApiTask[] }>('/tasks/saved'),
@@ -226,6 +227,12 @@ export const api = {
       method: 'POST',
       json: { stars, ...(comment?.trim() ? { comment: comment.trim() } : {}) },
     }),
+
+  // --- web push ---
+  pushSubscribe: (sub: { endpoint: string; keys: { p256dh: string; auth: string } }) =>
+    call<{ subscribed: boolean }>('/push/subscribe', { method: 'POST', json: sub }),
+  pushUnsubscribe: (endpoint: string) =>
+    call<{ subscribed: boolean }>('/push/subscribe', { method: 'DELETE', json: { endpoint } }),
 
   // --- notifications ---
   notifications: () => call<{ notifications: ApiNotification[]; unread: number }>('/notifications'),

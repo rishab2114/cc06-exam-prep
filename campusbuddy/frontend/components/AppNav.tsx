@@ -2,18 +2,22 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Home, Search, PlusCircle, MessageCircle, Bell, User, type LucideIcon } from 'lucide-react';
 import { useStore } from '../lib/store';
 
 // Single source of truth for app navigation, rendered as a desktop sidebar and a
-// mobile bottom tab bar. Active route is highlighted; Activity and Chats each
-// carry a live unread badge. Wallet stays out until real payments ship.
-const NAV = [
-  { href: '/app', icon: '🏠', label: 'Home' },
-  { href: '/app/find', icon: '🔎', label: 'Explore' },
-  { href: '/app/tasks/new', icon: '➕', label: 'Post' },
-  { href: '/app/messages', icon: '💬', label: 'Chats' },
-  { href: '/app/notifications', icon: '🔔', label: 'Activity' },
-  { href: '/app/profile', icon: '👤', label: 'Profile' },
+// mobile bottom tab bar. Real icons (not emoji) here: this is chrome a screen
+// reader announces on every page, so it gets a proper accessible name instead
+// of a glyph like "broom" or "envelope". Active route is highlighted; Activity
+// and Chats each carry a live unread badge. Wallet stays out until real
+// payments ship.
+const NAV: { href: string; icon: LucideIcon; label: string }[] = [
+  { href: '/app', icon: Home, label: 'Home' },
+  { href: '/app/find', icon: Search, label: 'Explore' },
+  { href: '/app/tasks/new', icon: PlusCircle, label: 'Post' },
+  { href: '/app/messages', icon: MessageCircle, label: 'Chats' },
+  { href: '/app/notifications', icon: Bell, label: 'Activity' },
+  { href: '/app/profile', icon: User, label: 'Profile' },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -45,14 +49,15 @@ export function AppNav({ variant }: { variant: 'sidebar' | 'tabs' }) {
         {NAV.map((n) => {
           const active = isActive(pathname, n.href);
           const badge = badgeCountFor(n.label, unread, messageUnread);
+          const Icon = n.icon;
           return (
             <Link
               key={n.href}
               href={n.href}
               className={`flex flex-col items-center justify-center gap-0.5 ${active ? 'text-blue-700' : 'text-slate-500'}`}
             >
-              <span className="relative text-base leading-none">
-                {n.icon}
+              <span className="relative">
+                <Icon size={20} strokeWidth={active ? 2.5 : 2} aria-hidden="true" />
                 {badge > 0 && (
                   <span className="absolute -right-2 -top-1 rounded-full bg-red-500 px-1 text-[9px] font-bold leading-3 text-white">
                     {badge > 9 ? '9+' : badge}
@@ -76,6 +81,7 @@ export function AppNav({ variant }: { variant: 'sidebar' | 'tabs' }) {
         {NAV.map((n) => {
           const active = isActive(pathname, n.href);
           const badge = badgeCountFor(n.label, unread, messageUnread);
+          const Icon = n.icon;
           return (
             <Link
               key={n.href}
@@ -84,7 +90,7 @@ export function AppNav({ variant }: { variant: 'sidebar' | 'tabs' }) {
                 active ? 'bg-blue-50 font-medium text-blue-700' : 'text-slate-700 hover:bg-slate-100'
               }`}
             >
-              <span>{n.icon}</span>
+              <Icon size={18} strokeWidth={active ? 2.5 : 2} aria-hidden="true" />
               <span>{n.label}</span>
               <Badge count={badge} />
             </Link>
