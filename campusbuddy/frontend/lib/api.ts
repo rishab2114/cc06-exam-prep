@@ -7,6 +7,7 @@ import type { Task as SharedTask, StudyRequest } from '@campusbuddy/shared';
  */
 export interface ApiTask extends SharedTask {
   status: string;
+  kind: 'REQUEST' | 'OFFER';
   customerId: string;
   isMine: boolean;
   isProvider: boolean;
@@ -102,6 +103,8 @@ export const REPORT_REASONS: { key: ReportReason; label: string }[] = [
 
 export interface CreateTaskInput {
   category: string;
+  kind?: 'REQUEST' | 'OFFER';
+  title?: string;
   description?: string;
   hall?: string;
   when?: string;
@@ -179,6 +182,10 @@ export const api = {
   saveTask: (id: string) => call<{ saved: boolean }>(`/tasks/${id}/save`, { method: 'POST' }),
   unsaveTask: (id: string) => call<{ saved: boolean }>(`/tasks/${id}/save`, { method: 'DELETE' }),
   myOffers: () => call<{ offers: MyOffer[] }>('/offers/mine'),
+  // --- freelance gigs (kind=OFFER) ---
+  services: () => call<{ tasks: ApiTask[] }>('/tasks?kind=offer'),
+  myServices: () => call<{ tasks: ApiTask[] }>('/tasks?kind=offer&mine=1'),
+  bookGig: (id: string) => call<{ task: ApiTask; reused: boolean }>(`/tasks/${id}/book`, { method: 'POST' }),
   createTask: (input: CreateTaskInput) => call<{ task: ApiTask }>('/tasks', { method: 'POST', json: input }),
   updateTask: (id: string, input: Partial<Pick<CreateTaskInput, 'description' | 'hall' | 'when' | 'priceCents'>>) =>
     call<{ task: ApiTask }>(`/tasks/${id}`, { method: 'PATCH', json: input }),

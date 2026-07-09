@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Search, PlusCircle, MessageCircle, Bell, User, type LucideIcon } from 'lucide-react';
+import { Home, Search, Briefcase, PlusCircle, MessageCircle, Bell, User, type LucideIcon } from 'lucide-react';
 import { useStore } from '../lib/store';
 
 // Single source of truth for app navigation, rendered as a desktop sidebar and a
@@ -14,6 +14,7 @@ import { useStore } from '../lib/store';
 const NAV: { href: string; icon: LucideIcon; label: string }[] = [
   { href: '/app', icon: Home, label: 'Home' },
   { href: '/app/find', icon: Search, label: 'Explore' },
+  { href: '/app/services', icon: Briefcase, label: 'Services' },
   { href: '/app/tasks/new', icon: PlusCircle, label: 'Post' },
   { href: '/app/messages', icon: MessageCircle, label: 'Chats' },
   { href: '/app/notifications', icon: Bell, label: 'Activity' },
@@ -45,7 +46,7 @@ export function AppNav({ variant }: { variant: 'sidebar' | 'tabs' }) {
 
   if (variant === 'tabs') {
     return (
-      <nav className="fixed inset-x-0 bottom-0 z-10 grid grid-cols-6 border-t bg-white py-1.5 text-center text-[10px] lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-10 grid grid-cols-7 border-t bg-white py-1.5 text-center text-[10px] lg:hidden">
         {NAV.map((n) => {
           const active = isActive(pathname, n.href);
           const badge = badgeCountFor(n.label, unread, messageUnread);
