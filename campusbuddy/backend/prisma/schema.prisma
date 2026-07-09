@@ -47,6 +47,16 @@ enum TaskStatus {
   DISPUTED
 }
 
+// REQUEST = the original "I need help" post (customer posts, buddies bid).
+// OFFER   = a freelance gig: a student advertises a service they'll do at a set
+// rate. Booking a gig spins up a REQUEST (the booker as customer) with a
+// pending offer from the gig owner, so the existing accept→chat→complete→review
+// machine handles it unchanged.
+enum TaskKind {
+  REQUEST
+  OFFER
+}
+
 // Negotiation: one Offer row per (task, provider) thread; `round` increments on
 // each counter and history is written to TaskEvent. State machine lives in
 // @campusbuddy/shared (offers.ts) — DB enum must mirror it exactly.
@@ -253,6 +263,10 @@ model Task {
   provider        User?      @relation("ProviderTasks", fields: [providerId], references: [id])
   categoryId      String
   category        ServiceCategory @relation(fields: [categoryId], references: [id])
+  kind            TaskKind   @default(REQUEST)
+  sourceGigId     String? // set on a REQUEST that was spun up by booking a gig
+  sourceGig       Task?      @relation("GigBookings", fields: [sourceGigId], references: [id])
+  bookings        Task[]     @relation("GigBookings")
   title           String
   description     String?
   status          TaskStatus @default(OPEN)
@@ -286,6 +300,7 @@ model Task {
   savedBy      SavedTask[]
 
   @@index([campusId, status, createdAt]) // the Explore feed query
+  @@index([campusId, kind, status, createdAt]) // the Services (gig) browse
   @@index([status, hall])
   @@index([categoryId])
   @@index([customerId])

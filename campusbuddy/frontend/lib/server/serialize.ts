@@ -45,6 +45,7 @@ export const FORM_CATEGORY_TO_SLUG: Record<string, string> = {
 
 export type ApiTask = SharedTask & {
   status: string;
+  kind: 'REQUEST' | 'OFFER';
   customerId: string;
   isMine: boolean;
   isProvider: boolean;
@@ -75,6 +76,7 @@ export function taskToDto(
     contactless: meta.contactless,
     study: (t.study as StudyRequest | null) ?? undefined,
     status: t.status,
+    kind: t.kind,
     customerId: t.customerId,
     isMine: t.customerId === viewerId,
     isProvider: t.providerId === viewerId,
