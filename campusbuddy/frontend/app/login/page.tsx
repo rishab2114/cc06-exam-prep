@@ -11,6 +11,7 @@ interface DemoAccount {
   name: string;
   campus: string;
   hall: string | null;
+  isDemo?: boolean;
 }
 
 // Sign-in / sign-up entry. The campus email gate is checked here for fast
@@ -42,7 +43,7 @@ export default function LoginPage() {
       await api.devLogin(email);
       router.replace('/app');
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : 'Demo login failed — did you run the demo seed?');
+      setError(err instanceof ApiClientError ? err.message : 'Could not switch account — try again.');
       setDemoBusy(null);
     }
   }
@@ -120,12 +121,13 @@ export default function LoginPage() {
 
       {demoAccounts.length > 0 && (
         <div className="mt-8 rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-4">
-          <p className="text-sm font-semibold text-amber-800">🧪 Demo accounts (dev)</p>
+          <p className="text-sm font-semibold text-amber-800">🧪 Switch accounts (dev)</p>
           <p className="mt-1 text-xs text-amber-700">
-            One tap to sign in as a seeded SUTD student. Log in as one to post, switch to another to
-            offer and bargain, then back to accept — you can play every role.
+            One tap to sign in as any account on this server — the seeded demo students plus every
+            account you create above with the code flow. Make a couple of accounts, then hop between
+            them here to post, offer, and chat across both sides. Newest first.
           </p>
-          <div className="mt-3 space-y-2">
+          <div className="mt-3 max-h-80 space-y-2 overflow-y-auto">
             {demoAccounts.map((a) => (
               <button
                 key={a.email}
@@ -133,11 +135,20 @@ export default function LoginPage() {
                 disabled={demoBusy !== null}
                 className="flex w-full items-center justify-between rounded-xl border border-amber-200 bg-white px-3 py-2.5 text-left disabled:opacity-60"
               >
-                <span>
-                  <span className="block text-sm font-medium">{a.name}</span>
-                  <span className="block text-xs text-slate-400">{a.campus}{a.hall ? ` · ${a.hall}` : ''}</span>
+                <span className="min-w-0">
+                  <span className="flex items-center gap-1.5 text-sm font-medium">
+                    <span className="truncate">{a.name}</span>
+                    {a.isDemo && (
+                      <span className="shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+                        demo
+                      </span>
+                    )}
+                  </span>
+                  <span className="block truncate text-xs text-slate-400">
+                    {a.email} · {a.campus}{a.hall ? ` · ${a.hall}` : ''}
+                  </span>
                 </span>
-                <span className="text-sm font-medium text-blue-700">
+                <span className="shrink-0 pl-2 text-sm font-medium text-blue-700">
                   {demoBusy === a.email ? 'Signing in…' : 'Sign in ›'}
                 </span>
               </button>

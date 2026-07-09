@@ -3,9 +3,12 @@ import { db } from '../../../../../lib/server/db';
 import { handler, ok, fail, parseBody } from '../../../../../lib/server/http';
 import { isDevAuth, createSessionCookie } from '../../../../../lib/server/auth';
 
-// POST /api/v1/auth/dev-login — one-tap sign-in as a seeded demo student, so a
-// single person can drive both sides of the marketplace. DEV ONLY: refuses
-// unless RESEND_API_KEY is unset, and only ever logs in the seeded demo users.
+// POST /api/v1/auth/dev-login — one-tap sign-in as any existing account, so a
+// single person can drive every side of the marketplace: create a few students
+// with the email→code flow, then hop between them here without re-entering
+// codes. DEV ONLY: refuses unless RESEND_API_KEY is unset, so it's inert on any
+// email-configured (production) deployment. Only signs in accounts that already
+// exist — it never creates one (that's what the code flow is for).
 const Body = z.object({ email: z.string().email().max(120) });
 
 export const POST = handler(
@@ -16,8 +19,8 @@ export const POST = handler(
       where: { email: email.trim().toLowerCase() },
       include: { campus: true },
     });
-    if (!user || !user.id.startsWith('demo-user-')) {
-      fail(404, 'NOT_DEMO', 'That is not a demo account — seed them with prisma:seed:demo');
+    if (!user) {
+      fail(404, 'NO_ACCOUNT', 'No account with that email yet — sign up with the code flow first');
     }
     if (user.isSuspended) fail(403, 'SUSPENDED', 'This account is suspended');
 

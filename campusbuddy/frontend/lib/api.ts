@@ -158,11 +158,12 @@ export const api = {
   logout: () => call<{ ok: boolean }>('/auth/logout', { method: 'POST' }),
   me: () => call<{ user: Me | null }>('/me'),
 
-  // --- dev-only demo account switcher (inert unless RESEND_API_KEY is unset) ---
+  // --- dev-only account switcher (inert unless RESEND_API_KEY is unset) ---
   devAccounts: () =>
-    call<{ dev: boolean; accounts: { email: string; name: string; campus: string; hall: string | null }[] }>(
-      '/auth/dev-accounts',
-    ),
+    call<{
+      dev: boolean;
+      accounts: { email: string; name: string; campus: string; hall: string | null; isDemo?: boolean }[];
+    }>('/auth/dev-accounts'),
   devLogin: (email: string) =>
     call<{ user: { id: string; name: string; email: string; campus: string } }>('/auth/dev-login', {
       method: 'POST',
