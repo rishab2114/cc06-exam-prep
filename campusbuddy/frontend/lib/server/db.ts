@@ -9,7 +9,13 @@ const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 export function db(): PrismaClient {
   if (!globalForPrisma.prisma) {
-    globalForPrisma.prisma = new PrismaClient();
+    // On Vercel the Prisma Postgres integration provides POSTGRES_URL (a direct
+    // postgresql:// connection). Prefer it so a plain PrismaClient connects
+    // without the Accelerate extension. Locally, fall back to DATABASE_URL.
+    const url = process.env.POSTGRES_URL;
+    globalForPrisma.prisma = url
+      ? new PrismaClient({ datasources: { db: { url } } })
+      : new PrismaClient();
   }
   return globalForPrisma.prisma;
 }
