@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 /**
  * Demo seed — makes the marketplace playable with one person at a keyboard.
  *
- * Creates 3 verified SUTD students and a spread of freshly-posted tasks so that
+ * Creates 3 verified NTU students and a spread of freshly-posted tasks so that
  * whichever demo account you log in as, you immediately see *other people's*
  * posts to offer on, plus your own to manage. One task is pre-completed with
  * reviews on both sides so provider reputation (⭐ + jobs) shows up right away.
@@ -18,28 +18,28 @@ const prisma = new PrismaClient();
  * RESEND_API_KEY is unset) to hop between these students without email codes.
  */
 
-const CAMPUS_CODE = 'SUTD';
+const CAMPUS_CODE = 'NTU';
 
 const USERS = [
-  { id: 'demo-user-priya', email: 'priya@mymail.sutd.edu.sg', fullName: 'Priya S', hall: 'Hall 5, Blk 57' },
-  { id: 'demo-user-wei', email: 'wei@mymail.sutd.edu.sg', fullName: 'Wei Lim', hall: 'Hall 2, Blk 22' },
-  { id: 'demo-user-arjun', email: 'arjun@mymail.sutd.edu.sg', fullName: 'Arjun Rao', hall: 'Hall 8, Blk 83' },
+  { id: 'demo-user-priya', email: 'priya@e.ntu.edu.sg', fullName: 'Priya S', hall: 'Hall 9' },
+  { id: 'demo-user-wei', email: 'wei@e.ntu.edu.sg', fullName: 'Wei Lim', hall: 'Crescent Hall' },
+  { id: 'demo-user-arjun', email: 'arjun@e.ntu.edu.sg', fullName: 'Arjun Rao', hall: 'Binjai Hall' },
 ] as const;
 
 // Recently-posted OPEN tasks. `mins` = minutes ago, so the feed shows a
 // realistic "just now / 20m ago" spread ordered newest-first.
 const TASKS = [
   { id: 'demo-task-clean', by: 'demo-user-priya', slug: 'room-cleaning', budget: 1800, mins: 8,
-    title: 'Clean my room before block inspection', hall: 'Hall 5, Blk 57', when: 'Today 6–8pm',
+    title: 'Clean my room before block inspection', hall: 'Hall 9', when: 'Today 6–8pm',
     description: 'Bathroom + floor + empty bins before Friday inspection. I’ll be in the room.' },
   { id: 'demo-task-parcel', by: 'demo-user-priya', slug: 'parcel-collection', budget: 500, mins: 26,
-    title: 'Grab my Amazon parcel from the S11 counter', hall: 'S11 mailroom', when: 'Before 9pm today',
+    title: 'Grab my Amazon parcel from the hall counter', hall: 'Hall 9 mailroom', when: 'Before 9pm today',
     description: 'One small box, I’ll share the pickup code. Drop outside my door — contactless is fine.' },
   { id: 'demo-task-laundry', by: 'demo-user-wei', slug: 'laundry-pickup', budget: 1000, mins: 42,
-    title: 'Laundry wash & fold — bag’s outside my door', hall: 'Hall 2, Blk 22', when: 'Anytime today',
+    title: 'Laundry wash & fold — bag’s outside my door', hall: 'Crescent Hall', when: 'Anytime today',
     description: 'One bag, colours. Wash, dry, fold, text me when it’s back. No room entry needed.' },
   { id: 'demo-task-meal', by: 'demo-user-wei', slug: 'spare-meal', budget: 600, mins: 70,
-    title: 'Spare portion of home-cooked butter chicken 🍛', hall: 'Hall 2 pantry', when: 'Dinner, 7pm',
+    title: 'Spare portion of home-cooked butter chicken 🍛', hall: 'Crescent Hall pantry', when: 'Dinner, 7pm',
     description: 'Cooking a big batch tonight — one extra container going spare if anyone’s keen.' },
   { id: 'demo-task-study', by: 'demo-user-arjun', slug: 'study-help', budget: 2500, mins: 95,
     title: 'MH1810 Calculus — integration help before midterm', hall: 'Library, level 3', when: 'This week',
@@ -53,7 +53,7 @@ const TASKS = [
       format: '📍 In person (library)',
     } },
   { id: 'demo-task-supper', by: 'demo-user-arjun', slug: 'late-night-run', budget: 700, mins: 130,
-    title: 'Late-night McDonald’s supper run', hall: 'Hall 8, Blk 83', when: 'Tonight after 11pm',
+    title: 'Late-night McDonald’s supper run', hall: 'Binjai Hall', when: 'Tonight after 11pm',
     description: 'McSpicy meal + fries. I’ll PayNow on delivery. Keep the change for the trip 🙏' },
 ] as const;
 
@@ -74,7 +74,7 @@ async function main() {
   await prisma.offer.deleteMany({ where: { taskId: { in: allTaskIds } } });
   await prisma.task.deleteMany({ where: { id: { in: allTaskIds } } });
 
-  // --- users (verified SUTD students) ---
+  // --- users (verified NTU students) ---
   for (const u of USERS) {
     await prisma.user.upsert({
       where: { email: u.email },
@@ -125,7 +125,7 @@ async function main() {
       categoryId: cleanCat.id,
       title: 'Room clean before I flew home for break',
       description: 'Full clean while I packed. Went great.',
-      hall: 'Hall 5, Blk 57',
+      hall: 'Hall 9',
       whenText: 'Last Sunday',
       budgetCents: 2000,
       finalPriceCents: 2000,

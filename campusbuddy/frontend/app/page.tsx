@@ -81,12 +81,12 @@ export default function LandingPage() {
           )}
 
           <ul className="mt-8 space-y-2 text-sm text-slate-600">
-            <li>✓ Verified students only (SUTD, NTU, NUS, SMU &amp; more)</li>
+            <li>✓ Verified students only (NTU, NUS, SUTD, SMU &amp; more)</li>
             <li>✓ On demand — no waiting on busy friends, no owing favours</li>
             <li>✓ Contactless options where it makes sense · two-way ratings</li>
           </ul>
 
-          <p className="mt-6 text-xs text-slate-400">Now launching at SUTD.</p>
+          <p className="mt-6 text-xs text-slate-400">Now launching at NTU.</p>
         </div>
 
         {/* Right (desktop only): how it works + categories */}

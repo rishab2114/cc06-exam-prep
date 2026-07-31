@@ -19,7 +19,8 @@ interface DemoAccount {
 // On success the server emails a 6-digit code and we move to /verify.
 export default function LoginPage() {
   const router = useRouter();
-  const [campus, setCampus] = useState(CAMPUSES[0].code); // default to launch campus
+  // Default to the launch campus (NTU); fall back to the first registry entry.
+  const [campus, setCampus] = useState((CAMPUSES.find((c) => c.code === 'NTU') ?? CAMPUSES[0]).code);
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
@@ -53,7 +54,7 @@ export default function LoginPage() {
     if (sending) return;
     const cleaned = email.trim().toLowerCase(); // paste-with-spaces & caps happen constantly
     if (!isCampusEmail(cleaned)) {
-      setError('Please use your university email (e.g. yourname@mymail.sutd.edu.sg).');
+      setError('Please use your university email (e.g. yourname@e.ntu.edu.sg).');
       return;
     }
     if (campusForEmail(cleaned)?.code !== campus) {
@@ -103,7 +104,7 @@ export default function LoginPage() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="yourname@mymail.sutd.edu.sg"
+          placeholder="yourname@e.ntu.edu.sg"
           className="w-full rounded-xl border border-slate-300 px-4 py-3"
         />
         {error && <p className="text-sm text-red-600">{error}</p>}
