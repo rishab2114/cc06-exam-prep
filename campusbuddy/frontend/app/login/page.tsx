@@ -122,11 +122,11 @@ export default function LoginPage() {
 
       {demoAccounts.length > 0 && (
         <div className="mt-8 rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-4">
-          <p className="text-sm font-semibold text-amber-800">🧪 Switch accounts (dev)</p>
+          <p className="text-sm font-semibold text-amber-800">🧪 Try it as a demo student</p>
           <p className="mt-1 text-xs text-amber-700">
-            One tap to sign in as any account on this server — the seeded demo students plus every
-            account you create above with the code flow. Make a couple of accounts, then hop between
-            them here to post, offer, and chat across both sides. Newest first.
+            One tap to explore the marketplace as a sample NTU student — no email code needed. Sign
+            in as one to post a task, switch to another to offer and bargain, then back to accept.
+            These are sample accounts, not real students.
           </p>
           <div className="mt-3 max-h-80 space-y-2 overflow-y-auto">
             {demoAccounts.map((a) => (

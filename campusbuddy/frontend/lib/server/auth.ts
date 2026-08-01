@@ -27,6 +27,24 @@ export function isDevAuth(): boolean {
   return process.env.NODE_ENV !== 'production'; // safe default: only off-prod (local/dev)
 }
 
+/** A seeded demo persona — fake accounts the demo seed creates, never real students. */
+export const DEMO_USER_PREFIX = 'demo-user-';
+
+/**
+ * "Demo mode": the deployment has no real email provider, so nobody can actually
+ * receive a sign-in code. Rather than a dead login screen, we let anyone explore
+ * the marketplace as one of the SEEDED DEMO PERSONAS (ids prefixed
+ * `demo-user-`).
+ *
+ * This is safe in production, unlike dev-auth: it never reveals a real student's
+ * code, never lists real accounts, and can only ever sign you in as a fake
+ * persona. Real students still need email OTP. It switches itself off the moment
+ * RESEND_API_KEY is set — a deployment with real email is a real marketplace.
+ */
+export function isDemoMode(): boolean {
+  return !process.env.RESEND_API_KEY;
+}
+
 export interface Session {
   sub: string; // user id
   email: string;
@@ -82,6 +100,19 @@ export async function getSession(): Promise<Session | null> {
 }
 
 // ---------- login codes ----------
+
+/**
+ * Thrown when email sign-in is genuinely unavailable: no email provider is
+ * configured and we refuse to hand the code back to the caller. Defined here
+ * (rather than as an http ApiError) because http.ts imports this module.
+ */
+export class EmailUnavailableError extends Error {
+  constructor() {
+    super('Email sign-in is not available on this deployment');
+    this.name = 'EmailUnavailableError';
+  }
+}
+
 export function newLoginCode(): string {
   return String(randomInt(100000, 1000000)); // 6 digits, crypto-random
 }
@@ -93,13 +124,21 @@ export function hashLoginCode(email: string, code: string): string {
 }
 
 /**
- * Send the login code. With RESEND_API_KEY set this emails for real; without it
- * (local/pilot dev) the code is returned so the UI can display it — clearly
- * labelled as dev-only behaviour.
+ * Send the login code. With RESEND_API_KEY set this emails for real.
+ *
+ * Without a provider we only hand the code back when isDevAuth() allows it
+ * (local dev / explicit opt-in) — returning it to the caller is exactly the
+ * account-takeover vector we close in production: anyone could request a code
+ * for a real student's address and read it out of the response. On a demo
+ * deployment with no provider we therefore refuse rather than pretend to send;
+ * visitors explore via the demo personas instead.
  */
 export async function sendLoginCode(email: string, code: string): Promise<{ devCode?: string }> {
   const key = process.env.RESEND_API_KEY;
   if (!key) {
+    if (!isDevAuth()) {
+      throw new EmailUnavailableError();
+    }
     console.warn(`[auth] RESEND_API_KEY not set — dev login code for ${email}: ${code}`);
     return { devCode: code };
   }
