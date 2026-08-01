@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { feeBreakdown, formatSgd } from '../../../../lib/format';
 import { parseSgdToCents } from '../../../../lib/store';
 import { api, ApiClientError, type ApiTask } from '../../../../lib/api';
+import { CategoryIcon } from '../../../../components/CategoryIcon';
 
 // Offer flow (provider side). Your quote opens a real negotiation thread with
 // the poster — they can accept it or counter, and you continue on the task page.
@@ -33,11 +34,11 @@ export default function ApplyPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <div className="p-6 text-center text-slate-400">Loading task…</div>;
+  if (loading) return <div className="p-6 text-center text-subtle">Loading task…</div>;
   if (!task) {
     return (
-      <div className="p-6 text-center text-slate-500">
-        Task not found. <Link href="/app/find" className="text-blue-700">Back to tasks</Link>
+      <div className="p-6 text-center text-muted">
+        Task not found. <Link href="/app/find" className="text-brand">Back to tasks</Link>
       </div>
     );
   }
@@ -74,17 +75,17 @@ export default function ApplyPage() {
       <div className="flex min-h-[70vh] flex-col items-center justify-center p-6 text-center">
         <div className="text-5xl">✅</div>
         <h1 className="mt-4 text-xl font-bold">Offer sent — {formatSgd(quoteCents)}!</h1>
-        <p className="mt-2 text-slate-600">
+        <p className="mt-2 text-muted">
           {task.customerName} can accept your price or counter. We&apos;ll notify you the moment they
           respond.
         </p>
         <Link
           href={`/app/task/${task.id}`}
-          className="mt-8 rounded-xl bg-blue-700 px-6 py-3 font-medium text-white"
+          className="mt-8 rounded-xl bg-brand px-6 py-3 font-medium text-white"
         >
           Track your offer ›
         </Link>
-        <Link href="/app/find" className="mt-3 text-sm text-slate-500">
+        <Link href="/app/find" className="mt-3 text-sm text-muted">
           Find more tasks
         </Link>
       </div>
@@ -93,53 +94,53 @@ export default function ApplyPage() {
 
   return (
     <div className="lg:mx-auto lg:max-w-2xl">
-      <header className="border-b bg-white px-4 py-3 font-semibold">
-        <Link href="/app/find" className="text-slate-500">‹ </Link> Offer to help
+      <header className="border-b bg-surface px-4 py-3 font-semibold">
+        <Link href="/app/find" className="text-muted">‹ </Link> Offer to help
       </header>
 
       <div className="space-y-4 p-4">
         {/* Task summary */}
-        <div className="rounded-xl border bg-white p-3">
+        <div className="rounded-xl border bg-surface p-3">
           <div className="flex justify-between">
-            <span className="font-medium"><span aria-hidden="true">{task.icon}</span> {task.title}</span>
-            <span className="text-green-700">{formatSgd(task.priceCents)}{task.study ? '/hr' : ''}</span>
+            <span className="font-medium"><CategoryIcon category={task.category} emoji={task.icon} size="sm" /> {task.title}</span>
+            <span className="text-success">{formatSgd(task.priceCents)}{task.study ? '/hr' : ''}</span>
           </div>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-muted">
             {task.hall} · {task.when} · {task.customerName}
           </p>
           {task.description && task.description !== task.title && (
-            <p className="mt-2 rounded-lg bg-slate-50 px-2 py-1.5 text-sm text-slate-600">“{task.description}”</p>
+            <p className="mt-2 rounded-lg bg-surface-sunken px-2 py-1.5 text-sm text-muted">“{task.description}”</p>
           )}
-          <p className="mt-2 rounded-lg bg-green-50 px-2 py-1 text-sm text-green-800">
+          <p className="mt-2 rounded-lg bg-success-soft px-2 py-1 text-sm text-green-800">
             You earn <b>{formatSgd(earnings)}</b>
           </p>
         </div>
 
         {ownTask && (
-          <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+          <p className="rounded-lg bg-accent-soft px-3 py-2 text-sm text-accent-text">
             This is your own post — you can&apos;t offer on it.{' '}
             <Link href={`/app/applicants/${task.id}`} className="font-medium underline">See your offers ›</Link>
           </p>
         )}
         {notOpen && !ownTask && (
-          <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+          <p className="rounded-lg bg-accent-soft px-3 py-2 text-sm text-accent-text">
             This task is no longer taking offers.
           </p>
         )}
 
         {/* Structured study request — what exactly they need help with */}
         {task.study && (
-          <div className="rounded-xl border bg-white p-3">
+          <div className="rounded-xl border bg-surface p-3">
             <p className="font-medium">📖 {task.study.module}</p>
             <div className="mt-2 space-y-1.5 text-sm">
-              <p><span className="text-slate-400">Topics:</span> {task.study.topics.join(', ')}</p>
-              <p><span className="text-slate-400">Level:</span> {task.study.level}</p>
-              <p><span className="text-slate-400">Goal:</span> {task.study.goal}</p>
-              <p><span className="text-slate-400">Format:</span> {task.study.format}</p>
+              <p><span className="text-subtle">Topics:</span> {task.study.topics.join(', ')}</p>
+              <p><span className="text-subtle">Level:</span> {task.study.level}</p>
+              <p><span className="text-subtle">Goal:</span> {task.study.goal}</p>
+              <p><span className="text-subtle">Format:</span> {task.study.format}</p>
             </div>
             <div className="mt-2 flex flex-wrap gap-1">
               {task.study.helpTypes.map((h) => (
-                <span key={h} className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700">{h}</span>
+                <span key={h} className="rounded-full bg-brand-soft px-2 py-0.5 text-xs text-brand">{h}</span>
               ))}
             </div>
           </div>
@@ -147,14 +148,14 @@ export default function ApplyPage() {
 
         {/* Academic-integrity guardrail for study help / tutoring */}
         {task.category === 'Study help' && !ownTask && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
-            <p className="font-medium text-amber-800">📚 Study help — keep it honest</p>
-            <p className="mt-1 text-sm text-amber-700">
+          <div className="rounded-xl border border-accent/30 bg-accent-soft p-3">
+            <p className="font-medium text-accent-text">📚 Study help — keep it honest</p>
+            <p className="mt-1 text-sm text-accent-text">
               Explain concepts, work through practice questions, and help {task.customerName} prep.
               You must <b>not</b> do their assignments, write their essays, or sit exams for them —
               that&apos;s contract cheating and gets both accounts banned.
             </p>
-            <label className="mt-2 flex items-start gap-2 text-xs text-amber-800">
+            <label className="mt-2 flex items-start gap-2 text-xs text-accent-text">
               <input
                 type="checkbox"
                 checked={integrityOk}
@@ -168,15 +169,15 @@ export default function ApplyPage() {
 
         {/* Safety rails for this task type */}
         <div className="space-y-3">
-          <p className="text-xs font-semibold uppercase text-slate-500">How this task works</p>
+          <p className="text-xs font-semibold uppercase text-muted">How this task works</p>
 
           {task.requiresMatricVerification && (
-            <div className="rounded-xl border bg-white p-3">
+            <div className="rounded-xl border bg-surface p-3">
               <div className="flex items-center justify-between">
                 <span className="font-medium">🪪 Verify on arrival</span>
-                <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700">Campus email ✓</span>
+                <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-success">Campus email ✓</span>
               </div>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-muted">
                 This task enters a room / handles belongings, so at the door you&apos;ll confirm your
                 identity with {task.customerName} — the buddy they accepted is the one who shows up.
                 (Live matric-card scan is coming with the verification launch.)
@@ -185,12 +186,12 @@ export default function ApplyPage() {
           )}
 
           {task.contactless && (
-            <div className="rounded-xl border bg-white p-3">
+            <div className="rounded-xl border bg-surface p-3">
               <div className="flex items-center justify-between">
                 <span className="font-medium">📦 Contactless</span>
                 <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs text-sky-700">No room entry</span>
               </div>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-muted">
                 {task.customerName} leaves the bag outside the door. You pick it up and send live
                 status updates (like Grab) — picked up, washing, on the way back.
               </p>
@@ -198,12 +199,12 @@ export default function ApplyPage() {
           )}
 
           {task.presenceRequired && (
-            <div className="rounded-xl border bg-white p-3">
+            <div className="rounded-xl border bg-surface p-3">
               <div className="flex items-center justify-between">
                 <span className="font-medium">👥 Done with {task.customerName} present</span>
-                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700">In person</span>
+                <span className="rounded-full bg-brand-soft px-2 py-0.5 text-xs text-brand">In person</span>
               </div>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-muted">
                 For safety, this task is done while {task.customerName} is in the room — you&apos;re
                 never working alone in someone&apos;s space.
               </p>
@@ -218,17 +219,17 @@ export default function ApplyPage() {
             <button
               onClick={() => void submit(task.priceCents)}
               disabled={submitting}
-              className="block w-full rounded-xl bg-blue-700 py-3 font-medium text-white disabled:opacity-50"
+              className="block w-full rounded-xl bg-brand py-3 font-medium text-white disabled:opacity-50"
             >
               {submitting ? 'Sending offer…' : `Offer to help — ${formatSgd(task.priceCents)}`}
             </button>
-            <p className="text-center text-xs text-slate-400">
+            <p className="text-center text-xs text-subtle">
               You earn <b>{formatSgd(feeBreakdown(task.priceCents).buddyGets)}</b> · {task.customerName}’s asking price
             </p>
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-danger">{error}</p>}
             <button
               onClick={() => { setCustom(true); setQuote((task.priceCents / 100).toFixed(2)); }}
-              className="block w-full py-1 text-center text-sm font-medium text-blue-700"
+              className="block w-full py-1 text-center text-sm font-medium text-brand"
             >
               or name your own price ›
             </button>
@@ -239,7 +240,7 @@ export default function ApplyPage() {
         {canApply && custom && (
           <div className="space-y-4">
             <label className="block text-sm">
-              <span className="text-slate-500">Your price (SGD)</span>
+              <span className="text-muted">Your price (SGD)</span>
               <input
                 type="number"
                 inputMode="decimal"
@@ -249,7 +250,7 @@ export default function ApplyPage() {
                 className="mt-1 w-full rounded-xl border px-3 py-2"
                 autoFocus
               />
-              <span className={`mt-1 block text-xs ${invalidQuote ? 'text-red-500' : 'text-slate-400'}`}>
+              <span className={`mt-1 block text-xs ${invalidQuote ? 'text-red-500' : 'text-subtle'}`}>
                 {invalidQuote
                   ? 'That price doesn’t look right — enter a number above S$0.'
                   : <>{task.customerName} listed {formatSgd(task.priceCents)} — offer higher or lower. You earn <b>{formatSgd(earnings)}</b>.</>}
@@ -257,7 +258,7 @@ export default function ApplyPage() {
             </label>
 
             <label className="block text-sm">
-              <span className="text-slate-500">Message to {task.customerName} (optional)</span>
+              <span className="text-muted">Message to {task.customerName} (optional)</span>
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
@@ -268,16 +269,16 @@ export default function ApplyPage() {
               />
             </label>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-danger">{error}</p>}
 
             <button
               onClick={() => void submit()}
               disabled={invalidQuote || submitting}
-              className="block w-full rounded-xl bg-blue-700 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="block w-full rounded-xl bg-brand py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               {submitting ? 'Sending offer…' : invalidQuote ? 'Fix your price to continue' : `Send offer · ${formatSgd(quoteCents)}`}
             </button>
-            <button onClick={() => setCustom(false)} className="block w-full text-center text-xs text-slate-400">
+            <button onClick={() => setCustom(false)} className="block w-full text-center text-xs text-subtle">
               ‹ Back to one-tap at {formatSgd(task.priceCents)}
             </button>
           </div>
@@ -287,7 +288,7 @@ export default function ApplyPage() {
         {!canApply && (
           <button
             disabled
-            className="block w-full rounded-xl bg-blue-700 py-3 font-medium text-white opacity-50"
+            className="block w-full rounded-xl bg-brand py-3 font-medium text-white opacity-50"
           >
             {ownTask
               ? 'This is your own task'

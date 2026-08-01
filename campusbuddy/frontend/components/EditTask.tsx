@@ -41,23 +41,23 @@ export function EditTask({ task, onSaved }: { task: ApiTask; onSaved: () => Prom
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} className="text-sm font-medium text-blue-700">
+      <button onClick={() => setOpen(true)} className="text-sm font-medium text-brand">
         ✏️ Edit post
       </button>
     );
   }
 
   return (
-    <div className="rounded-xl border bg-white p-3 text-sm">
+    <div className="rounded-xl border bg-surface p-3 text-sm">
       <p className="font-medium">✏️ Edit your post</p>
-      <p className="mt-0.5 text-xs text-slate-400">
+      <p className="mt-0.5 text-xs text-subtle">
         Buddies with open offers will be notified of the change.
       </p>
 
       <div className="mt-3 space-y-3">
         {!task.study && (
           <label className="block">
-            <span className="text-slate-500">What do you need?</span>
+            <span className="text-muted">What do you need?</span>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -69,16 +69,16 @@ export function EditTask({ task, onSaved }: { task: ApiTask; onSaved: () => Prom
         )}
         <div className="flex gap-2">
           <label className="block flex-1">
-            <span className="text-slate-500">Where</span>
+            <span className="text-muted">Where</span>
             <input value={hall} onChange={(e) => setHall(e.target.value)} maxLength={60} className="mt-1 w-full rounded-xl border px-3 py-2" />
           </label>
           <label className="block flex-1">
-            <span className="text-slate-500">When</span>
+            <span className="text-muted">When</span>
             <input value={when} onChange={(e) => setWhen(e.target.value)} maxLength={40} className="mt-1 w-full rounded-xl border px-3 py-2" />
           </label>
         </div>
         <label className="block">
-          <span className="text-slate-500">Budget (SGD{task.study ? ' per hour' : ''})</span>
+          <span className="text-muted">Budget (SGD{task.study ? ' per hour' : ''})</span>
           <input
             type="number"
             inputMode="decimal"
@@ -90,17 +90,17 @@ export function EditTask({ task, onSaved }: { task: ApiTask; onSaved: () => Prom
           {invalid && <span className="mt-1 block text-xs text-red-500">Enter a budget above S$0.</span>}
         </label>
 
-        {error && <p className="text-red-600">{error}</p>}
+        {error && <p className="text-danger">{error}</p>}
 
         <div className="flex gap-2">
           <button
             onClick={() => void save()}
             disabled={busy || invalid}
-            className="rounded-lg bg-blue-700 px-4 py-2 font-medium text-white disabled:opacity-50"
+            className="rounded-lg bg-brand px-4 py-2 font-medium text-white disabled:opacity-50"
           >
             {busy ? 'Saving…' : 'Save changes'}
           </button>
-          <button onClick={() => setOpen(false)} className="text-slate-400">Cancel</button>
+          <button onClick={() => setOpen(false)} className="text-subtle">Cancel</button>
         </div>
       </div>
     </div>

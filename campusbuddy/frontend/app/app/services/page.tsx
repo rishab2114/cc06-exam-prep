@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Briefcase } from 'lucide-react';
 import { formatSgd } from '../../../lib/format';
 import { api, ApiClientError, type ApiTask } from '../../../lib/api';
+import { CategoryIcon } from '../../../components/CategoryIcon';
 
 // Services = the freelance side of the marketplace. Instead of "I need help",
 // a student advertises a gig they'll do at a set rate; anyone can book it.
@@ -44,59 +45,59 @@ export default function ServicesPage() {
 
   return (
     <div className="lg:mx-auto lg:max-w-5xl">
-      <header className="flex items-center justify-between border-b bg-white px-4 py-3">
+      <header className="flex items-center justify-between border-b bg-surface px-4 py-3">
         <span className="flex items-center gap-2 font-semibold">
           <Briefcase size={18} aria-hidden="true" /> Services
         </span>
-        <Link href="/app/services/new" className="rounded-lg bg-blue-700 px-3 py-1.5 text-sm font-medium text-white">
+        <Link href="/app/services/new" className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white">
           + Offer a service
         </Link>
       </header>
 
-      <p className="px-4 pt-3 text-sm text-slate-500">
+      <p className="px-4 pt-3 text-sm text-muted">
         Freelance gigs from verified students on your campus. Book one and the provider&apos;s quote
         is already on the table — just accept and chat.
       </p>
 
-      {error && <p className="px-4 pt-2 text-sm text-red-600">{error}</p>}
+      {error && <p className="px-4 pt-2 text-sm text-danger">{error}</p>}
 
       <div className="p-4">
         {gigs === null ? (
-          <p className="py-16 text-center text-sm text-slate-400">Loading services…</p>
+          <p className="py-16 text-center text-sm text-subtle">Loading services…</p>
         ) : gigs.length === 0 ? (
-          <div className="rounded-xl border border-dashed bg-white p-8 text-center text-sm text-slate-500">
+          <div className="rounded-xl border border-dashed bg-surface p-8 text-center text-sm text-muted">
             <p className="text-3xl">💼</p>
-            <p className="mt-2 font-medium text-slate-700">No services on offer yet</p>
+            <p className="mt-2 font-medium text-text">No services on offer yet</p>
             <p className="mt-1">Be the first — post a gig you can do for other students.</p>
-            <Link href="/app/services/new" className="mt-3 inline-block font-medium text-blue-700">
+            <Link href="/app/services/new" className="mt-3 inline-block font-medium text-brand">
               Offer a service ›
             </Link>
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {gigs.map((g) => (
-              <div key={g.id} className="flex flex-col rounded-xl border bg-white p-4">
+              <div key={g.id} className="flex flex-col rounded-xl border bg-surface p-4">
                 <div className="flex items-start justify-between gap-2">
                   <span className="font-medium">
-                    <span aria-hidden="true">{g.icon}</span> {g.title}
+                    <CategoryIcon category={g.category} emoji={g.icon} size="sm" /> {g.title}
                   </span>
-                  <span className="shrink-0 font-semibold text-green-700">{formatSgd(g.priceCents)}</span>
+                  <span className="shrink-0 font-semibold text-success">{formatSgd(g.priceCents)}</span>
                 </div>
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-subtle">
                   {g.category} · by {g.customerName}
                   {g.hall && g.hall !== 'On campus' ? ` · ${g.hall}` : ''}
                 </p>
-                {g.description && <p className="mt-2 line-clamp-3 text-sm text-slate-600">{g.description}</p>}
+                {g.description && <p className="mt-2 line-clamp-3 text-sm text-muted">{g.description}</p>}
                 <div className="mt-auto pt-3">
                   {g.isMine ? (
-                    <span className="block rounded-lg border border-slate-200 py-2 text-center text-sm text-slate-400">
+                    <span className="block rounded-lg border border-border py-2 text-center text-sm text-subtle">
                       Your gig
                     </span>
                   ) : (
                     <button
                       onClick={() => book(g.id)}
                       disabled={booking !== null}
-                      className="block w-full rounded-lg bg-blue-700 py-2 text-center text-sm font-medium text-white disabled:opacity-60"
+                      className="block w-full rounded-lg bg-brand py-2 text-center text-sm font-medium text-white disabled:opacity-60"
                     >
                       {booking === g.id ? 'Booking…' : 'Request this service'}
                     </button>

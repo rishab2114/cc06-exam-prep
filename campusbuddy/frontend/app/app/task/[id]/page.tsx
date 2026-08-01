@@ -10,6 +10,7 @@ import { api, ApiClientError, type ApiTask, type ApiOffer } from '../../../../li
 import { TaskChat } from '../../../../components/TaskChat';
 import { RateCard } from '../../../../components/RateCard';
 import { ProblemActions } from '../../../../components/ProblemActions';
+import { CategoryIcon } from '../../../../components/CategoryIcon';
 
 // Grab-style status steps for a shopping / fetch-&-deliver run (grocery, 7-Eleven /
 // Prime, parcels, food). The chat handles anything out of stock — agree a swap
@@ -99,11 +100,11 @@ export default function ActiveTaskPage() {
     }
   }
 
-  if (loading) return <div className="p-6 text-center text-slate-400">Loading task…</div>;
+  if (loading) return <div className="p-6 text-center text-subtle">Loading task…</div>;
   if (!task) {
     return (
-      <div className="p-6 text-center text-slate-500">
-        Task not found. <Link href="/app/find" className="text-blue-700">Back to tasks</Link>
+      <div className="p-6 text-center text-muted">
+        Task not found. <Link href="/app/find" className="text-brand">Back to tasks</Link>
       </div>
     );
   }
@@ -121,35 +122,35 @@ export default function ActiveTaskPage() {
 
   const chip =
     task.status === 'OPEN'
-      ? { label: myOffer ? 'NEGOTIATING' : 'OPEN', cls: 'bg-amber-100 text-amber-700' }
+      ? { label: myOffer ? 'NEGOTIATING' : 'OPEN', cls: 'bg-accent-soft text-accent-text' }
       : task.status === 'COMPLETED'
-        ? { label: 'COMPLETED', cls: 'bg-green-100 text-green-700' }
-        : { label: task.status.replace('_', ' '), cls: 'bg-blue-100 text-blue-700' };
+        ? { label: 'COMPLETED', cls: 'bg-green-100 text-success' }
+        : { label: task.status.replace('_', ' '), cls: 'bg-brand-soft text-brand' };
 
   return (
     <div className="lg:mx-auto lg:max-w-2xl">
-      <header className="border-b bg-white px-4 py-3">
+      <header className="border-b bg-surface px-4 py-3">
         <div className="flex items-center justify-between">
           <span className="font-semibold">
-            <Link href="/app/find" className="text-slate-500">‹ </Link>
-            <span aria-hidden="true">{task.icon}</span> {task.title}
+            <Link href="/app/find" className="text-muted">‹ </Link>
+            <CategoryIcon category={task.category} emoji={task.icon} size="sm" /> {task.title}
           </span>
           <span className={`rounded-full px-2 py-0.5 text-xs ${chip.cls}`}>{chip.label}</span>
         </div>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-muted">
           {task.hall} · with {task.customerName} · you earn {formatSgd(earnings)}
         </p>
       </header>
 
       <div className="space-y-4 p-4">
-        {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+        {error && <p className="rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger">{error}</p>}
 
         {/* ---------- Phase 1: negotiation ---------- */}
         {task.status === 'OPEN' && myOffer && (
-          <div className="rounded-xl border bg-white p-4">
+          <div className="rounded-xl border bg-surface p-4">
             <p className="font-medium">🤝 Your negotiation with {task.customerName}</p>
-            <p className="mt-2 text-2xl font-semibold text-green-700">{formatSgd(myOffer.amountCents)}</p>
-            <p className="text-xs text-slate-400">
+            <p className="mt-2 text-2xl font-semibold text-success">{formatSgd(myOffer.amountCents)}</p>
+            <p className="text-xs text-subtle">
               round {myOffer.round} ·{' '}
               {myOffer.yourTurn
                 ? `${task.customerName} countered — your move`
@@ -157,13 +158,13 @@ export default function ActiveTaskPage() {
             </p>
 
             {myOffer.state === 'DECLINED' ? (
-              <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
+              <p className="mt-3 rounded-lg bg-surface-sunken px-3 py-2 text-sm text-muted">
                 This one went to another buddy — more tasks are waiting in Explore.
               </p>
             ) : myOffer.yourTurn ? (
               counterOpen ? (
                 <div className="mt-3 flex items-center gap-2">
-                  <span className="text-sm text-slate-500">Counter S$</span>
+                  <span className="text-sm text-muted">Counter S$</span>
                   <input
                     type="number"
                     value={counterVal}
@@ -180,18 +181,18 @@ export default function ActiveTaskPage() {
                       })
                     }
                     disabled={parseSgdToCents(counterVal) <= 0 || busy}
-                    className="rounded-lg bg-blue-700 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+                    className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
                   >
                     {busy ? 'Sending…' : 'Send'}
                   </button>
-                  <button onClick={() => setCounterOpen(false)} className="text-sm text-slate-400">Cancel</button>
+                  <button onClick={() => setCounterOpen(false)} className="text-sm text-subtle">Cancel</button>
                 </div>
               ) : (
                 <div className="mt-3 flex gap-2">
                   <button
                     onClick={() => void act(() => api.acceptOffer(myOffer.id))}
                     disabled={busy}
-                    className="flex-1 rounded-lg bg-blue-700 py-2 text-sm font-medium text-white disabled:opacity-60"
+                    className="flex-1 rounded-lg bg-brand py-2 text-sm font-medium text-white disabled:opacity-60"
                   >
                     {busy ? 'Accepting…' : `Accept ${formatSgd(myOffer.amountCents)} — deal`}
                   </button>
@@ -201,14 +202,14 @@ export default function ActiveTaskPage() {
                       setCounterVal(String(Math.round(myOffer.amountCents / 100)));
                     }}
                     disabled={busy}
-                    className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
+                    className="rounded-lg border border-border-strong px-4 py-2 text-sm font-medium text-text"
                   >
                     Counter
                   </button>
                 </div>
               )
             ) : (
-              <p className="mt-3 rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-700">
+              <p className="mt-3 rounded-lg bg-brand-soft px-3 py-2 text-sm text-brand">
                 ⏳ We&apos;ll notify you when {task.customerName} accepts or counters.
               </p>
             )}
@@ -217,7 +218,7 @@ export default function ActiveTaskPage() {
               <button
                 onClick={() => void act(() => api.withdrawOffer(myOffer.id))}
                 disabled={busy}
-                className="mt-2 text-xs text-slate-400 hover:text-red-500"
+                className="mt-2 text-xs text-subtle hover:text-red-500"
               >
                 Withdraw my offer
               </button>
@@ -226,9 +227,9 @@ export default function ActiveTaskPage() {
         )}
 
         {task.status === 'OPEN' && !myOffer && (
-          <div className="rounded-xl border border-dashed bg-white p-6 text-center text-sm text-slate-500">
+          <div className="rounded-xl border border-dashed bg-surface p-6 text-center text-sm text-muted">
             You haven&apos;t offered on this task yet.
-            <Link href={`/app/apply/${task.id}`} className="mt-2 block font-medium text-blue-700">
+            <Link href={`/app/apply/${task.id}`} className="mt-2 block font-medium text-brand">
               Make an offer ›
             </Link>
           </div>
@@ -236,7 +237,7 @@ export default function ActiveTaskPage() {
 
         {/* ---------- Phase 3: completed ---------- */}
         {task.status === 'COMPLETED' && (
-          <div className="rounded-xl bg-green-50 p-4 text-center text-sm text-green-800">
+          <div className="rounded-xl bg-success-soft p-4 text-center text-sm text-green-800">
             ✅ <b>Task complete — you earned {formatSgd(earnings)}.</b>
             <Link href="/app/find" className="mt-2 block font-medium underline">
               Find more tasks
@@ -251,23 +252,23 @@ export default function ActiveTaskPage() {
         {iAmAssigned && task.status !== 'COMPLETED' && (
           task.contactless || isRun ? (
             /* Grab-style status timeline: contactless laundry, or a store/food run */
-            <div className="rounded-xl border bg-white p-4">
+            <div className="rounded-xl border bg-surface p-4">
               <p className="font-medium">{task.contactless ? '📦 Contactless laundry' : '🛒 Shopping run'}</p>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-muted">
                 {task.contactless
                   ? `${task.customerName} leaves the bag outside the door — no room entry. Tap each step to update them live, like Grab.`
                   : `Grab ${task.customerName}'s items and tap each step so they can follow along, like Grab.`}
               </p>
 
               {isRun && (
-                <div className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                <div className="mt-3 rounded-lg bg-accent-soft px-3 py-2 text-sm text-accent-text">
                   🛒 <b>Something out of stock?</b> Message {task.customerName} in the chat below and
                   agree a swap <b>before</b> you buy it.
                 </div>
               )}
 
               {lastSent && (
-                <div className="mt-3 rounded-lg bg-blue-50 p-3 text-sm text-blue-800">
+                <div className="mt-3 rounded-lg bg-brand-soft p-3 text-sm text-brand-hover">
                   📲 Texted {task.customerName}: “{lastSent}”
                 </div>
               )}
@@ -282,13 +283,13 @@ export default function ActiveTaskPage() {
                           state === 'done'
                             ? 'bg-green-600 text-white'
                             : state === 'current'
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-slate-200 text-slate-500'
+                              ? 'bg-brand text-white'
+                              : 'bg-slate-200 text-muted'
                         }`}
                       >
                         {state === 'done' ? '✓' : i + 1}
                       </span>
-                      <span className={state === 'todo' ? 'text-slate-400' : 'font-medium'}>{s.label}</span>
+                      <span className={state === 'todo' ? 'text-subtle' : 'font-medium'}>{s.label}</span>
                     </li>
                   );
                 })}
@@ -297,7 +298,7 @@ export default function ActiveTaskPage() {
               {!stepsDone ? (
                 <button
                   onClick={() => setStep(step + 1)}
-                  className="mt-4 block w-full rounded-xl bg-blue-700 py-3 font-medium text-white"
+                  className="mt-4 block w-full rounded-xl bg-brand py-3 font-medium text-white"
                 >
                   Update: {activeSteps[step].label}
                 </button>
@@ -314,9 +315,9 @@ export default function ActiveTaskPage() {
           ) : task.presenceRequired ? (
             /* In-room job (cleaning, moving): arrival check-in, then complete */
             <>
-              <div className="rounded-xl border bg-white p-4">
+              <div className="rounded-xl border bg-surface p-4">
                 <p className="font-medium">📍 Arrival check-in</p>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-muted">
                   At {task.customerName}&apos;s door, confirm it&apos;s really you so the buddy they
                   accepted is the one who showed up. Live matric-card scan lands with the
                   verification flow — for now check-in pings {task.customerName} that you&apos;ve
@@ -324,7 +325,7 @@ export default function ActiveTaskPage() {
                 </p>
 
                 {checkedIn ? (
-                  <div className="mt-3 rounded-lg bg-green-50 p-3 text-sm text-green-800">
+                  <div className="mt-3 rounded-lg bg-success-soft p-3 text-sm text-green-800">
                     ✅ <b>Checked in.</b> {task.customerName} now sees: “Your buddy has arrived.”
                   </div>
                 ) : (
@@ -336,7 +337,7 @@ export default function ActiveTaskPage() {
                   </button>
                 )}
 
-                <p className="mt-3 text-xs text-slate-400">
+                <p className="mt-3 text-xs text-subtle">
                   🔒 The matric number is never shown — verification only returns an identity match.
                 </p>
               </div>
@@ -351,37 +352,37 @@ export default function ActiveTaskPage() {
             </>
           ) : (
             /* Meet-up (study help, spare meal, etc.): coordinate over chat, then complete */
-            <div className="rounded-xl border bg-white p-4">
+            <div className="rounded-xl border bg-surface p-4">
               <p className="font-medium">{isStudy ? '📚 Study session' : '🤝 Meet-up'}</p>
 
               {isStudy && task.study ? (
                 <>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-muted">
                     Here&apos;s exactly what {task.customerName} needs — use the chat below to dig into
                     specifics, agree what to cover, share materials, and set a time &amp; place.
                   </p>
-                  <div className="mt-3 rounded-lg bg-slate-50 p-3 text-sm">
+                  <div className="mt-3 rounded-lg bg-surface-sunken p-3 text-sm">
                     <p className="font-medium">📖 {task.study.module}</p>
-                    <div className="mt-2 space-y-1 text-slate-600">
-                      <p><span className="text-slate-400">Topics:</span> {task.study.topics.join(', ')}</p>
-                      <p><span className="text-slate-400">Level:</span> {task.study.level}</p>
-                      <p><span className="text-slate-400">Goal:</span> {task.study.goal}</p>
-                      <p><span className="text-slate-400">Format:</span> {task.study.format}</p>
+                    <div className="mt-2 space-y-1 text-muted">
+                      <p><span className="text-subtle">Topics:</span> {task.study.topics.join(', ')}</p>
+                      <p><span className="text-subtle">Level:</span> {task.study.level}</p>
+                      <p><span className="text-subtle">Goal:</span> {task.study.goal}</p>
+                      <p><span className="text-subtle">Format:</span> {task.study.format}</p>
                     </div>
                     {task.study.helpTypes.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1">
                         {task.study.helpTypes.map((h) => (
-                          <span key={h} className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700">{h}</span>
+                          <span key={h} className="rounded-full bg-brand-soft px-2 py-0.5 text-xs text-brand">{h}</span>
                         ))}
                       </div>
                     )}
                   </div>
-                  <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                  <p className="mt-3 rounded-lg bg-accent-soft px-3 py-2 text-xs text-accent-text">
                     📚 Tutoring only — explain and coach; don&apos;t do the work for them.
                   </p>
                 </>
               ) : (
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-muted">
                   Sort out the where &amp; when with {task.customerName} in the chat below, then mark it
                   complete once you&apos;re done.
                 </p>
@@ -412,9 +413,9 @@ export default function ActiveTaskPage() {
 
         {/* Assigned, but to someone else */}
         {task.status !== 'OPEN' && task.status !== 'COMPLETED' && !iAmAssigned && (
-          <div className="rounded-xl border border-dashed bg-white p-6 text-center text-sm text-slate-500">
+          <div className="rounded-xl border border-dashed bg-surface p-6 text-center text-sm text-muted">
             This task went to another buddy — more are waiting in Explore.
-            <Link href="/app/find" className="mt-2 block font-medium text-blue-700">Browse tasks ›</Link>
+            <Link href="/app/find" className="mt-2 block font-medium text-brand">Browse tasks ›</Link>
           </div>
         )}
       </div>

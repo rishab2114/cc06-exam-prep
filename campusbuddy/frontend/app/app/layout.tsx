@@ -8,7 +8,7 @@ import { AppNav } from '../../components/AppNav';
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <StoreProvider>
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-surface-sunken">
         <AppNav variant="sidebar" />
 
         <div className="lg:pl-60">

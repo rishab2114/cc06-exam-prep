@@ -10,6 +10,7 @@ import { TaskChat } from '../../../../components/TaskChat';
 import { RateCard } from '../../../../components/RateCard';
 import { ProblemActions } from '../../../../components/ProblemActions';
 import { EditTask } from '../../../../components/EditTask';
+import { CategoryIcon } from '../../../../components/CategoryIcon';
 
 // Customer view of one task: every offer thread, with REAL turn-taking
 // bargaining. Each buddy has a live number on the table; whoever moved last
@@ -75,12 +76,12 @@ export default function ApplicantsPage() {
   }
 
   if (loading) {
-    return <div className="p-6 text-center text-slate-400">Loading offers…</div>;
+    return <div className="p-6 text-center text-subtle">Loading offers…</div>;
   }
   if (!task) {
     return (
-      <div className="p-6 text-center text-slate-500">
-        Task not found. <Link href="/app" className="text-blue-700">Home</Link>
+      <div className="p-6 text-center text-muted">
+        Task not found. <Link href="/app" className="text-brand">Home</Link>
       </div>
     );
   }
@@ -98,12 +99,12 @@ export default function ApplicantsPage() {
 
   return (
     <div className="lg:mx-auto lg:max-w-3xl">
-      <header className="border-b bg-white px-4 py-3">
+      <header className="border-b bg-surface px-4 py-3">
         <span className="font-semibold">
-          <Link href="/app" className="text-slate-500">‹ </Link>
-          <span aria-hidden="true">{task.icon}</span> {task.title}
+          <Link href="/app" className="text-muted">‹ </Link>
+          <CategoryIcon category={task.category} emoji={task.icon} size="sm" /> {task.title}
         </span>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-muted">
           You listed {formatSgd(task.priceCents)}{task.study ? '/hr' : ''} ·{' '}
           {assigned
             ? `status: ${task.status.toLowerCase().replace('_', ' ')}`
@@ -112,7 +113,7 @@ export default function ApplicantsPage() {
       </header>
 
       <div className="space-y-3 p-4">
-        {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+        {error && <p className="rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger">{error}</p>}
 
         {!assigned && (
           <EditTask
@@ -123,10 +124,10 @@ export default function ApplicantsPage() {
         )}
 
         {accepted && (
-          <div className="rounded-xl border border-green-300 bg-white p-3">
+          <div className="rounded-xl border border-green-300 bg-surface p-3">
             <p className="font-medium">🤝 Deal with {accepted.providerName}</p>
-            <p className="mt-1 text-sm text-slate-600">
-              Agreed at <b className="text-green-700">{formatSgd(accepted.amountCents)}</b>
+            <p className="mt-1 text-sm text-muted">
+              Agreed at <b className="text-success">{formatSgd(accepted.amountCents)}</b>
               {task.status === 'COMPLETED' ? ' · completed ✅' : ' · they’ll get it done and mark it complete.'}
             </p>
           </div>
@@ -151,37 +152,37 @@ export default function ApplicantsPage() {
             const diff = o.amountCents - task.priceCents;
             const busy = acting === o.id;
             return (
-              <div key={o.id} className="rounded-xl border bg-white p-3">
+              <div key={o.id} className="rounded-xl border bg-surface p-3">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="font-medium">
                       {o.providerName}{' '}
-                      <span className="text-sm font-normal text-slate-500">
+                      <span className="text-sm font-normal text-muted">
                         {o.providerRating !== null
                           ? `⭐${o.providerRating} · ${o.providerJobs} job${o.providerJobs === 1 ? '' : 's'}`
                           : '🪪 campus-verified · new buddy'}
                       </span>
                     </p>
-                    <p className="mt-1 text-xs text-slate-400">
+                    <p className="mt-1 text-xs text-subtle">
                       round {o.round} · {o.yourTurn ? 'your move' : 'waiting for them'}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-semibold text-green-700">{formatSgd(o.amountCents)}</p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-lg font-semibold text-success">{formatSgd(o.amountCents)}</p>
+                    <p className="text-xs text-subtle">
                       {diff === 0 ? 'at your budget' : diff > 0 ? `+${formatSgd(diff)}` : `−${formatSgd(-diff)}`}
                     </p>
                   </div>
                 </div>
 
                 {o.message && (
-                  <p className="mt-2 rounded-lg bg-slate-50 px-2 py-1 text-sm text-slate-600">“{o.message}”</p>
+                  <p className="mt-2 rounded-lg bg-surface-sunken px-2 py-1 text-sm text-muted">“{o.message}”</p>
                 )}
 
                 {o.yourTurn ? (
                   counterOpen === o.id ? (
                     <div className="mt-2 flex items-center gap-2">
-                      <span className="text-sm text-slate-500">Offer S$</span>
+                      <span className="text-sm text-muted">Offer S$</span>
                       <input
                         type="number"
                         value={counterVal}
@@ -198,32 +199,32 @@ export default function ApplicantsPage() {
                           })
                         }
                         disabled={parseSgdToCents(counterVal) <= 0 || busy}
-                        className="rounded-lg bg-blue-700 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+                        className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
                       >
                         {busy ? 'Sending…' : 'Send counter'}
                       </button>
-                      <button onClick={() => setCounterOpen(null)} className="text-sm text-slate-400">Cancel</button>
+                      <button onClick={() => setCounterOpen(null)} className="text-sm text-subtle">Cancel</button>
                     </div>
                   ) : (
                     <div className="mt-2 flex gap-2">
                       <button
                         onClick={() => void act(o.id, () => api.acceptOffer(o.id))}
                         disabled={busy}
-                        className="flex-1 rounded-lg bg-blue-700 py-2 text-sm font-medium text-white disabled:opacity-60"
+                        className="flex-1 rounded-lg bg-brand py-2 text-sm font-medium text-white disabled:opacity-60"
                       >
                         {busy ? 'Accepting…' : `Accept ${formatSgd(o.amountCents)}`}
                       </button>
                       <button
                         onClick={() => openCounter(o)}
                         disabled={busy}
-                        className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
+                        className="rounded-lg border border-border-strong px-4 py-2 text-sm font-medium text-text"
                       >
                         {o.round > 1 ? 'Counter again' : 'Bargain'}
                       </button>
                     </div>
                   )
                 ) : (
-                  <p className="mt-2 rounded-lg bg-blue-50 px-2 py-1.5 text-sm text-blue-700">
+                  <p className="mt-2 rounded-lg bg-brand-soft px-2 py-1.5 text-sm text-brand">
                     ⏳ You countered {formatSgd(o.amountCents)} — waiting for {o.providerName} to accept
                     or counter back.
                   </p>
@@ -233,7 +234,7 @@ export default function ApplicantsPage() {
                   <button
                     onClick={() => void act(o.id, () => api.declineOffer(o.id))}
                     disabled={busy}
-                    className="mt-2 text-xs text-slate-400 hover:text-red-500"
+                    className="mt-2 text-xs text-subtle hover:text-red-500"
                   >
                     Decline this offer
                   </button>
@@ -243,19 +244,19 @@ export default function ApplicantsPage() {
           })}
 
         {!assigned && ranked.length === 0 && (
-          <div className="rounded-xl border border-dashed bg-white p-8 text-center text-sm text-slate-500">
+          <div className="rounded-xl border border-dashed bg-surface p-8 text-center text-sm text-muted">
             <p className="text-3xl">⏳</p>
-            <p className="mt-2 font-medium text-slate-700">No offers yet</p>
+            <p className="mt-2 font-medium text-text">No offers yet</p>
             <p className="mt-1">
               Your post is live in Explore — we&apos;ll notify you the moment a buddy offers.
             </p>
-            <Link href="/app/find" className="mt-3 block font-medium text-blue-700">
+            <Link href="/app/find" className="mt-3 block font-medium text-brand">
               See it in Explore ›
             </Link>
           </div>
         )}
 
-        <p className="rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700">
+        <p className="rounded-lg bg-brand-soft px-3 py-2 text-xs text-brand">
           💡 Posting is free. Accept a number you like or counter — each side takes turns until you
           shake on a price.
         </p>

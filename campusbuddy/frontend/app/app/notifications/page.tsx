@@ -48,8 +48,8 @@ export default function NotificationsPage() {
 
   return (
     <div className="lg:mx-auto lg:max-w-2xl">
-      <header className="border-b bg-white px-4 py-3 font-semibold">
-        <Link href="/app" className="text-slate-500">‹ </Link> Notifications
+      <header className="border-b bg-surface px-4 py-3 font-semibold">
+        <Link href="/app" className="text-muted">‹ </Link> Notifications
       </header>
 
       <div className="divide-y">
@@ -59,26 +59,26 @@ export default function NotificationsPage() {
             <>
               <span className="mt-0.5">{TYPE_ICON[n.type] ?? '🔔'}</span>
               <div className="flex-1">
-                <p className={`text-sm ${n.read ? 'text-slate-600' : 'font-medium'}`}>{n.title}</p>
-                {n.body && <p className="mt-0.5 text-sm text-slate-500">{n.body}</p>}
-                <p className="mt-0.5 text-xs text-slate-400">{timeAgo(n.at)}</p>
+                <p className={`text-sm ${n.read ? 'text-muted' : 'font-medium'}`}>{n.title}</p>
+                {n.body && <p className="mt-0.5 text-sm text-muted">{n.body}</p>}
+                <p className="mt-0.5 text-xs text-subtle">{timeAgo(n.at)}</p>
               </div>
               {href && <span className="mt-0.5 text-slate-300">›</span>}
             </>
           );
           return href ? (
-            <Link key={n.id} href={href} className="flex items-start gap-3 bg-white px-4 py-3">
+            <Link key={n.id} href={href} className="flex items-start gap-3 bg-surface px-4 py-3">
               {inner}
             </Link>
           ) : (
-            <div key={n.id} className="flex items-start gap-3 bg-white px-4 py-3">
+            <div key={n.id} className="flex items-start gap-3 bg-surface px-4 py-3">
               {inner}
             </div>
           );
         })}
 
         {notifications.length === 0 && (
-          <div className="bg-white p-8 text-center text-sm text-slate-500">
+          <div className="bg-surface p-8 text-center text-sm text-muted">
             <p className="text-3xl">🔔</p>
             <p className="mt-2">Nothing yet — post a task or offer on one and the action lands here.</p>
           </div>

@@ -62,20 +62,20 @@ export default function NewServicePage() {
 
   return (
     <div className="lg:mx-auto lg:max-w-2xl">
-      <header className="border-b bg-white px-4 py-3 font-semibold">
-        <Link href="/app/services" className="text-slate-500">‹ </Link> Offer a service
+      <header className="border-b bg-surface px-4 py-3 font-semibold">
+        <Link href="/app/services" className="text-muted">‹ </Link> Offer a service
       </header>
 
       <form className="space-y-4 p-4 text-sm" onSubmit={(e) => { e.preventDefault(); post(); }}>
         <label className="block">
-          <span className="text-slate-500">Service type</span>
+          <span className="text-muted">Service type</span>
           <select value={category} onChange={(e) => setCategory(e.target.value)} className="mt-1 w-full rounded-xl border px-3 py-2">
             {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
           </select>
         </label>
 
         <label className="block">
-          <span className="text-slate-500">Title</span>
+          <span className="text-muted">Title</span>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -87,7 +87,7 @@ export default function NewServicePage() {
         </label>
 
         <label className="block">
-          <span className="text-slate-500">What you offer</span>
+          <span className="text-muted">What you offer</span>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -100,17 +100,17 @@ export default function NewServicePage() {
 
         <div className="flex gap-2">
           <label className="block flex-1">
-            <span className="text-slate-500">Where (optional)</span>
+            <span className="text-muted">Where (optional)</span>
             <input value={where} onChange={(e) => setWhere(e.target.value)} maxLength={60} placeholder="Library / your hall / online" className="mt-1 w-full rounded-xl border px-3 py-2" />
           </label>
           <label className="block flex-1">
-            <span className="text-slate-500">Availability</span>
+            <span className="text-muted">Availability</span>
             <input value={availability} onChange={(e) => setAvailability(e.target.value)} maxLength={40} className="mt-1 w-full rounded-xl border px-3 py-2" />
           </label>
         </div>
 
         <label className="block">
-          <span className="text-slate-500">Your rate (SGD)</span>
+          <span className="text-muted">Your rate (SGD)</span>
           <input
             type="number"
             inputMode="decimal"
@@ -122,22 +122,22 @@ export default function NewServicePage() {
             className="mt-1 w-full rounded-xl border px-3 py-2"
             aria-invalid={invalidRate}
           />
-          <span className="mt-1 block text-xs text-slate-400">
+          <span className="mt-1 block text-xs text-subtle">
             {invalidRate ? 'Set a rate above S$0 (max S$999).' : 'Bookers can still bargain — this is your starting quote.'}
           </span>
         </label>
 
-        <div className="rounded-xl bg-blue-50 p-3 text-sm text-blue-800">
+        <div className="rounded-xl bg-brand-soft p-3 text-sm text-brand-hover">
           <b>Free to list.</b> Your gig shows on the Services tab at {formatSgd(cents)}. When a student
           books it, your quote lands as a pending offer — accept to lock it in and start chatting.
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-danger">{error}</p>}
 
         <button
           type="submit"
           disabled={!canPost}
-          className="block w-full rounded-xl bg-blue-700 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+          className="block w-full rounded-xl bg-brand py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
           {posting ? 'Posting…' : missingTitle ? 'Add a title to post' : invalidRate ? 'Set a rate to post' : 'Post service (free)'}
         </button>

@@ -45,7 +45,7 @@ export function RateCard({ taskId, counterpartName }: { taskId: string; counterp
   const mine = reviews.find((r) => r.mine);
 
   return (
-    <div className="rounded-xl border bg-white p-3">
+    <div className="rounded-xl border bg-surface p-3">
       <p className="font-medium">⭐ Rate {counterpartName}</p>
 
       {canReview ? (
@@ -69,26 +69,26 @@ export function RateCard({ taskId, counterpartName }: { taskId: string; counterp
             placeholder="Optional — how did it go?"
             className="w-full rounded-xl border px-3 py-2 text-sm"
           />
-          {error && <p className="text-xs text-red-600">{error}</p>}
+          {error && <p className="text-xs text-danger">{error}</p>}
           <button
             onClick={() => void submit()}
             disabled={busy}
-            className="w-full rounded-xl bg-blue-700 py-2 text-sm font-medium text-white disabled:opacity-60"
+            className="w-full rounded-xl bg-brand py-2 text-sm font-medium text-white disabled:opacity-60"
           >
             {busy ? 'Submitting…' : `Submit ${stars}-star review`}
           </button>
         </div>
       ) : mine ? (
-        <p className="mt-2 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-800">
+        <p className="mt-2 rounded-lg bg-success-soft px-3 py-2 text-sm text-green-800">
           You rated {counterpartName} {'⭐'.repeat(mine.stars)}
           {mine.comment ? ` — “${mine.comment}”` : ''}
         </p>
       ) : (
-        <p className="mt-2 text-sm text-slate-500">Rating opens when the task is completed.</p>
+        <p className="mt-2 text-sm text-muted">Rating opens when the task is completed.</p>
       )}
 
       {theirs && (
-        <p className="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
+        <p className="mt-2 rounded-lg bg-surface-sunken px-3 py-2 text-sm text-muted">
           {theirs.raterName} rated you {'⭐'.repeat(theirs.stars)}
           {theirs.comment ? ` — “${theirs.comment}”` : ''}
         </p>

@@ -53,19 +53,19 @@ function PushToggle() {
             onClick={() => void toggle()}
             disabled={busy}
             className={`rounded-full px-3 py-1 text-xs font-medium disabled:opacity-60 ${
-              enabled ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
+              enabled ? 'bg-green-100 text-success' : 'bg-surface-sunken text-muted'
             }`}
           >
             {busy ? '…' : enabled ? 'On — tap to disable' : 'Off — tap to enable'}
           </button>
         ) : (
-          <span className="text-xs text-slate-400">Not supported here</span>
+          <span className="text-xs text-subtle">Not supported here</span>
         )}
       </div>
-      <p className="mt-1 text-xs text-slate-500">
+      <p className="mt-1 text-xs text-muted">
         Get an alert on this device the moment someone offers, counters, messages, or accepts.
       </p>
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-xs text-danger">{error}</p>}
     </div>
   );
 }
@@ -96,26 +96,26 @@ export default function ProfilePage() {
 
   return (
     <div className="lg:mx-auto lg:max-w-2xl">
-      <header className="border-b bg-white px-4 py-3 font-semibold">Profile</header>
+      <header className="border-b bg-surface px-4 py-3 font-semibold">Profile</header>
 
       <div className="space-y-4 p-4">
         {/* Identity card */}
-        <div className="rounded-2xl border bg-white p-4">
+        <div className="rounded-2xl border bg-surface p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 text-xl font-bold text-blue-700">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-soft text-xl font-bold text-brand">
               {me.name[0]?.toUpperCase() ?? '🎒'}
             </div>
             <div>
               <p className="text-lg font-semibold">{me.name}</p>
-              <p className="text-sm text-slate-500">{me.campus}{me.hall ? ` · ${me.hall}` : ''}</p>
-              <p className="text-xs text-slate-400">{me.email}</p>
+              <p className="text-sm text-muted">{me.campus}{me.hall ? ` · ${me.hall}` : ''}</p>
+              <p className="text-xs text-subtle">{me.email}</p>
             </div>
           </div>
           <div className="mt-3 flex flex-wrap gap-1">
-            <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700">
+            <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-success">
               🎓 {me.campus} email verified
             </span>
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">
+            <span className="rounded-full bg-accent-soft px-2 py-0.5 text-xs text-accent-text">
               🪪 Matric scan — at first in-person task
             </span>
           </div>
@@ -123,24 +123,24 @@ export default function ProfilePage() {
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="rounded-xl border bg-white p-3">
+          <div className="rounded-xl border bg-surface p-3">
             <p className="text-lg font-bold">{myTasks.length}</p>
-            <p className="text-xs text-slate-500">Active posts</p>
+            <p className="text-xs text-muted">Active posts</p>
           </div>
-          <div className="rounded-xl border bg-white p-3">
+          <div className="rounded-xl border bg-surface p-3">
             <p className="text-lg font-bold">{me.jobsDone}</p>
-            <p className="text-xs text-slate-500">Jobs done</p>
+            <p className="text-xs text-muted">Jobs done</p>
           </div>
-          <div className="rounded-xl border bg-white p-3">
+          <div className="rounded-xl border bg-surface p-3">
             <p className="text-lg font-bold">{me.rating !== null ? `⭐${me.rating}` : '⭐ New'}</p>
-            <p className="text-xs text-slate-500">Rating</p>
+            <p className="text-xs text-muted">Rating</p>
           </div>
         </div>
 
         {/* Settings */}
         <section>
-          <p className="mb-2 text-xs font-semibold uppercase text-slate-500">Settings</p>
-          <div className="divide-y rounded-xl border bg-white">
+          <p className="mb-2 text-xs font-semibold uppercase text-muted">Settings</p>
+          <div className="divide-y rounded-xl border bg-surface">
             <PushToggle />
             {SETTINGS.map((s) => (
               <details key={s.label} className="group px-4 py-3">
@@ -148,7 +148,7 @@ export default function ProfilePage() {
                   <span>{s.icon} {s.label}</span>
                   <span className="text-slate-300 transition group-open:rotate-90">›</span>
                 </summary>
-                <p className="mt-2 text-sm text-slate-500">{s.body}</p>
+                <p className="mt-2 text-sm text-muted">{s.body}</p>
               </details>
             ))}
           </div>
@@ -156,9 +156,9 @@ export default function ProfilePage() {
 
         {/* Dev-only fast identity switch for driving both sides of the marketplace */}
         {demoAccounts.filter((a) => a.email !== me.email).length > 0 && (
-          <section className="rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-4">
-            <p className="text-sm font-semibold text-amber-800">🧪 Switch demo account (dev)</p>
-            <p className="mt-1 text-xs text-amber-700">
+          <section className="rounded-2xl border border-dashed border-accent/40 bg-accent-soft p-4">
+            <p className="text-sm font-semibold text-accent-text">🧪 Switch demo account (dev)</p>
+            <p className="mt-1 text-xs text-accent-text">
               Jump to another student to offer, bargain, or accept from the other side.
             </p>
             <div className="mt-3 space-y-2">
@@ -169,10 +169,10 @@ export default function ProfilePage() {
                     key={a.email}
                     onClick={() => void switchTo(a.email)}
                     disabled={switching !== null}
-                    className="flex w-full items-center justify-between rounded-xl border border-amber-200 bg-white px-3 py-2.5 text-sm font-medium disabled:opacity-60"
+                    className="flex w-full items-center justify-between rounded-xl border border-accent/30 bg-surface px-3 py-2.5 text-sm font-medium disabled:opacity-60"
                   >
                     <span>{a.name}</span>
-                    <span className="text-blue-700">{switching === a.email ? 'Switching…' : 'Switch ›'}</span>
+                    <span className="text-brand">{switching === a.email ? 'Switching…' : 'Switch ›'}</span>
                   </button>
                 ))}
             </div>
@@ -181,7 +181,7 @@ export default function ProfilePage() {
 
         <button
           onClick={() => void signOut()}
-          className="block w-full rounded-xl border border-red-200 bg-white py-3 text-sm font-medium text-red-600"
+          className="block w-full rounded-xl border border-danger/30 bg-surface py-3 text-sm font-medium text-danger"
         >
           Sign out
         </button>

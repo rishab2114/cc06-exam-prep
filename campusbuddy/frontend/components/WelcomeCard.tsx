@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useStore } from '../lib/store';
+import { Search, Handshake, CircleCheck } from 'lucide-react';
 
 const STEPS = [
-  { icon: '🔎', title: 'Browse', body: 'See what students near you need right now — laundry, parcels, meals, study help.' },
-  { icon: '🤝', title: 'Offer or accept', body: 'Quote your own price, or just take theirs. Either side can counter until you agree.' },
-  { icon: '✅', title: 'Get it done', body: 'Coordinate in chat, do the task, then rate each other. Free to post, always.' },
+  { icon: Search, title: 'Browse', body: 'See what students near you need right now — laundry, parcels, meals, study help.' },
+  { icon: Handshake, title: 'Offer or accept', body: 'Quote your own price, or just take theirs. Either side can counter until you agree.' },
+  { icon: CircleCheck, title: 'Get it done', body: 'Coordinate in chat, do the task, then rate each other. Free to post, always.' },
 ];
 
 function storageKey(userId: string) {
@@ -35,25 +36,25 @@ export function WelcomeCard({ forceShow }: { forceShow: boolean }) {
   }
 
   return (
-    <div className="relative rounded-2xl border border-blue-100 bg-blue-50 p-4">
+    <div className="relative rounded-2xl border border-blue-100 bg-brand-soft p-4">
       <button
         onClick={dismiss}
         aria-label="Dismiss"
-        className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
+        className="absolute right-3 top-3 text-subtle hover:text-muted"
       >
         ✕
       </button>
-      <p className="pr-6 font-semibold text-blue-900">👋 Welcome to CampusBuddy — here's how it works</p>
+      <p className="pr-6 font-semibold text-brand-hover">Welcome to CampusBuddy — here&apos;s how it works</p>
       <div className="mt-3 grid gap-3 sm:grid-cols-3">
         {STEPS.map((s) => (
-          <div key={s.title} className="rounded-xl bg-white p-3">
-            <p className="text-xl">{s.icon}</p>
+          <div key={s.title} className="rounded-xl bg-surface p-3">
+            <s.icon size={18} className="text-brand" aria-hidden="true" />
             <p className="mt-1 text-sm font-medium">{s.title}</p>
-            <p className="mt-0.5 text-xs text-slate-500">{s.body}</p>
+            <p className="mt-0.5 text-xs text-muted">{s.body}</p>
           </div>
         ))}
       </div>
-      <button onClick={dismiss} className="mt-3 text-sm font-medium text-blue-700">
+      <button onClick={dismiss} className="mt-3 text-sm font-medium text-brand">
         Got it, let's go ›
       </button>
     </div>

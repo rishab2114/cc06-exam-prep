@@ -42,7 +42,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
       type="button"
       onClick={onClick}
       className={`rounded-full border px-3 py-1.5 text-sm ${
-        active ? 'border-blue-600 bg-blue-50 font-medium text-blue-700' : 'border-slate-300 bg-white'
+        active ? 'border-brand bg-brand-soft font-medium text-brand' : 'border-border-strong bg-surface'
       }`}
     >
       {children}
@@ -130,32 +130,32 @@ function NewTaskForm() {
       <div className="flex min-h-[70vh] flex-col items-center justify-center p-6 text-center">
         <div className="text-5xl">✅</div>
         <h1 className="mt-4 text-xl font-bold">Task posted — for free!</h1>
-        <p className="mt-2 max-w-sm text-slate-600">
+        <p className="mt-2 max-w-sm text-muted">
           It&apos;s live on the marketplace now. You only pay when you accept a buddy — we hold the
           agreed amount and refund anything unused to your balance.
         </p>
         <Link
           href={`/app/applicants/${postedId}`}
-          className="mt-8 rounded-xl bg-blue-700 px-6 py-3 font-medium text-white"
+          className="mt-8 rounded-xl bg-brand px-6 py-3 font-medium text-white"
         >
           View your task & applicants ›
         </Link>
-        <Link href="/app/find" className="mt-3 text-sm text-blue-700">See it in Explore</Link>
-        <Link href="/app" className="mt-3 text-sm text-slate-500">Back to home</Link>
+        <Link href="/app/find" className="mt-3 text-sm text-brand">See it in Explore</Link>
+        <Link href="/app" className="mt-3 text-sm text-muted">Back to home</Link>
       </div>
     );
   }
 
   return (
     <div className="lg:mx-auto lg:max-w-2xl">
-      <header className="border-b bg-white px-4 py-3 font-semibold">
-        <Link href="/app" className="text-slate-500">‹ </Link>
+      <header className="border-b bg-surface px-4 py-3 font-semibold">
+        <Link href="/app" className="text-muted">‹ </Link>
         {isStudy ? 'Get study help' : 'New task'}
       </header>
 
       <form className="space-y-4 p-4 text-sm" onSubmit={(e) => { e.preventDefault(); post(); }}>
         <label className="block">
-          <span className="text-slate-500">Category</span>
+          <span className="text-muted">Category</span>
           <select value={category} onChange={(e) => setCategory(e.target.value)} className="mt-1 w-full rounded-xl border px-3 py-2">
             {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
           </select>
@@ -163,7 +163,7 @@ function NewTaskForm() {
 
         {isGrocery && (
           <label className="block">
-            <span className="text-slate-500">Store</span>
+            <span className="text-muted">Store</span>
             <select value={store} onChange={(e) => setStore(e.target.value)} className="mt-1 w-full rounded-xl border px-3 py-2">
               {STORES.map((s) => <option key={s}>{s}</option>)}
             </select>
@@ -173,7 +173,7 @@ function NewTaskForm() {
         {isStudy ? (
           <>
             <label className="block">
-              <span className="text-slate-500">Module & topic</span>
+              <span className="text-muted">Module & topic</span>
               <input
                 value={module}
                 onChange={(e) => setModule(e.target.value)}
@@ -185,7 +185,7 @@ function NewTaskForm() {
             </label>
 
             <div>
-              <span className="text-slate-500">Where are you at?</span>
+              <span className="text-muted">Where are you at?</span>
               <div className="mt-1 flex flex-wrap gap-2">
                 {LEVELS.map((l) => (
                   <Chip key={l} active={level === l} onClick={() => setLevel(l)}>{l}</Chip>
@@ -194,7 +194,7 @@ function NewTaskForm() {
             </div>
 
             <div>
-              <span className="text-slate-500">Help needed (pick any)</span>
+              <span className="text-muted">Help needed (pick any)</span>
               <div className="mt-1 flex flex-wrap gap-2">
                 {HELP_TYPES.map((h) => (
                   <Chip key={h.key} active={helpTypes.includes(h.key)} onClick={() => toggleHelpType(h.key)}>
@@ -205,7 +205,7 @@ function NewTaskForm() {
             </div>
 
             <div>
-              <span className="text-slate-500">Where & when</span>
+              <span className="text-muted">Where & when</span>
               <div className="mt-1 flex flex-wrap gap-2">
                 {FORMATS.map((f) => (
                   <Chip key={f} active={format === f} onClick={() => setFormat(f)}>{f}</Chip>
@@ -219,7 +219,7 @@ function NewTaskForm() {
 
             {showDetails ? (
               <label className="block">
-                <span className="text-slate-500">Details (optional)</span>
+                <span className="text-muted">Details (optional)</span>
                 <input
                   value={details}
                   onChange={(e) => setDetails(e.target.value)}
@@ -229,19 +229,19 @@ function NewTaskForm() {
                 />
               </label>
             ) : (
-              <button type="button" onClick={() => setShowDetails(true)} className="text-xs font-medium text-blue-700">
+              <button type="button" onClick={() => setShowDetails(true)} className="text-xs font-medium text-brand">
                 + Add details (goal, specific questions)
               </button>
             )}
 
-            <p className="rounded-lg bg-amber-50 px-2 py-1 text-xs text-amber-700">
+            <p className="rounded-lg bg-accent-soft px-2 py-1 text-xs text-accent-text">
               📚 Tutoring only — buddies explain and coach, never do the work for you.
             </p>
           </>
         ) : (
           <>
             <label className="block">
-              <span className="text-slate-500">What do you need?</span>
+              <span className="text-muted">What do you need?</span>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -253,7 +253,7 @@ function NewTaskForm() {
             </label>
 
             <label className="block">
-              <span className="text-slate-500">Where</span>
+              <span className="text-muted">Where</span>
               <input
                 value={where}
                 onChange={(e) => setWhere(e.target.value)}
@@ -264,11 +264,11 @@ function NewTaskForm() {
 
             <div className="flex gap-2">
               <label className="block flex-1">
-                <span className="text-slate-500">When</span>
+                <span className="text-muted">When</span>
                 <input value={when} onChange={(e) => setWhen(e.target.value)} maxLength={20} className="mt-1 w-full rounded-xl border px-3 py-2" />
               </label>
               <label className="block flex-1">
-                <span className="text-slate-500">Time</span>
+                <span className="text-muted">Time</span>
                 <input value={time} onChange={(e) => setTime(e.target.value)} maxLength={20} className="mt-1 w-full rounded-xl border px-3 py-2" />
               </label>
             </div>
@@ -276,7 +276,7 @@ function NewTaskForm() {
         )}
 
         <label className="block">
-          <span className="text-slate-500">{isStudy ? 'Budget (SGD per hour)' : 'Budget (SGD)'}</span>
+          <span className="text-muted">{isStudy ? 'Budget (SGD per hour)' : 'Budget (SGD)'}</span>
           <input
             type="number"
             inputMode="decimal"
@@ -288,24 +288,24 @@ function NewTaskForm() {
             className="mt-1 w-full rounded-xl border px-3 py-2"
             aria-invalid={invalidBudget}
           />
-          <span className="mt-1 block text-xs text-slate-400">
+          <span className="mt-1 block text-xs text-subtle">
             {invalidBudget
               ? 'Enter a budget above S$0 (max S$999). Buddies can also offer their own price.'
               : 'No minimum — set any budget. Buddies can also offer their own price.'}
           </span>
         </label>
 
-        <div className="rounded-xl bg-blue-50 p-3 text-sm text-blue-800">
+        <div className="rounded-xl bg-brand-soft p-3 text-sm text-brand-hover">
           <b>Free to post.</b> Budget {formatSgd(cents)}{isStudy ? '/hr' : ''} — you only pay when
           you accept a buddy. We hold the agreed amount and refund anything unused.
         </div>
 
-        {postError && <p className="text-sm text-red-600">{postError}</p>}
+        {postError && <p className="text-sm text-danger">{postError}</p>}
 
         <button
           type="submit"
           disabled={!canPost}
-          className="block w-full rounded-xl bg-blue-700 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+          className="block w-full rounded-xl bg-brand py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
         >
           {posting
             ? 'Posting…'

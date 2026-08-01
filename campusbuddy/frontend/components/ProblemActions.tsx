@@ -52,30 +52,30 @@ export function ProblemActions({
 
   if (reported) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-600">
+      <div className="rounded-xl border border-border bg-surface p-3 text-sm text-muted">
         ✅ Report received — our team will review it and follow up. For anything urgent, email{' '}
-        <a href="mailto:hello@campusbuddy.sg" className="font-medium text-blue-700">hello@campusbuddy.sg</a>.
+        <a href="mailto:hello@campusbuddy.sg" className="font-medium text-brand">hello@campusbuddy.sg</a>.
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3">
-      <p className="text-xs font-semibold uppercase text-slate-400">Having an issue?</p>
+    <div className="rounded-xl border border-border bg-surface p-3">
+      <p className="text-xs font-semibold uppercase text-subtle">Having an issue?</p>
 
       {open === null && (
         <div className="mt-2 flex flex-wrap gap-2">
           {canCancel && (
             <button
               onClick={() => { setOpen('cancel'); setReason(''); setError(null); }}
-              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700"
+              className="rounded-lg border border-border-strong px-3 py-1.5 text-sm font-medium text-text"
             >
               Cancel this booking
             </button>
           )}
           <button
             onClick={() => { setOpen('report'); setReason(''); setError(null); }}
-            className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600"
+            className="rounded-lg border border-danger/30 px-3 py-1.5 text-sm font-medium text-danger"
           >
             🚩 Report a problem
           </button>
@@ -84,7 +84,7 @@ export function ProblemActions({
 
       {open === 'cancel' && (
         <div className="mt-2 space-y-2">
-          <p className="text-sm text-slate-600">Cancel this booking? The other person will be told, with your reason.</p>
+          <p className="text-sm text-muted">Cancel this booking? The other person will be told, with your reason.</p>
           <textarea
             value={reason}
             onChange={(e) => setReason(e.target.value)}
@@ -93,7 +93,7 @@ export function ProblemActions({
             placeholder="Reason (optional) — e.g. plans changed, they didn’t show…"
             className="w-full rounded-lg border px-3 py-2 text-sm"
           />
-          {error && <p className="text-xs text-red-600">{error}</p>}
+          {error && <p className="text-xs text-danger">{error}</p>}
           <div className="flex gap-2">
             <button
               onClick={() => void doCancel()}
@@ -102,7 +102,7 @@ export function ProblemActions({
             >
               {busy ? 'Cancelling…' : 'Confirm cancel'}
             </button>
-            <button onClick={() => setOpen(null)} className="text-sm text-slate-400">Keep it</button>
+            <button onClick={() => setOpen(null)} className="text-sm text-subtle">Keep it</button>
           </div>
         </div>
       )}
@@ -130,7 +130,7 @@ export function ProblemActions({
             placeholder="Anything else we should know? (optional)"
             className="w-full rounded-lg border px-3 py-2 text-sm"
           />
-          {error && <p className="text-xs text-red-600">{error}</p>}
+          {error && <p className="text-xs text-danger">{error}</p>}
           <div className="flex gap-2">
             <button
               onClick={() => void doReport()}
@@ -139,7 +139,7 @@ export function ProblemActions({
             >
               {busy ? 'Sending…' : 'Send report'}
             </button>
-            <button onClick={() => setOpen(null)} className="text-sm text-slate-400">Cancel</button>
+            <button onClick={() => setOpen(null)} className="text-sm text-subtle">Cancel</button>
           </div>
         </div>
       )}

@@ -47,13 +47,13 @@ export default function MessagesPage() {
 
   return (
     <div className="lg:mx-auto lg:max-w-2xl">
-      <header className="border-b bg-white px-4 py-3 font-semibold">Messages</header>
+      <header className="border-b bg-surface px-4 py-3 font-semibold">Messages</header>
 
       <div className="divide-y">
         {threads === null && (
           <div className="space-y-2 p-4">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="h-16 animate-pulse rounded-xl border bg-white" />
+              <div key={i} className="h-16 animate-pulse rounded-xl border bg-surface" />
             ))}
           </div>
         )}
@@ -62,9 +62,9 @@ export default function MessagesPage() {
           <Link
             key={t.taskId}
             href={t.taskStatus === 'OPEN' ? `/app/applicants/${t.taskId}` : `/app/task/${t.taskId}`}
-            className="flex items-start gap-3 bg-white px-4 py-3"
+            className="flex items-start gap-3 bg-surface px-4 py-3"
           >
-            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700">
+            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-bold text-brand">
               {t.counterpartName[0]?.toUpperCase() ?? '💬'}
             </span>
             <div className="min-w-0 flex-1">
@@ -72,16 +72,16 @@ export default function MessagesPage() {
                 <span className={`truncate text-sm ${t.unread > 0 ? 'font-semibold' : 'font-medium'}`}>
                   {t.counterpartName}
                 </span>
-                <span className="shrink-0 text-xs text-slate-400">{timeAgo(t.lastMessageAt)}</span>
+                <span className="shrink-0 text-xs text-subtle">{timeAgo(t.lastMessageAt)}</span>
               </div>
-              <p className="truncate text-xs text-slate-400">{t.taskTitle}</p>
-              <p className={`mt-0.5 truncate text-sm ${t.unread > 0 ? 'font-medium text-slate-800' : 'text-slate-500'}`}>
+              <p className="truncate text-xs text-subtle">{t.taskTitle}</p>
+              <p className={`mt-0.5 truncate text-sm ${t.unread > 0 ? 'font-medium text-text' : 'text-muted'}`}>
                 {t.lastMessageMine ? 'You: ' : ''}
                 {t.lastMessage ?? 'Say hi 👋'}
               </p>
             </div>
             {t.unread > 0 && (
-              <span className="mt-1 shrink-0 rounded-full bg-red-500 px-1.5 text-[10px] font-bold leading-4 text-white">
+              <span className="mt-1 shrink-0 rounded-full bg-danger px-1.5 text-[10px] font-bold leading-4 text-white">
                 {t.unread > 9 ? '9+' : t.unread}
               </span>
             )}
@@ -89,13 +89,13 @@ export default function MessagesPage() {
         ))}
 
         {threads?.length === 0 && (
-          <div className="bg-white p-8 text-center text-sm text-slate-500">
+          <div className="bg-surface p-8 text-center text-sm text-muted">
             <p className="text-3xl">💬</p>
-            <p className="mt-2 font-medium text-slate-700">No conversations yet</p>
+            <p className="mt-2 font-medium text-text">No conversations yet</p>
             <p className="mt-1">
               {me ? 'Chat opens automatically once you accept or get accepted on a task.' : ''}
             </p>
-            <Link href="/app/find" className="mt-3 block font-medium text-blue-700">Browse tasks ›</Link>
+            <Link href="/app/find" className="mt-3 block font-medium text-brand">Browse tasks ›</Link>
           </div>
         )}
       </div>

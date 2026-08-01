@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { isCampusEmail, campusForEmail, CAMPUSES } from '../../lib/ntu';
 import { api, ApiClientError } from '../../lib/api';
+import { Sparkles, ShieldCheck, FlaskConical, ChevronRight } from 'lucide-react';
 
 interface DemoAccount {
   email: string;
@@ -77,20 +78,28 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6">
-      <Link href="/" className="text-sm text-slate-500">‹ Back</Link>
-      <h1 className="mt-4 text-2xl font-bold text-blue-700">Welcome to CampusBuddy</h1>
-      <p className="mt-2 text-slate-600">
-        Sign in or join with your campus email. We&apos;ll send you a 6-digit code — no password.
-      </p>
+    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-5 py-10">
+      <Link href="/" className="inline-flex items-center gap-1 text-sm text-muted hover:text-text">
+        ‹ Back
+      </Link>
 
-      <form onSubmit={onSubmit} className="mt-8 space-y-3">
+      <div className="mt-5 card p-6 shadow-card sm:p-7">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-white">
+          <Sparkles size={19} aria-hidden="true" />
+        </span>
+        <h1 className="mt-4 text-2xl font-bold tracking-tight">Welcome to CampusBuddy</h1>
+        <p className="mt-2 text-[15px] leading-relaxed text-muted">
+          Sign in or join with your campus email. We&apos;ll send you a 6-digit code — no password.
+        </p>
+
+      <form onSubmit={onSubmit} className="mt-7 space-y-4">
         <label className="block text-sm">
-          <span className="text-slate-500">Your campus</span>
+          <span className="font-medium">Your campus</span>
           <select
             value={campus}
             onChange={(e) => setCampus(e.target.value)}
-            className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-3"
+            className="input mt-1.5 appearance-none bg-[right_1rem_center] bg-no-repeat pr-10"
+            style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")" }}
           >
             {CAMPUSES.map((c) => (
               <option key={c.code} value={c.code}>
@@ -99,31 +108,42 @@ export default function LoginPage() {
             ))}
           </select>
         </label>
-        <input
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="yourname@e.ntu.edu.sg"
-          className="w-full rounded-xl border border-slate-300 px-4 py-3"
-        />
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <button
-          disabled={sending}
-          className="block w-full rounded-xl bg-blue-700 px-4 py-3 font-medium text-white disabled:opacity-60"
-        >
+        <label className="block text-sm">
+          <span className="font-medium">Campus email</span>
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="yourname@e.ntu.edu.sg"
+            className="input mt-1.5"
+            aria-invalid={error ? true : undefined}
+          />
+        </label>
+        {/* Rule 8: the error sits with the field it belongs to, not at the top. */}
+        {error && (
+          <p role="alert" className="rounded-xl bg-danger-soft px-3 py-2 text-sm text-danger">
+            {error}
+          </p>
+        )}
+        <button disabled={sending} className="btn btn-primary w-full">
           {sending ? 'Sending code…' : 'Send sign-in code'}
         </button>
       </form>
 
-      <p className="mt-6 text-xs text-slate-400">
-        Only verified students can join. Accounts are verified by your campus email.
+      <p className="mt-5 flex items-start gap-2 text-xs text-subtle">
+        <ShieldCheck size={14} className="mt-px shrink-0 text-brand" aria-hidden="true" />
+        Only verified students can join — we check your university email.
       </p>
+      </div>
 
       {demoAccounts.length > 0 && (
-        <div className="mt-8 rounded-2xl border border-dashed border-amber-300 bg-amber-50 p-4">
-          <p className="text-sm font-semibold text-amber-800">🧪 Try it as a demo student</p>
-          <p className="mt-1 text-xs text-amber-700">
+        <div className="mt-8 rounded-2xl border border-dashed border-accent/40 bg-accent-soft p-4">
+          <p className="flex items-center gap-1.5 text-sm font-semibold text-accent-text">
+            <FlaskConical size={15} aria-hidden="true" />
+            Try it as a demo student
+          </p>
+          <p className="mt-1 text-xs text-accent-text">
             One tap to explore the marketplace as a sample NTU student — no email code needed. Sign
             in as one to post a task, switch to another to offer and bargain, then back to accept.
             These are sample accounts, not real students.
@@ -134,23 +154,24 @@ export default function LoginPage() {
                 key={a.email}
                 onClick={() => demoLogin(a.email)}
                 disabled={demoBusy !== null}
-                className="flex w-full items-center justify-between rounded-xl border border-amber-200 bg-white px-3 py-2.5 text-left disabled:opacity-60"
+                className="flex min-h-[52px] w-full items-center justify-between rounded-xl border border-accent/30 bg-surface px-3 py-2.5 text-left transition-colors duration-150 hover:border-accent/60 disabled:opacity-60"
               >
                 <span className="min-w-0">
                   <span className="flex items-center gap-1.5 text-sm font-medium">
                     <span className="truncate">{a.name}</span>
                     {a.isDemo && (
-                      <span className="shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+                      <span className="shrink-0 rounded bg-accent-soft px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent-text">
                         demo
                       </span>
                     )}
                   </span>
-                  <span className="block truncate text-xs text-slate-400">
+                  <span className="block truncate text-xs text-subtle">
                     {a.email} · {a.campus}{a.hall ? ` · ${a.hall}` : ''}
                   </span>
                 </span>
-                <span className="shrink-0 pl-2 text-sm font-medium text-blue-700">
-                  {demoBusy === a.email ? 'Signing in…' : 'Sign in ›'}
+                <span className="flex shrink-0 items-center gap-0.5 pl-2 text-sm font-medium text-brand">
+                  {demoBusy === a.email ? 'Signing in…' : 'Sign in'}
+                  {demoBusy !== a.email && <ChevronRight size={14} aria-hidden="true" />}
                 </span>
               </button>
             ))}

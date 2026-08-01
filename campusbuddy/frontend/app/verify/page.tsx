@@ -27,8 +27,8 @@ function VerifyForm() {
   if (!email) {
     return (
       <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 text-center">
-        <p className="text-slate-600">Start from the sign-in page so we know where to send your code.</p>
-        <Link href="/login" className="mt-4 font-medium text-blue-700">Go to sign in ›</Link>
+        <p className="text-muted">Start from the sign-in page so we know where to send your code.</p>
+        <Link href="/login" className="mt-4 font-medium text-brand">Go to sign in ›</Link>
       </main>
     );
   }
@@ -69,13 +69,13 @@ function VerifyForm() {
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 text-center">
       <div className="text-4xl">📬</div>
       <h1 className="mt-4 text-2xl font-bold">Check your inbox</h1>
-      <p className="mt-2 text-slate-600">
+      <p className="mt-2 text-muted">
         We sent a 6-digit code to <span className="font-medium">{email}</span>. It expires in 10
         minutes.
       </p>
 
       {devCode && (
-        <div className="mt-4 rounded-xl border border-dashed border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+        <div className="mt-4 rounded-xl border border-dashed border-accent/40 bg-accent-soft p-3 text-sm text-accent-text">
           Dev build — email isn&apos;t connected. Your code: <b className="tracking-widest">{devCode}</b>
         </div>
       )}
@@ -90,33 +90,33 @@ function VerifyForm() {
           value={code}
           onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
           placeholder="123456"
-          className="w-full rounded-xl border border-slate-300 px-4 py-3 text-center text-2xl tracking-[0.5em]"
+          className="w-full rounded-xl border border-border-strong px-4 py-3 text-center text-2xl tracking-[0.5em]"
           autoFocus
         />
         <label className="block text-sm">
-          <span className="text-slate-500">Your name (shown to other students — optional)</span>
+          <span className="text-muted">Your name (shown to other students — optional)</span>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={60}
             placeholder="e.g. Priya S"
-            className="mt-1 w-full rounded-xl border border-slate-300 px-4 py-3"
+            className="mt-1 w-full rounded-xl border border-border-strong px-4 py-3"
           />
         </label>
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        {resent && <p className="text-sm text-green-700">New code sent ✓</p>}
+        {error && <p className="text-sm text-danger">{error}</p>}
+        {resent && <p className="text-sm text-success">New code sent ✓</p>}
         <button
           disabled={busy || code.length !== 6}
-          className="block w-full rounded-xl bg-blue-700 px-4 py-3 font-medium text-white disabled:opacity-50"
+          className="block w-full rounded-xl bg-brand px-4 py-3 font-medium text-white disabled:opacity-50"
         >
           {busy ? 'Verifying…' : 'Verify & sign in'}
         </button>
       </form>
 
-      <button onClick={resend} className="mt-4 text-sm text-blue-700">
+      <button onClick={resend} className="mt-4 text-sm text-brand">
         Resend code
       </button>
-      <Link href="/login" className="mt-2 text-sm text-slate-500">
+      <Link href="/login" className="mt-2 text-sm text-muted">
         Use a different email
       </Link>
     </main>
