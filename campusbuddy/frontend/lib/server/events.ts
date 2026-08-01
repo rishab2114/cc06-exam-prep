@@ -7,9 +7,12 @@ import { EventEmitter } from 'events';
  * the client already knows how to fetch, so this stays simple and never gets
  * out of sync.
  *
- * Single-instance only (dev + one server). At multi-instance scale this bus
- * becomes Redis pub/sub with the exact same publish/subscribe shape — the call
- * sites don't change. Kept on globalThis so it survives Next's dev HMR.
+ * Single-instance only, and on serverless that means effectively no-op: each
+ * invocation is its own process, so nothing is listening. The client therefore
+ * polls /api/v1/sync for change detection instead. These publishes are kept
+ * because they are free, they document intent at every mutation site, and they
+ * become real the moment this runs on a persistent server (or gets swapped for
+ * Redis pub/sub behind the same shape). Kept on globalThis to survive dev HMR.
  */
 export interface RealtimeEvent {
   // 'task'  -> a task the user is in changed (offers/status) — refetch feed + that task

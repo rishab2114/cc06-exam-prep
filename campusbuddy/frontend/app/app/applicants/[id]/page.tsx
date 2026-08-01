@@ -46,7 +46,9 @@ export default function ApplicantsPage() {
     void load();
     // Realtime: refetch the instant an offer/counter/withdraw/decline lands.
     const off = subscribe((ev) => {
-      if (ev.taskId === id) void load();
+      // No taskId means the change came from the sync digest, which can't say
+      // which task moved — refetch rather than miss it.
+      if (!ev.taskId || ev.taskId === id) void load();
     });
     const timer = setInterval(() => {
       if (document.visibilityState === 'visible') void load();

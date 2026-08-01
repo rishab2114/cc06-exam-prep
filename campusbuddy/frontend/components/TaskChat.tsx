@@ -32,7 +32,9 @@ export function TaskChat({ taskId, counterpartName }: { taskId: string; counterp
     void load();
     // Realtime: a new message on this task pushes a 'chat' event to us.
     const off = subscribe((ev) => {
-      if (ev.taskId === taskId && (ev.kind === 'chat' || ev.kind === 'task')) void load();
+      // No taskId means the change came from the sync digest, which can't say
+      // which thread moved — refetch rather than miss a message.
+      if ((!ev.taskId || ev.taskId === taskId) && (ev.kind === 'chat' || ev.kind === 'task')) void load();
     });
     const timer = setInterval(() => {
       if (document.visibilityState === 'visible') void load();

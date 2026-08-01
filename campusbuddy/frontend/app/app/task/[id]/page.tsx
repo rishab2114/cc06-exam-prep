@@ -71,7 +71,9 @@ export default function ActiveTaskPage() {
   useEffect(() => {
     void load();
     const off = subscribe((ev) => {
-      if (ev.taskId === id) void load();
+      // No taskId means the change came from the sync digest, which can't say
+      // which task moved — refetch rather than miss it.
+      if (!ev.taskId || ev.taskId === id) void load();
     });
     const timer = setInterval(() => {
       if (document.visibilityState === 'visible') void load();

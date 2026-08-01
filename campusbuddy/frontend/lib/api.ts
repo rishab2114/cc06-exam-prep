@@ -173,6 +173,9 @@ export const api = {
       json: { email },
     }),
 
+  // Cheap "anything changed for me?" digest the store polls (see /api/v1/sync).
+  sync: () => call<{ v: string; messages: number }>('/sync'),
+
   // --- tasks ---
   feed: (cursor?: string) =>
     call<{ tasks: ApiTask[]; nextCursor: string | null }>(`/tasks${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`),

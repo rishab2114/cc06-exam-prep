@@ -5,13 +5,15 @@ import { useRouter } from 'next/navigation';
 import { api, ApiClientError, type ApiTask, type ApiNotification, type Me, type MyOffer } from './api';
 
 /**
- * App store, backed by the real API + realtime SSE. Mounted by the /app layout:
- * it loads the session (/me, redirect to /login on 401), keeps the campus feed,
- * the user's own posts, and notifications fresh, and holds ONE EventSource to
- * /api/v1/stream. Server nudges arrive instantly; pages subscribe via
- * `subscribe()` to react to events for a specific task/chat. A slow interval
- * remains only as a safety net (covers new campus posts that don't notify you,
- * and SSE gaps).
+ * App store, backed by the real API. Mounted by the /app layout: it loads the
+ * session (/me, redirect to /login on 401) and keeps the campus feed, the
+ * user's own posts, chat badge and notifications fresh.
+ *
+ * Freshness is a short poll of /api/v1/sync (a three-COUNT digest) rather than a
+ * stream — see that route for why streaming can't work on serverless. When the
+ * digest moves we refetch and fan out to pages via `subscribe()`. Events raised
+ * this way carry no taskId (the digest doesn't know which task moved), so page
+ * listeners treat a missing taskId as "might be mine" and refetch.
  */
 export interface RealtimeEvent {
   kind: 'task' | 'chat' | 'notification';
@@ -43,7 +45,7 @@ interface StoreShape {
 
 const StoreContext = createContext<StoreShape | null>(null);
 
-const FALLBACK_MS = 45_000; // safety net only — SSE does the real-time work
+const SYNC_MS = 8_000; // how often an active tab asks "anything new?" (cheap digest)
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -114,7 +116,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     alive.current = true;
     let timer: ReturnType<typeof setInterval> | undefined;
-    let es: EventSource | undefined;
+    let onVisible: (() => void) | undefined;
 
     const onEvent = (ev: RealtimeEvent) => {
       // Bell/feed/my-tasks refresh on 'task'; the Chats badge refreshes on
@@ -147,22 +149,42 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         if (!alive.current) return;
         setReady(true);
 
-        es = new EventSource('/api/v1/stream');
-        es.onmessage = (e) => {
-          if (!e.data) return;
+        // Change detection is a poll, not a stream: on serverless each request
+        // is its own process, so an in-process bus never reaches a held-open
+        // connection and SSE dies at the function timeout regardless. /sync is
+        // three indexed COUNTs, so polling it is cheap; we only do the real
+        // refetch when the digest moves. Paused while the tab is hidden.
+        let lastDigest: string | null = null;
+        let lastMessages = 0;
+
+        const poll = async () => {
+          if (document.visibilityState !== 'visible' || !alive.current) return;
           try {
-            onEvent(JSON.parse(e.data) as RealtimeEvent);
+            const { v, messages } = await api.sync();
+            if (!alive.current) return;
+            if (lastDigest === null) {
+              lastDigest = v;
+              lastMessages = messages;
+              return; // first read just establishes the baseline
+            }
+            if (v === lastDigest) return;
+            const chatOnly = messages !== lastMessages;
+            lastDigest = v;
+            lastMessages = messages;
+            onEvent({ kind: chatOnly ? 'chat' : 'task' });
           } catch {
-            /* ignore malformed frames */
+            /* transient — the next tick retries, and pages keep their own timers */
           }
         };
-        // On error the browser auto-reconnects (we sent `retry:`); refresh once
-        // reconnected so we don't miss anything that happened while offline.
-        es.onopen = () => void refresh();
 
-        timer = setInterval(() => {
-          if (document.visibilityState === 'visible') void refresh();
-        }, FALLBACK_MS);
+        void poll();
+        timer = setInterval(poll, SYNC_MS);
+
+        // Coming back to the tab should feel instant, not wait for the next tick.
+        onVisible = () => {
+          if (document.visibilityState === 'visible') void poll();
+        };
+        document.addEventListener('visibilitychange', onVisible);
       } catch (e) {
         if (e instanceof ApiClientError && e.status === 401) {
           router.replace('/login');
@@ -175,7 +197,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     return () => {
       alive.current = false;
       if (timer) clearInterval(timer);
-      es?.close();
+      if (onVisible) document.removeEventListener('visibilitychange', onVisible);
     };
   }, [router, refresh, refreshNotifications, refreshMessageUnread]);
 
