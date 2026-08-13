@@ -9,6 +9,8 @@ export interface NotifyInput {
   body?: string;
   taskId?: string;
   offerId?: string;
+  href?: string;
+  meta?: Record<string, string | number | boolean>;
 }
 
 /**
@@ -20,7 +22,9 @@ export interface NotifyInput {
  * business logic.
  */
 export async function notifyUser(input: NotifyInput): Promise<void> {
-  const data = input.taskId || input.offerId ? { taskId: input.taskId, offerId: input.offerId } : undefined;
+  const data = input.taskId || input.offerId || input.href || input.meta
+    ? { ...input.meta, taskId: input.taskId, offerId: input.offerId, href: input.href }
+    : undefined;
   await db().notification.create({
     data: {
       userId: input.userId,
@@ -33,5 +37,5 @@ export async function notifyUser(input: NotifyInput): Promise<void> {
   publishToUser(input.userId, { kind: 'notification' });
   if (input.taskId) publishToUser(input.userId, { kind: 'task', taskId: input.taskId });
   // Best-effort — never let a push failure affect the API response.
-  void sendPushToUser(input.userId, { title: input.title, body: input.body, taskId: input.taskId });
+  void sendPushToUser(input.userId, { title: input.title, body: input.body, taskId: input.taskId, href: input.href });
 }

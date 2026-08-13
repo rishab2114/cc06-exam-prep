@@ -3,7 +3,7 @@
 // Money is stored as integer minor units (SGD cents). Balances are derived from the ledger.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   // "native" covers local dev/Docker; the rhel targets are the query-engine
   // binaries for Vercel's serverless runtime (Amazon Linux — OpenSSL 3.0 on
   // Node 20, 1.0.x on Node 18) so the deployed functions can reach Postgres.
@@ -129,6 +129,12 @@ enum DisputeStatus {
   REJECTED
 }
 
+enum HallSwapConnectionStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
 // ---------- Tenancy ----------
 // Shared-schema multi-tenancy: every user and task belongs to exactly one campus
 // and ALL queries are campus-scoped (enforced in services; RLS optional later).
@@ -140,8 +146,10 @@ model Campus {
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
 
-  users User[]
-  tasks Task[]
+  users               User[]
+  tasks               Task[]
+  hallSwapProfiles    HallSwapProfile[]
+  hallSwapConnections HallSwapConnection[]
 
   @@map("campuses")
 }
@@ -169,28 +177,73 @@ model User {
   updatedAt       DateTime   @updatedAt
   deletedAt       DateTime?
 
-  providerProfile ProviderProfile?
-  verifications   Verification[]
-  tasksAsCustomer Task[]          @relation("CustomerTasks")
-  tasksAsProvider Task[]          @relation("ProviderTasks")
-  offers          Offer[]
-  savedProviders  SavedProvider[] @relation("Saver")
-  savedByOthers   SavedProvider[] @relation("Saved")
-  savedTasks      SavedTask[]
-  media           Media[]
-  reviewsWritten  Review[]        @relation("RaterReviews")
-  reviewsReceived Review[]        @relation("RateeReviews")
-  payouts         Payout[]
-  notifications   Notification[]
-  pushSubs        PushSubscription[]
-  messages        Message[]
-  disputesRaised  Dispute[]
-  safetyEvents    SafetyEvent[]
-  blocksMade      UserBlock[]     @relation("Blocker")
-  blocksAgainst   UserBlock[]     @relation("Blocked")
+  providerProfile          ProviderProfile?
+  verifications            Verification[]
+  tasksAsCustomer          Task[]               @relation("CustomerTasks")
+  tasksAsProvider          Task[]               @relation("ProviderTasks")
+  offers                   Offer[]
+  savedProviders           SavedProvider[]      @relation("Saver")
+  savedByOthers            SavedProvider[]      @relation("Saved")
+  savedTasks               SavedTask[]
+  media                    Media[]
+  reviewsWritten           Review[]             @relation("RaterReviews")
+  reviewsReceived          Review[]             @relation("RateeReviews")
+  payouts                  Payout[]
+  notifications            Notification[]
+  pushSubs                 PushSubscription[]
+  messages                 Message[]
+  disputesRaised           Dispute[]
+  safetyEvents             SafetyEvent[]
+  blocksMade               UserBlock[]          @relation("Blocker")
+  blocksAgainst            UserBlock[]          @relation("Blocked")
+  hallSwapProfile          HallSwapProfile?
+  hallSwapRequestsSent     HallSwapConnection[] @relation("HallSwapRequester")
+  hallSwapRequestsReceived HallSwapConnection[] @relation("HallSwapRecipient")
 
   @@index([campusId])
   @@map("users")
+}
+
+// ---------- Free hall-swap matcher ----------
+// CampusBuddy only discovers reciprocal preferences. Residents still submit
+// the actual mutual-swap request through NTU's official housing process.
+model HallSwapProfile {
+  id              String   @id @default(uuid())
+  campusId        String
+  campus          Campus   @relation(fields: [campusId], references: [id])
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gender          String
+  term            String
+  haveHall        String
+  haveRoomType    String
+  haveAircon      Boolean
+  wantedHalls     String[]
+  wantedRoomTypes String[]
+  wantedAircon    String
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([campusId, gender, term, isActive])
+  @@map("hall_swap_profiles")
+}
+
+model HallSwapConnection {
+  id          String                   @id @default(uuid())
+  campusId    String
+  campus      Campus                   @relation(fields: [campusId], references: [id])
+  requesterId String
+  requester   User                     @relation("HallSwapRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  recipientId String
+  recipient   User                     @relation("HallSwapRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  status      HallSwapConnectionStatus @default(PENDING)
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+
+  @@unique([requesterId, recipientId])
+  @@index([recipientId, status, createdAt])
+  @@map("hall_swap_connections")
 }
 
 model ProviderProfile {
@@ -258,22 +311,22 @@ model ServiceCategory {
 
 // ---------- Tasks / bookings ----------
 model Task {
-  id              String     @id @default(uuid())
+  id              String          @id @default(uuid())
   campusId        String
-  campus          Campus     @relation(fields: [campusId], references: [id])
+  campus          Campus          @relation(fields: [campusId], references: [id])
   customerId      String
-  customer        User       @relation("CustomerTasks", fields: [customerId], references: [id])
+  customer        User            @relation("CustomerTasks", fields: [customerId], references: [id])
   providerId      String?
-  provider        User?      @relation("ProviderTasks", fields: [providerId], references: [id])
+  provider        User?           @relation("ProviderTasks", fields: [providerId], references: [id])
   categoryId      String
   category        ServiceCategory @relation(fields: [categoryId], references: [id])
-  kind            TaskKind   @default(REQUEST)
+  kind            TaskKind        @default(REQUEST)
   sourceGigId     String? // set on a REQUEST that was spun up by booking a gig
-  sourceGig       Task?      @relation("GigBookings", fields: [sourceGigId], references: [id])
-  bookings        Task[]     @relation("GigBookings")
+  sourceGig       Task?           @relation("GigBookings", fields: [sourceGigId], references: [id])
+  bookings        Task[]          @relation("GigBookings")
   title           String
   description     String?
-  status          TaskStatus @default(OPEN)
+  status          TaskStatus      @default(OPEN)
   hall            String?
   whenText        String? // human schedule text, e.g. "Today 6-8pm"
   locationNote    String?
@@ -281,7 +334,7 @@ model Task {
   finalPriceCents Int?
   windowStart     DateTime?
   windowEnd       DateTime?
-  createdAt       DateTime   @default(now())
+  createdAt       DateTime        @default(now())
   assignedAt      DateTime?
   startedAt       DateTime?
   completedAt     DateTime?
@@ -291,8 +344,8 @@ model Task {
   study           Json? // structured study request (module/topics/level/goal/format)
   deletedAt       DateTime?
   repeatOfId      String?
-  repeatOf        Task?      @relation("TaskRepeats", fields: [repeatOfId], references: [id])
-  repeats         Task[]     @relation("TaskRepeats")
+  repeatOf        Task?           @relation("TaskRepeats", fields: [repeatOfId], references: [id])
+  repeats         Task[]          @relation("TaskRepeats")
 
   offers       Offer[]
   events       TaskEvent[]
@@ -350,19 +403,19 @@ model TaskEvent {
 
 // ---------- Payments & ledger ----------
 model Payment {
-  id                   String        @id @default(uuid())
-  taskId               String        @unique
-  task                 Task          @relation(fields: [taskId], references: [id])
-  customerId           String
-  amountCents          Int
-  platformFeeCents     Int
-  providerAmountCents  Int
-  currency             String        @default("sgd")
-  status               PaymentStatus @default(REQUIRES_AUTH)
-  stripePaymentIntentId String?      @unique
-  stripeTransferId     String?
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @updatedAt
+  id                    String        @id @default(uuid())
+  taskId                String        @unique
+  task                  Task          @relation(fields: [taskId], references: [id])
+  customerId            String
+  amountCents           Int
+  platformFeeCents      Int
+  providerAmountCents   Int
+  currency              String        @default("sgd")
+  status                PaymentStatus @default(REQUIRES_AUTH)
+  stripePaymentIntentId String?       @unique
+  stripeTransferId      String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
 
   ledgerEntries LedgerEntry[]
 
@@ -370,46 +423,46 @@ model Payment {
 }
 
 model LedgerEntry {
-  id         String     @id @default(uuid())
-  paymentId  String?
-  payment    Payment?   @relation(fields: [paymentId], references: [id])
-  userId     String?
-  type       LedgerType
+  id          String     @id @default(uuid())
+  paymentId   String?
+  payment     Payment?   @relation(fields: [paymentId], references: [id])
+  userId      String?
+  type        LedgerType
   amountCents Int
-  currency   String     @default("sgd")
-  stripeRef  String?
-  meta       Json?
-  createdAt  DateTime   @default(now())
+  currency    String     @default("sgd")
+  stripeRef   String?
+  meta        Json?
+  createdAt   DateTime   @default(now())
 
   @@map("ledger_entries")
 }
 
 model Payout {
-  id            String       @id @default(uuid())
-  providerId    String
-  provider      User         @relation(fields: [providerId], references: [id])
-  amountCents   Int
-  status        PayoutStatus @default(PENDING)
+  id             String       @id @default(uuid())
+  providerId     String
+  provider       User         @relation(fields: [providerId], references: [id])
+  amountCents    Int
+  status         PayoutStatus @default(PENDING)
   stripePayoutId String?
-  createdAt     DateTime     @default(now())
-  paidAt        DateTime?
+  createdAt      DateTime     @default(now())
+  paidAt         DateTime?
 
   @@map("payouts")
 }
 
 // ---------- Reviews ----------
 model Review {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   taskId      String
-  task        Task     @relation(fields: [taskId], references: [id])
+  task        Task      @relation(fields: [taskId], references: [id])
   raterId     String
-  rater       User     @relation("RaterReviews", fields: [raterId], references: [id])
+  rater       User      @relation("RaterReviews", fields: [raterId], references: [id])
   rateeId     String
-  ratee       User     @relation("RateeReviews", fields: [rateeId], references: [id])
+  ratee       User      @relation("RateeReviews", fields: [rateeId], references: [id])
   stars       Int
   comment     String?
-  isPublished Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  isPublished Boolean   @default(false)
+  createdAt   DateTime  @default(now())
   deletedAt   DateTime?
 
   @@unique([taskId, raterId])

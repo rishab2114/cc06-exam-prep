@@ -29,6 +29,9 @@ const TYPE_ICON: Record<string, string> = {
   'offer.declined': '🙅',
   'report.filed': '🚩',
   'task.updated': '✏️',
+  'hall_swap.match': '🏠',
+  'hall_swap.intro_requested': '👋',
+  'hall_swap.intro_accepted': '🤝',
 };
 
 export default function NotificationsPage() {
@@ -54,7 +57,7 @@ export default function NotificationsPage() {
 
       <div className="divide-y">
         {notifications.map((n) => {
-          const href = hrefFor(n.data?.taskId);
+          const href = n.data?.href ?? hrefFor(n.data?.taskId);
           const inner = (
             <>
               <span className="mt-0.5">{TYPE_ICON[n.type] ?? '🔔'}</span>

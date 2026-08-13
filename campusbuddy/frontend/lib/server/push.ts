@@ -21,6 +21,7 @@ export interface PushPayload {
   title: string;
   body?: string;
   taskId?: string;
+  href?: string;
 }
 
 /** Best-effort push to every device the user has subscribed. Never throws. */
@@ -29,7 +30,7 @@ export async function sendPushToUser(userId: string, payload: PushPayload): Prom
   const subs = await db().pushSubscription.findMany({ where: { userId } });
   if (subs.length === 0) return;
 
-  const body = JSON.stringify({ title: payload.title, body: payload.body, taskId: payload.taskId });
+  const body = JSON.stringify({ title: payload.title, body: payload.body, taskId: payload.taskId, href: payload.href });
   await Promise.all(
     subs.map(async (s) => {
       try {

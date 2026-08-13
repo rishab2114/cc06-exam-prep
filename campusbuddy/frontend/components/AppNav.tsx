@@ -12,6 +12,7 @@ import {
   User,
   Sparkles,
   ShieldCheck,
+  ArrowLeftRight,
   type LucideIcon,
 } from 'lucide-react';
 import { useStore } from '../lib/store';
@@ -37,6 +38,7 @@ const TABS: { href: string; icon: LucideIcon; label: string }[] = [
 const SIDEBAR: { href: string; icon: LucideIcon; label: string }[] = [
   ...TABS.slice(0, 2),
   { href: '/app/services', icon: Briefcase, label: 'Services' },
+  { href: '/app/hall-swap', icon: ArrowLeftRight, label: 'Hall swap' },
   ...TABS.slice(2),
   { href: '/app/profile', icon: User, label: 'Profile' },
 ];

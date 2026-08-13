@@ -4,6 +4,14 @@ Last updated: 2026-08-13
 
 ## Current context
 
+> **2026-08-13 addition:** `/app/hall-swap` is now a persistent, NTU-only,
+> reciprocal Hall Swap Matcher. It stores structured Have/Want preferences,
+> notifies compatible residents, supports mutual-consent introductions, and
+> reveals university email contact details only after acceptance. The feature
+> is free and explicitly routes students to NTU's official swap process; there
+> are no rent or cash-top-up fields. Canonical models are `HallSwapProfile` and
+> `HallSwapConnection`, with API routes under `/api/v1/hall-swaps`.
+
 - GitHub: `rishab2114/cc06-exam-prep`
 - Working branch: `claude/campusbuddy-ntu-mvp-etaymm`
 - Project root: `campusbuddy/`
@@ -51,6 +59,7 @@ Demo mode exposes one-tap access only for IDs prefixed `demo-user-`; it does not
 - `/app` — dashboard and quick task posting
 - `/app/find` — request feed, search, safety and course facets
 - `/app/services` — freelance service listings and booking
+- `/app/hall-swap` — structured reciprocal NTU room-swap matching
 - `/app/apply/[id]` — offer and negotiation entry
 - `/app/applicants/[id]` — poster-side offer comparison and acceptance
 - `/app/task/[id]` — negotiation, chat, status and completion

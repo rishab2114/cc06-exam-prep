@@ -47,6 +47,14 @@ const DEMO_USERS = [
   { id: 'demo-user-priya', email: 'priya@e.ntu.edu.sg', fullName: 'Priya S', hall: 'Hall 9' },
   { id: 'demo-user-wei', email: 'wei@e.ntu.edu.sg', fullName: 'Wei Lim', hall: 'Crescent Hall' },
   { id: 'demo-user-arjun', email: 'arjun@e.ntu.edu.sg', fullName: 'Arjun Rao', hall: 'Binjai Hall' },
+  {
+    id: 'demo-user-amelia', email: 'amelia.swap@e.ntu.edu.sg', fullName: 'Amelia Tan', hall: 'Hall 10',
+    hallSwap: { gender: 'FEMALE', term: 'Semester 1', haveHall: 'Hall 10', haveRoomType: 'DOUBLE', haveAircon: true, wantedHalls: ['Hall 8'], wantedRoomTypes: ['SINGLE'], wantedAircon: 'ANY' },
+  },
+  {
+    id: 'demo-user-chloe', email: 'chloe.swap@e.ntu.edu.sg', fullName: 'Chloe Lim', hall: 'Hall 8',
+    hallSwap: { gender: 'FEMALE', term: 'Semester 1', haveHall: 'Hall 8', haveRoomType: 'SINGLE', haveAircon: false, wantedHalls: ['Hall 10'], wantedRoomTypes: ['DOUBLE'], wantedAircon: 'AIRCON' },
+  },
 ];
 
 const DEMO_TASKS = [
@@ -109,6 +117,9 @@ async function seedDemo() {
   await prisma.taskEvent.deleteMany({ where: { taskId: { in: taskIds } } });
   await prisma.offer.deleteMany({ where: { taskId: { in: taskIds } } });
   await prisma.task.deleteMany({ where: { id: { in: taskIds } } });
+  await prisma.hallSwapConnection.deleteMany({
+    where: { OR: [{ requesterId: { in: userIds } }, { recipientId: { in: userIds } }] },
+  });
 
   // Upsert BY ID (not email): these personas moved campus/email when we
   // switched the launch campus to NTU, and the id is the stable key.
@@ -118,6 +129,13 @@ async function seedDemo() {
       update: { email: u.email, fullName: u.fullName, hall: u.hall, campusId: campus.id, emailVerifiedAt: new Date(), isSuspended: false },
       create: { id: u.id, email: u.email, fullName: u.fullName, hall: u.hall, campusId: campus.id, emailVerifiedAt: new Date() },
     });
+    if (u.hallSwap) {
+      await prisma.hallSwapProfile.upsert({
+        where: { userId: u.id },
+        update: { ...u.hallSwap, campusId: campus.id, isActive: true },
+        create: { ...u.hallSwap, campusId: campus.id, userId: u.id },
+      });
+    }
   }
 
   const slugs = Array.from(new Set([...DEMO_TASKS.map((t) => t.slug), ...DEMO_GIGS.map((g) => g.slug)]));
@@ -177,7 +195,7 @@ async function seedDemo() {
       ],
     });
   }
-  console.log(`Seeded ${DEMO_USERS.length} demo students + ${DEMO_TASKS.length} open tasks + ${DEMO_GIGS.length} services (demo deployment).`);
+  console.log(`Seeded ${DEMO_USERS.length} demo students + ${DEMO_TASKS.length} open tasks + ${DEMO_GIGS.length} services + 2 hall-swap profiles (demo deployment).`);
 }
 
 async function main() {

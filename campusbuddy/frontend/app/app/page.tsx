@@ -165,6 +165,21 @@ export default function AppHome() {
 
           {/* Aside: quick-post + browse + sponsored */}
           <aside className="mt-6 space-y-5 lg:mt-0">
+            {me?.campus === 'NTU' && (
+              <section className="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
+                <span className="rounded-full bg-blue-700 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
+                  New · Free
+                </span>
+                <h2 className="mt-3 font-semibold text-slate-900">Find your reciprocal hall swap</h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Enter what you have and want. See only students whose preferences also match your room.
+                </p>
+                <Link href="/app/hall-swap" className="mt-3 block rounded-xl bg-blue-700 py-2.5 text-center text-sm font-medium text-white">
+                  Try Hall Swap Matcher ›
+                </Link>
+              </section>
+            )}
+
             <section>
               <p className="mb-2 text-xs font-semibold uppercase text-muted">Post a task</p>
               <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4 lg:grid-cols-2">

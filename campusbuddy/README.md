@@ -6,6 +6,8 @@ The current NTU deployment is an **interactive product demo backed by PostgreSQL
 
 [Open the CampusBuddy demo](https://frontend-git-claude-campusbuddy-ntu-216c22-rishab2114s-projects.vercel.app/)
 
+It also includes a **free NTU Hall Swap Matcher**: residents enter the hall and room type they have plus the halls, room types, and air-con options they would accept. CampusBuddy surfaces reciprocal matches only, keeps contact details private until both students agree to connect, and hands the pair back to NTU's official room-change process. It deliberately does not support room rental, cash top-ups, bidding, or unofficial transfers.
+
 ## What works today
 
 - Post a task or list a service.
@@ -15,6 +17,7 @@ The current NTU deployment is an **interactive product demo backed by PostgreSQL
 - Complete a task and leave two-sided reviews.
 - Save tasks, receive notifications and view history.
 - Create a password-based account using a supported campus-email domain.
+- Find reciprocal NTU hall-swap matches and request a private introduction.
 
 The deployed sample people, tasks, completed job and service listings are synthetic. Demo access checks the email domain; it does **not** yet prove inbox ownership. Email OTP is a pre-pilot requirement.
 

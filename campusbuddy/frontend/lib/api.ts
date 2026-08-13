@@ -1,4 +1,5 @@
 import type { Task as SharedTask, StudyRequest } from '@campusbuddy/shared';
+import type { HallSwapConnection, HallSwapMatch, HallSwapPreferences } from './hallSwap';
 
 /**
  * Typed client for /api/v1 — the only place the frontend talks HTTP. Every
@@ -86,7 +87,7 @@ export interface ApiNotification {
   type: string;
   title: string;
   body: string | null;
-  data: { taskId?: string; offerId?: string } | null;
+  data: { taskId?: string; offerId?: string; href?: string } | null;
   read: boolean;
   at: number;
 }
@@ -258,4 +259,30 @@ export const api = {
   // --- notifications ---
   notifications: () => call<{ notifications: ApiNotification[]; unread: number }>('/notifications'),
   markNotificationsRead: () => call<{ ok: boolean }>('/notifications/read', { method: 'POST' }),
+
+  // --- free NTU hall-swap matcher ---
+  hallSwaps: () => call<{
+    profile: HallSwapPreferences | null;
+    matches: HallSwapMatch[];
+    connections: HallSwapConnection[];
+    activeProfiles: number;
+  }>('/hall-swaps'),
+  saveHallSwap: (input: Omit<HallSwapPreferences, 'isActive'>) =>
+    call<{
+      profile: HallSwapPreferences;
+      matches: HallSwapMatch[];
+      connections: HallSwapConnection[];
+      activeProfiles: number;
+    }>('/hall-swaps', { method: 'POST', json: input }),
+  pauseHallSwap: () => call<{ paused: boolean }>('/hall-swaps', { method: 'DELETE' }),
+  requestHallSwapIntro: (profileId: string) =>
+    call<{ connectionId: string; status: string }>('/hall-swaps/connections', {
+      method: 'POST',
+      json: { profileId },
+    }),
+  respondHallSwapIntro: (connectionId: string, action: 'ACCEPT' | 'DECLINE') =>
+    call<{ connectionId: string; status: string }>(`/hall-swaps/connections/${connectionId}`, {
+      method: 'POST',
+      json: { action },
+    }),
 };
