@@ -102,6 +102,11 @@ export default function LoginPage() {
         ‹ Back
       </Link>
 
+      <p className="mt-4 rounded-xl border border-accent/30 bg-accent-soft px-3 py-2 text-sm text-accent-text">
+        <b>Interactive demo:</b> sample personas and marketplace data are synthetic. You can also
+        create your own working campus-domain account below.
+      </p>
+
       <div className="card mt-5 p-6 shadow-card sm:p-7">
         <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-white">
           <Sparkles size={19} aria-hidden="true" />
@@ -111,7 +116,7 @@ export default function LoginPage() {
         </h1>
         <p className="mt-2 text-[15px] leading-relaxed text-muted">
           {isSignup
-            ? 'Join with your university email and pick a password.'
+            ? 'Create a working demo account with your university email and a password.'
             : 'Sign in with your university email and password.'}
         </p>
 
@@ -235,7 +240,8 @@ export default function LoginPage() {
 
         <p className="mt-5 flex items-start gap-2 text-xs text-subtle">
           <ShieldCheck size={14} className="mt-px shrink-0 text-brand" aria-hidden="true" />
-          Only university email addresses can join — we check the domain when you sign up.
+          Demo access checks your university email domain. Inbox OTP ownership verification will be
+          added before a real pilot.
         </p>
       </div>
 
@@ -243,7 +249,7 @@ export default function LoginPage() {
         <div className="mt-6 rounded-2xl border border-dashed border-accent/40 bg-accent-soft p-4">
           <p className="flex items-center gap-1.5 text-sm font-semibold text-accent-text">
             <FlaskConical size={15} aria-hidden="true" />
-            Or look around as a demo student
+            Or try a sample student
           </p>
           <p className="mt-1 text-xs text-accent-text">
             One tap, no account needed. Sign in as one to post a task, switch to another to offer and

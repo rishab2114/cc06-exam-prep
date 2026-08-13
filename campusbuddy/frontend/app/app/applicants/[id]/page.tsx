@@ -160,7 +160,7 @@ export default function ApplicantsPage() {
                       <span className="text-sm font-normal text-muted">
                         {o.providerRating !== null
                           ? `⭐${o.providerRating} · ${o.providerJobs} job${o.providerJobs === 1 ? '' : 's'}`
-                          : '🪪 campus-verified · new buddy'}
+                          : 'campus account · new buddy'}
                       </span>
                     </p>
                     <p className="mt-1 text-xs text-subtle">

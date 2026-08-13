@@ -55,8 +55,8 @@ export default function ServicesPage() {
       </header>
 
       <p className="px-4 pt-3 text-sm text-muted">
-        Freelance gigs from verified students on your campus. Book one and the provider&apos;s quote
-        is already on the table — just accept and chat.
+        Sample freelance listings from campus-domain accounts. Book one and the provider&apos;s quote
+        is already on the table — accept, chat and try the full workflow.
       </p>
 
       {error && <p className="px-4 pt-2 text-sm text-danger">{error}</p>}

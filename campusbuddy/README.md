@@ -1,84 +1,61 @@
-# CampusBuddy NTU
+# CampusBuddy
 
-> An on-demand, student-to-student services marketplace for Nanyang Technological University (NTU), Singapore.
-> On-demand campus chores & errands, exclusively for verified university students.
+CampusBuddy is a student-to-student marketplace for small campus tasks and services: laundry, parcel collection, food runs, room help, moving and tutoring.
 
-CampusBuddy connects **students who need everyday tasks done** (cleaning, laundry, food runs, parcel pickup, moving help) with **verified NTU students who want flexible income**. The platform handles discovery, booking, escrowed payments via Stripe, ratings, and trust & safety.
+The current NTU deployment is an **interactive product demo backed by PostgreSQL**, not a static mock-up. Visitors can use one-tap synthetic personas or create a working account with a supported campus-email domain.
 
----
+[Open the CampusBuddy demo](https://frontend-git-claude-campusbuddy-ntu-216c22-rishab2114s-projects.vercel.app/)
 
-## Why this exists
+## What works today
 
-Students in hall struggle with chores and errands because of heavy academic workload, internships, CCAs, exams, and lack of transport. Meanwhile many students want flexible side income. CampusBuddy is the marketplace that matches the two — inside the trusted, closed network of a single campus.
+- Post a task or list a service.
+- Browse and filter the campus feed, including tutoring by course.
+- Make an offer, counter and accept a price.
+- Chat after matching and follow task-specific completion flows.
+- Complete a task and leave two-sided reviews.
+- Save tasks, receive notifications and view history.
+- Create a password-based account using a supported campus-email domain.
 
-Starting with **one campus (NTU)** is deliberate: a closed community gives us dense supply/demand (liquidity), cheap word-of-mouth growth, natural verification (NTU email + matric card), and a defensible beachhead before expanding to other Singapore universities.
+The deployed sample people, tasks, completed job and service listings are synthetic. Demo access checks the email domain; it does **not** yet prove inbox ownership. Email OTP is a pre-pilot requirement.
 
----
+Payments are also intentionally not live. Students agree a price in the product and settle directly after the task; CampusBuddy does not hold funds or deduct a platform fee in the demo.
 
 ## Repository layout
 
-```
+```text
 campusbuddy/
-├── README.md                  ← you are here
-├── docs/                      ← the full design + strategy deliverables
-│   ├── 00-overview.md
-│   ├── 01-product-requirements.md     PRD
-│   ├── 02-database-schema.md          Postgres schema + SQL
-│   ├── 03-er-diagram.md               ER diagram (Mermaid)
-│   ├── 04-user-flows.md               Customer / Provider / Admin flows
-│   ├── 05-wireframes.md               Low-fi wireframes (ASCII + notes)
-│   ├── 06-api-architecture.md         REST API contract
-│   ├── 07-backend-structure.md        NestJS folder structure
-│   ├── 08-frontend-structure.md       Next.js folder structure
-│   ├── 09-admin-dashboard.md          Admin design
-│   ├── 10-stripe-integration.md       Payments / escrow / Connect
-│   ├── 11-security-architecture.md    Security & privacy
-│   ├── 12-launch-strategy.md          NTU go-to-market
-│   ├── 13-revenue-model.md            Unit economics
-│   ├── 14-growth-strategy.md          Growth loops
-│   ├── 15-roadmap.md                  MVP → 10,000 users
-│   └── 16-risks-and-redesign.md       Legal/safety/insurance redesign
-├── backend/                   ← NestJS + Prisma scaffold
-├── frontend/                  ← Next.js (App Router) + Tailwind scaffold
-└── docker-compose.yml         ← local Postgres + Redis
+├── frontend/   Next.js 14 app, UI, authenticated API routes and Vercel seed
+├── backend/    NestJS modules plus the shared Prisma schema and migrations
+├── shared/     Shared money and validation utilities
+├── docs/       Product, architecture, safety and venture decisions
+└── HANDOFF.md  Current implementation context
 ```
 
-## Recommended tech stack (decided)
+The deployed application currently runs through the Next.js route handlers in `frontend/app/api/v1`. The NestJS application remains a parallel backend scaffold rather than the deployed request path.
 
-| Layer | Choice | Why |
-|---|---|---|
-| Frontend | **Next.js 14 (App Router) + TypeScript + Tailwind + shadcn/ui** | SSR for SEO/landing, RSC, great mobile-web UX; PWA for app-like feel without app-store friction at MVP |
-| Backend | **NestJS (Node + TypeScript)** | Opinionated modular structure, DI, guards/interceptors map cleanly to auth + roles; shares types with frontend |
-| Database | **PostgreSQL** (Supabase or Railway) | Relational integrity for bookings/payments; PostGIS-ready for geo |
-| ORM | **Prisma** | Type-safe schema, migrations, shared types |
-| Auth | **Auth.js (NextAuth) with email-domain restriction + custom matric verification** | Avoids per-MAU cost of Clerk at scale; full control over NTU `@e.ntu.edu.sg` gating. (Clerk is the faster alternative — see ADR in docs/01.) |
-| Payments | **Stripe (Payment Intents + manual capture + Connect Express)** | Escrow-style hold, 15% application fee, payouts to providers |
-| Storage | **AWS S3** (presigned uploads) for ID/photos | Private bucket, short-lived URLs |
-| Realtime/Jobs | **Redis + BullMQ** | Notifications, payout jobs, matching |
-| Notifications | **Resend/Postmark (email) + Web Push (VAPID) / FCM** | Email + push per spec |
-| Hosting | **Vercel (frontend) + Railway (backend, Postgres, Redis)** | Fast MVP deploys |
-| Observability | **Sentry + Logtail + Stripe + PostHog (product analytics)** | Errors, logs, funnels |
+## Local development
 
-> **The most important part of this repo is `docs/16-risks-and-redesign.md`.** It challenges the original concept (legal, safety, insurance, MAS/regulatory, operational) and the redesign there is reflected throughout the schema and API.
-
-## Quick start (scaffold)
+Requirements: Node.js 20+, npm and PostgreSQL.
 
 ```bash
-# 1. Infra
-docker compose up -d           # Postgres + Redis
-
-# 2. Backend
-cd backend
-cp .env.example .env
 npm install
-npx prisma migrate dev
-npm run start:dev              # http://localhost:4000
-
-# 3. Frontend
-cd ../frontend
-cp .env.example .env.local
-npm install
-npm run dev                    # http://localhost:3000
+cp frontend/.env.example frontend/.env.local
+npx prisma migrate dev --schema backend/prisma/schema.prisma
+SEED_DEMO=1 node frontend/scripts/seed.mjs
+npm run dev
 ```
 
-See each `docs/*.md` for the detail an engineering team needs to start building immediately.
+Set `DATABASE_URL` and a strong `AUTH_SECRET` in `frontend/.env.local`. Leave `RESEND_API_KEY` unset for local demo mode; configure it before real email-code sign-in.
+
+Useful checks:
+
+```bash
+npm run build
+npm test
+```
+
+## Product status
+
+NTU is the intended first pilot. Other Singapore university domains are configured for product exploration, but they are not claims of active campus launches. Before a real pilot, the highest-priority work is email OTP, policy and liability review, matric/identity verification, and a deliberate payments decision.
+
+See `docs/17-decisions-log.md` for the latest product decisions and `docs/16-risks-and-redesign.md` for the safety and regulatory review.

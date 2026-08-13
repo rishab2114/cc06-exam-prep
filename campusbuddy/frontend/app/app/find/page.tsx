@@ -19,7 +19,7 @@ import {
 } from '../../../lib/facets';
 
 // Marketplace / Explore — the live campus feed. Filters map to how students
-// actually choose: category, trust flags (verified / contactless / customer
+// actually choose: category, safety flags (verification-on-arrival / contactless / customer
 // present / same-gender) and sorting. Client-side over the fetched feed; the
 // same params become API query params once volume needs server paging.
 
@@ -57,7 +57,7 @@ function FilterChip({
 function FindPageInner() {
   const params = useSearchParams();
   const forceWelcome = params.get('welcome') === '1';
-  const { feed, savedIds, toggleSave, feedHasMore, loadMoreFeed } = useStore();
+  const { hydrating, feed, savedIds, toggleSave, feedHasMore, loadMoreFeed } = useStore();
   const [loadingMore, setLoadingMore] = useState(false);
 
   async function handleLoadMore() {
@@ -155,7 +155,7 @@ function FindPageInner() {
           Explore
           <span className="ml-2 inline-flex items-center gap-1 align-middle text-xs font-medium text-success">
             <span className="h-1.5 w-1.5 rounded-full bg-success" aria-hidden="true" />
-            live
+            demo data
           </span>
         </span>
         {/* Sort — mobile only; on desktop it lives in the filter rail */}
@@ -257,7 +257,7 @@ function FindPageInner() {
         })}
         <div className="flex gap-2 overflow-x-auto pb-1">
           <FilterChip active={verifiedOnly} onClick={() => setVerifiedOnly(!verifiedOnly)}>
-            Verified
+            Verify on arrival
           </FilterChip>
           <FilterChip active={contactlessOnly} onClick={() => setContactlessOnly(!contactlessOnly)}>
             Contactless
@@ -356,7 +356,7 @@ function FindPageInner() {
               <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-subtle">Trust &amp; safety</p>
               <div className="space-y-2 text-sm text-muted">
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={verifiedOnly} onChange={() => setVerifiedOnly(!verifiedOnly)} /> Verified
+                  <input type="checkbox" checked={verifiedOnly} onChange={() => setVerifiedOnly(!verifiedOnly)} /> Verify on arrival
                 </label>
                 <label className="flex items-center gap-2">
                   <input type="checkbox" checked={contactlessOnly} onChange={() => setContactlessOnly(!contactlessOnly)} /> Contactless
@@ -374,7 +374,7 @@ function FindPageInner() {
 
         <div className="flex-1 space-y-3 p-4 lg:p-0">
           <div className="flex items-center justify-between text-xs text-muted">
-            <span>{tasks.length} task{tasks.length === 1 ? '' : 's'}</span>
+            <span>{hydrating ? 'Loading sample tasks…' : `${tasks.length} task${tasks.length === 1 ? '' : 's'}`}</span>
             {(category !== 'All' || verifiedOnly || contactlessOnly || presentOnly) && (
               <button onClick={clearFilters} className="text-brand lg:hidden">Clear filters</button>
             )}
@@ -382,7 +382,17 @@ function FindPageInner() {
 
           <SponsoredCard ad={adFor(2)} />
 
-        {tasks.length === 0 ? (
+        {hydrating ? (
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" aria-label="Loading tasks">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="card animate-pulse p-3.5 shadow-card" aria-hidden="true">
+                <div className="h-4 w-3/4 rounded bg-surface-sunken" />
+                <div className="mt-3 h-3 w-1/2 rounded bg-surface-sunken" />
+                <div className="mt-6 h-10 rounded-xl bg-surface-sunken" />
+              </div>
+            ))}
+          </div>
+        ) : tasks.length === 0 ? (
           <div className="rounded-xl border border-dashed bg-surface p-8 text-center text-sm text-muted">
             {q ? <>No tasks match “{query.trim()}”.</> : <>No tasks match these filters.</>}
             <button onClick={clearFilters} className="mt-2 block w-full font-medium text-brand">

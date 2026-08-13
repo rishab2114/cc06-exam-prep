@@ -57,11 +57,23 @@ const TASKS = [
     description: 'McSpicy meal + fries. I’ll PayNow on delivery. Keep the change for the trip 🙏' },
 ] as const;
 
+const GIGS = [
+  { id: 'demo-gig-organise', by: 'demo-user-priya', slug: 'room-organization', budget: 1600, mins: 18,
+    title: 'Hall-room reset: declutter + organise', hall: 'Any NTU hall', when: 'Weekend afternoons',
+    description: 'A focused one-hour reset for desks, wardrobes and move-in clutter. You stay in the room while we sort.' },
+  { id: 'demo-gig-laundry', by: 'demo-user-wei', slug: 'laundry-wash', budget: 1200, mins: 36,
+    title: 'Same-day laundry wash, dry & fold', hall: 'Crescent Hall', when: 'Weekdays after 4pm',
+    description: 'One standard bag, contactless pickup and return around Crescent and Pioneer halls.' },
+  { id: 'demo-gig-calculus', by: 'demo-user-arjun', slug: 'study-help', budget: 2200, mins: 58,
+    title: 'MH1810 calculus revision — 1:1 tutoring', hall: 'Lee Wee Nam Library', when: 'Weekday evenings',
+    description: 'Concept explanations and past-paper practice for limits, differentiation and integration. Tutoring only.' },
+] as const;
+
 async function main() {
   const campus = await prisma.campus.findUnique({ where: { code: CAMPUS_CODE } });
   if (!campus) throw new Error(`Campus ${CAMPUS_CODE} not found — run the base seed (prisma:seed) first.`);
 
-  const allTaskIds = [...TASKS.map((t) => t.id), 'demo-task-history'];
+  const allTaskIds = [...TASKS.map((t) => t.id), ...GIGS.map((g) => g.id), 'demo-task-history'];
   const userIds = USERS.map((u) => u.id);
 
   // --- wipe prior demo state so the playground is fresh & repeatable ---
@@ -84,7 +96,7 @@ async function main() {
   }
 
   // --- categories we reference, by slug ---
-  const slugs = Array.from(new Set(TASKS.map((t) => t.slug)));
+  const slugs = Array.from(new Set([...TASKS.map((t) => t.slug), ...GIGS.map((g) => g.slug)]));
   const cats = await prisma.serviceCategory.findMany({ where: { slug: { in: slugs } } });
   const catBySlug = new Map(cats.map((c) => [c.slug, c]));
   const missing = slugs.filter((s) => !catBySlug.has(s));
@@ -109,6 +121,29 @@ async function main() {
         study: 'study' in t ? (t.study as object) : undefined,
         createdAt: created,
         events: { create: { actorId: t.by, toStatus: 'OPEN', createdAt: created } },
+      },
+    });
+  }
+
+  // --- sample freelance services (TaskKind.OFFER) ---
+  for (const g of GIGS) {
+    const created = new Date(Date.now() - g.mins * 60_000);
+    const cat = catBySlug.get(g.slug)!;
+    await prisma.task.create({
+      data: {
+        id: g.id,
+        campusId: campus.id,
+        customerId: g.by,
+        categoryId: cat.id,
+        kind: 'OFFER',
+        title: g.title,
+        description: g.description,
+        hall: g.hall,
+        whenText: g.when,
+        budgetCents: g.budget,
+        status: 'OPEN',
+        createdAt: created,
+        events: { create: { actorId: g.by, toStatus: 'OPEN', createdAt: created } },
       },
     });
   }
@@ -155,7 +190,7 @@ async function main() {
   });
 
   const openCount = TASKS.length;
-  console.log(`✅ Demo ready on ${CAMPUS_CODE}: ${USERS.length} students, ${openCount} open tasks, 1 completed job with reviews.`);
+  console.log(`✅ Demo ready on ${CAMPUS_CODE}: ${USERS.length} students, ${openCount} open tasks, ${GIGS.length} services, 1 completed job with reviews.`);
   console.log('   Log in via the "Demo accounts" panel on /login (dev) and switch between:');
   for (const u of USERS) console.log(`   • ${u.fullName} — ${u.email}`);
 }

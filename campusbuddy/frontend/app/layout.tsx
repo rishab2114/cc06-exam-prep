@@ -4,7 +4,7 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'CampusBuddy',
   description:
-    'Campus chores done by verified students at your university — laundry, parcels, meals, study help. Launching at NTU.',
+    'Interactive CampusBuddy demo for student-to-student campus tasks, services, chat, negotiation and ratings.',
   manifest: '/manifest.webmanifest',
 };
 

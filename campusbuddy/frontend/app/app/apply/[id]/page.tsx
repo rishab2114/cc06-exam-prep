@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { feeBreakdown, formatSgd } from '../../../../lib/format';
+import { formatSgd } from '../../../../lib/format';
 import { parseSgdToCents } from '../../../../lib/store';
 import { api, ApiClientError, type ApiTask } from '../../../../lib/api';
 import { CategoryIcon } from '../../../../components/CategoryIcon';
@@ -51,7 +51,6 @@ export default function ApplyPage() {
   // Safe parse: empty -> listed price; junk/zero -> 0 (blocks submit below).
   const quoteCents = quote.trim() === '' ? task.priceCents : parseSgdToCents(quote);
   const invalidQuote = quote.trim() !== '' && quoteCents <= 0;
-  const earnings = feeBreakdown(quoteCents).buddyGets;
 
   // One-tap passes the asking price explicitly; the custom form passes nothing
   // and uses the typed quote. Message only rides along in custom mode.
@@ -112,7 +111,7 @@ export default function ApplyPage() {
             <p className="mt-2 rounded-lg bg-surface-sunken px-2 py-1.5 text-sm text-muted">“{task.description}”</p>
           )}
           <p className="mt-2 rounded-lg bg-success-soft px-2 py-1 text-sm text-green-800">
-            You earn <b>{formatSgd(earnings)}</b>
+            Listed price: <b>{formatSgd(task.priceCents)}</b> · settle directly after the task
           </p>
         </div>
 
@@ -175,7 +174,7 @@ export default function ApplyPage() {
             <div className="rounded-xl border bg-surface p-3">
               <div className="flex items-center justify-between">
                 <span className="font-medium">🪪 Verify on arrival</span>
-                <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-success">Campus email ✓</span>
+                <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-success">Campus domain ✓</span>
               </div>
               <p className="mt-1 text-sm text-muted">
                 This task enters a room / handles belongings, so at the door you&apos;ll confirm your
@@ -224,7 +223,7 @@ export default function ApplyPage() {
               {submitting ? 'Sending offer…' : `Offer to help — ${formatSgd(task.priceCents)}`}
             </button>
             <p className="text-center text-xs text-subtle">
-              You earn <b>{formatSgd(feeBreakdown(task.priceCents).buddyGets)}</b> · {task.customerName}’s asking price
+              No in-app fee or payment in this demo · {task.customerName}’s asking price
             </p>
             {error && <p className="text-sm text-danger">{error}</p>}
             <button
@@ -253,7 +252,7 @@ export default function ApplyPage() {
               <span className={`mt-1 block text-xs ${invalidQuote ? 'text-red-500' : 'text-subtle'}`}>
                 {invalidQuote
                   ? 'That price doesn’t look right — enter a number above S$0.'
-                  : <>{task.customerName} listed {formatSgd(task.priceCents)} — offer higher or lower. You earn <b>{formatSgd(earnings)}</b>.</>}
+                  : <>{task.customerName} listed {formatSgd(task.priceCents)} — offer higher or lower. If accepted, this is the amount you agree to settle directly.</>}
               </span>
             </label>
 

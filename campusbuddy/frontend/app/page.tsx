@@ -22,7 +22,7 @@ import {
 // first-time student knows what this is and that it's real within one screen.
 const STEPS: { icon: LucideIcon; title: string; body: string }[] = [
   { icon: Sparkles, title: 'Post what you need', body: 'Laundry, a parcel run, an extra home-cooked meal, study help. Takes about 30 seconds, and posting is free.' },
-  { icon: MessageSquare, title: 'Agree a price', body: 'Verified students from your hall offer. Take their price or counter — you settle it in chat before anything starts.' },
+  { icon: MessageSquare, title: 'Agree a price', body: 'Students on your campus offer. Take their price or counter, then confirm the details in chat before anything starts.' },
   { icon: Star, title: 'Get it done, rate each other', body: 'Coordinate in-app, mark it complete, leave a rating. Reputation is what makes the next task easy.' },
 ];
 
@@ -39,7 +39,7 @@ const CATEGORIES: { icon: LucideIcon; label: string }[] = [
 interface Stats {
   openTasks: number;
   completedTasks: number;
-  campuses: number;
+  listedServices: number;
 }
 
 export default function LandingPage() {
@@ -75,7 +75,7 @@ export default function LandingPage() {
           <div>
             <span className="badge bg-accent-soft text-accent-text">
               <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden="true" />
-              Now launching at NTU
+              Interactive NTU demo · synthetic data
             </span>
 
             <h1 className="mt-5 text-4xl font-bold leading-[1.1] tracking-tight lg:text-[3.25rem]">
@@ -85,7 +85,7 @@ export default function LandingPage() {
 
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted">
               Post a task — laundry, a parcel run, a spare home-cooked meal, last-minute study
-              help — and a verified student from your hall picks it up. No waiting on a friend, no
+              help — and another student on your campus picks it up. No waiting on a friend, no
               owing anyone a favour.
             </p>
 
@@ -99,13 +99,18 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            {/* Live proof — real counts, not marketing numbers. */}
-            {stats && (stats.openTasks > 0 || stats.completedTasks > 0) && (
+            <p className="mt-4 max-w-xl rounded-xl border border-accent/30 bg-accent-soft px-3 py-2 text-sm text-accent-text">
+              Try a one-tap sample persona or create your own working account. Sample people and
+              listings are synthetic; campus-email OTP and in-app payments are not live yet.
+            </p>
+
+            {/* Honest demo proof — counts only the synthetic NTU seed. */}
+            {stats && (stats.openTasks > 0 || stats.completedTasks > 0 || stats.listedServices > 0) && (
               <dl className="mt-10 flex gap-8 border-t border-border pt-6">
                 {[
-                  { n: stats.openTasks, l: 'open right now' },
-                  { n: stats.completedTasks, l: 'tasks completed' },
-                  { n: stats.campuses, l: 'campuses' },
+                  { n: stats.openTasks, l: 'sample tasks' },
+                  { n: stats.completedTasks, l: 'sample completed' },
+                  { n: stats.listedServices, l: 'sample services' },
                 ].map((s) => (
                   <div key={s.l}>
                     <dt className="sr-only">{s.l}</dt>
@@ -152,7 +157,9 @@ export default function LandingPage() {
         <section className="border-y border-border bg-surface-sunken py-16 lg:py-20">
           <div className="mx-auto max-w-6xl px-5">
             <h2 className="text-2xl font-bold tracking-tight lg:text-3xl">How it works</h2>
-            <p className="mt-2 text-muted">Three steps, and you only pay when you accept someone.</p>
+            <p className="mt-2 text-muted">
+              Three steps. Agree the price in-app; for this demo, students settle directly after the task.
+            </p>
             <ol className="mt-10 grid gap-5 md:grid-cols-3">
               {STEPS.map((s, i) => (
                 <li key={s.title} className="card p-6 shadow-card">
@@ -197,7 +204,7 @@ export default function LandingPage() {
             </h2>
             <ul className="mt-8 space-y-5 md:col-span-2 md:mt-0">
               {[
-                { icon: ShieldCheck, t: 'Verified students only', b: 'Everyone signs in with a university email, so you always know who you’re dealing with.' },
+                { icon: ShieldCheck, t: 'Campus email gate', b: 'The demo checks supported university email domains. Inbox OTP ownership verification is planned before a real pilot.' },
                 { icon: MessageSquare, t: 'Agree everything up front', b: 'Price, time and place are settled in chat before work starts — no awkward surprises.' },
                 { icon: Star, t: 'Ratings that mean something', b: 'Both sides rate each other after every completed task, and reputation follows you.' },
               ].map((f) => (
@@ -238,7 +245,7 @@ export default function LandingPage() {
       <footer className="border-t border-border py-8">
         <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 text-sm text-subtle sm:flex-row sm:items-center sm:justify-between">
           <span>© {new Date().getFullYear()} CampusBuddy · Built by students, for students</span>
-          <span>Launching at NTU · SUTD, NUS &amp; SMU next</span>
+          <span>NTU pilot concept · other campuses configured, not launched</span>
         </div>
       </footer>
     </div>

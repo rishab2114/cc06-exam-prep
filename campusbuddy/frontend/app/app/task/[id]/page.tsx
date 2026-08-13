@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { LAUNDRY_STEPS } from '../../../../lib/mockTasks';
-import { feeBreakdown, formatSgd } from '../../../../lib/format';
+import { formatSgd } from '../../../../lib/format';
 import { parseSgdToCents, useStore } from '../../../../lib/store';
 import { api, ApiClientError, type ApiTask, type ApiOffer } from '../../../../lib/api';
 import { TaskChat } from '../../../../components/TaskChat';
@@ -29,7 +29,8 @@ const RUN_STEPS = [
 //     chat for out-of-stock swaps; in-room jobs (cleaning) do an arrival
 //     check-in; meet-ups (study help) just coordinate over chat. All end in the
 //     real complete call.
-//  3. COMPLETED — earnings recap.
+//  3. COMPLETED — agreed-price recap. Payments are intentionally outside the
+//     demo, so students settle directly after completion.
 // If the viewer is the poster, they're redirected to their offers view.
 export default function ActiveTaskPage() {
   const { id } = useParams<{ id: string }>();
@@ -110,8 +111,7 @@ export default function ActiveTaskPage() {
   }
 
   const iAmAssigned = task.status !== 'OPEN' && myOffer?.state === 'ACCEPTED';
-  const agreedCents = myOffer?.state === 'ACCEPTED' ? myOffer.amountCents : task.priceCents;
-  const earnings = feeBreakdown(agreedCents).buddyGets;
+  const agreedPriceCents = myOffer?.state === 'ACCEPTED' ? myOffer.amountCents : task.priceCents;
 
   // Which assigned-flow this task uses.
   const isRun = task.category === 'Convenience' || task.category === 'Food'; // grocery / 7-11 / parcel / food
@@ -138,7 +138,7 @@ export default function ActiveTaskPage() {
           <span className={`rounded-full px-2 py-0.5 text-xs ${chip.cls}`}>{chip.label}</span>
         </div>
         <p className="mt-1 text-sm text-muted">
-          {task.hall} · with {task.customerName} · you earn {formatSgd(earnings)}
+          {task.hall} · with {task.customerName} · agreed price {formatSgd(agreedPriceCents)}
         </p>
       </header>
 
@@ -238,7 +238,8 @@ export default function ActiveTaskPage() {
         {/* ---------- Phase 3: completed ---------- */}
         {task.status === 'COMPLETED' && (
           <div className="rounded-xl bg-success-soft p-4 text-center text-sm text-green-800">
-            ✅ <b>Task complete — you earned {formatSgd(earnings)}.</b>
+            ✅ <b>Task complete — agreed price {formatSgd(agreedPriceCents)}.</b>
+            <span className="mt-1 block">Settle directly with {task.customerName}; CampusBuddy does not process payment in this demo.</span>
             <Link href="/app/find" className="mt-2 block font-medium underline">
               Find more tasks
             </Link>
@@ -308,7 +309,7 @@ export default function ActiveTaskPage() {
                   disabled={busy}
                   className="mt-4 block w-full rounded-xl bg-green-600 py-3 font-medium text-white disabled:opacity-60"
                 >
-                  {busy ? 'Finishing…' : `Mark complete — you earn ${formatSgd(earnings)}`}
+                  {busy ? 'Finishing…' : `Mark complete · ${formatSgd(agreedPriceCents)} agreed`}
                 </button>
               )}
             </div>
@@ -393,7 +394,7 @@ export default function ActiveTaskPage() {
                 disabled={busy}
                 className="mt-3 block w-full rounded-xl bg-green-600 py-3 font-medium text-white disabled:opacity-60"
               >
-                {busy ? 'Finishing…' : `Mark complete — you earn ${formatSgd(earnings)}`}
+                {busy ? 'Finishing…' : `Mark complete · ${formatSgd(agreedPriceCents)} agreed`}
               </button>
             </div>
           )

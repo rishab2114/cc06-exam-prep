@@ -78,11 +78,26 @@ const DEMO_TASKS = [
     description: 'McSpicy meal + fries. I’ll PayNow on delivery. Keep the change for the trip 🙏' },
 ];
 
+// Sample service listings make the reverse marketplace demonstrable too. Each
+// persona owns one gig, so whichever account a visitor chooses can still book
+// two other students through the normal request -> accept -> chat flow.
+const DEMO_GIGS = [
+  { id: 'demo-gig-organise', by: 'demo-user-priya', slug: 'room-organization', budget: 1600, mins: 18,
+    title: 'Hall-room reset: declutter + organise', hall: 'Any NTU hall', when: 'Weekend afternoons',
+    description: 'A focused one-hour reset for desks, wardrobes and move-in clutter. You stay in the room while we sort.' },
+  { id: 'demo-gig-laundry', by: 'demo-user-wei', slug: 'laundry-wash', budget: 1200, mins: 36,
+    title: 'Same-day laundry wash, dry & fold', hall: 'Crescent Hall', when: 'Weekdays after 4pm',
+    description: 'One standard bag, contactless pickup and return around Crescent and Pioneer halls.' },
+  { id: 'demo-gig-calculus', by: 'demo-user-arjun', slug: 'study-help', budget: 2200, mins: 58,
+    title: 'MH1810 calculus revision — 1:1 tutoring', hall: 'Lee Wee Nam Library', when: 'Weekday evenings',
+    description: 'Concept explanations and past-paper practice for limits, differentiation and integration. Tutoring only.' },
+];
+
 async function seedDemo() {
   const campus = await prisma.campus.findUnique({ where: { code: 'NTU' } });
   if (!campus) return;
 
-  const taskIds = [...DEMO_TASKS.map((t) => t.id), 'demo-task-history'];
+  const taskIds = [...DEMO_TASKS.map((t) => t.id), ...DEMO_GIGS.map((g) => g.id), 'demo-task-history'];
   const userIds = DEMO_USERS.map((u) => u.id);
 
   // Reset only demo-owned rows, so any real student's data is untouched.
@@ -105,7 +120,7 @@ async function seedDemo() {
     });
   }
 
-  const slugs = Array.from(new Set(DEMO_TASKS.map((t) => t.slug)));
+  const slugs = Array.from(new Set([...DEMO_TASKS.map((t) => t.slug), ...DEMO_GIGS.map((g) => g.slug)]));
   const cats = await prisma.serviceCategory.findMany({ where: { slug: { in: slugs } } });
   const catBySlug = new Map(cats.map((c) => [c.slug, c]));
 
@@ -119,6 +134,20 @@ async function seedDemo() {
         title: t.title, description: t.description, hall: t.hall, whenText: t.when,
         budgetCents: t.budget, status: 'OPEN', study: t.study ?? undefined, createdAt: created,
         events: { create: { actorId: t.by, toStatus: 'OPEN', createdAt: created } },
+      },
+    });
+  }
+
+  for (const g of DEMO_GIGS) {
+    const cat = catBySlug.get(g.slug);
+    if (!cat) continue;
+    const created = new Date(Date.now() - g.mins * 60_000);
+    await prisma.task.create({
+      data: {
+        id: g.id, campusId: campus.id, customerId: g.by, categoryId: cat.id,
+        kind: 'OFFER', title: g.title, description: g.description, hall: g.hall,
+        whenText: g.when, budgetCents: g.budget, status: 'OPEN', createdAt: created,
+        events: { create: { actorId: g.by, toStatus: 'OPEN', createdAt: created } },
       },
     });
   }
@@ -148,7 +177,7 @@ async function seedDemo() {
       ],
     });
   }
-  console.log(`Seeded ${DEMO_USERS.length} demo students + ${DEMO_TASKS.length} open tasks (demo deployment).`);
+  console.log(`Seeded ${DEMO_USERS.length} demo students + ${DEMO_TASKS.length} open tasks + ${DEMO_GIGS.length} services (demo deployment).`);
 }
 
 async function main() {

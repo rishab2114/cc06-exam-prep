@@ -12,6 +12,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <AppNav variant="sidebar" />
 
         <div className="lg:pl-60">
+          <div className="border-b border-accent/25 bg-accent-soft px-4 py-2 text-center text-xs text-accent-text lg:mx-8 lg:mt-2 lg:rounded-xl lg:border">
+            <b>Interactive demo:</b> sample personas and listings are synthetic. Campus-domain signup works;
+            email OTP and in-app payments come before a real pilot.
+          </div>
           {/* Mobile: phone-width, centered, room for the tab bar.
               Desktop: full width with padding; pages self-constrain. */}
           <div className="mx-auto w-full max-w-md pb-20 lg:mx-0 lg:max-w-none lg:px-8 lg:pb-10 lg:pt-2">

@@ -131,8 +131,8 @@ function NewTaskForm() {
         <div className="text-5xl">✅</div>
         <h1 className="mt-4 text-xl font-bold">Task posted — for free!</h1>
         <p className="mt-2 max-w-sm text-muted">
-          It&apos;s live on the marketplace now. You only pay when you accept a buddy — we hold the
-          agreed amount and refund anything unused to your balance.
+          It&apos;s live on the marketplace now. Agree the final price in-app, coordinate in chat, and
+          settle directly after completion. CampusBuddy does not hold funds in this demo.
         </p>
         <Link
           href={`/app/applicants/${postedId}`}
@@ -296,8 +296,8 @@ function NewTaskForm() {
         </label>
 
         <div className="rounded-xl bg-brand-soft p-3 text-sm text-brand-hover">
-          <b>Free to post.</b> Budget {formatSgd(cents)}{isStudy ? '/hr' : ''} — you only pay when
-          you accept a buddy. We hold the agreed amount and refund anything unused.
+          <b>Free to post.</b> Budget {formatSgd(cents)}{isStudy ? '/hr' : ''}. Agree the final
+          price before the task and settle directly — there is no in-app payment or fee in this demo.
         </div>
 
         {postError && <p className="text-sm text-danger">{postError}</p>}

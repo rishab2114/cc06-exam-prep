@@ -23,6 +23,7 @@ export interface RealtimeEvent {
 interface StoreShape {
   me: Me | null;
   ready: boolean;
+  hydrating: boolean;
   feed: ApiTask[];
   myTasks: ApiTask[];
   myOffers: MyOffer[];
@@ -51,6 +52,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [me, setMe] = useState<Me | null>(null);
   const [ready, setReady] = useState(false);
+  const [hydrating, setHydrating] = useState(true);
   const [feed, setFeed] = useState<ApiTask[]>([]);
   const [myTasks, setMyTasks] = useState<ApiTask[]>([]);
   const [myOffers, setMyOffers] = useState<MyOffer[]>([]);
@@ -145,9 +147,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           return;
         }
         setMe(user);
+        // Reveal the authenticated shell as soon as identity is known. The six
+        // independent dashboard reads can finish behind lightweight page
+        // skeletons instead of holding the whole app on a full-screen spinner.
+        setReady(true);
         await refresh();
         if (!alive.current) return;
-        setReady(true);
+        setHydrating(false);
 
         // Change detection is a poll, not a stream: on serverless each request
         // is its own process, so an in-process bus never reaches a held-open
@@ -190,7 +196,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           router.replace('/login');
           return;
         }
-        if (alive.current) setReady(true);
+        if (alive.current) {
+          setReady(true);
+          setHydrating(false);
+        }
       }
     })();
 
@@ -280,7 +289,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <StoreContext.Provider
-      value={{ me, ready, feed, myTasks, myOffers, messageUnread, savedTasks, savedIds: new Set(savedTasks.map((t) => t.id)), toggleSave, feedHasMore: feedCursor !== null, loadMoreFeed, findTask, refresh, cancelTask, notifications, unread, markAllRead, signOut, subscribe }}
+      value={{ me, ready, hydrating, feed, myTasks, myOffers, messageUnread, savedTasks, savedIds: new Set(savedTasks.map((t) => t.id)), toggleSave, feedHasMore: feedCursor !== null, loadMoreFeed, findTask, refresh, cancelTask, notifications, unread, markAllRead, signOut, subscribe }}
     >
       {children}
     </StoreContext.Provider>

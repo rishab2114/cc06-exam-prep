@@ -1,19 +1,17 @@
-// Mock sponsored inventory — the advertising surface (see docs/13). Real ads come
-// from an ad server, targeted on verified-student attributes (campus, year, school)
-// under PDPA consent. Always rendered clearly labelled "Sponsored".
+// Synthetic sponsored inventory for the advertising-surface demo (see docs/13).
+// Real ads would need partner approval, an ad server and PDPA-aware consent.
 export interface Ad {
   id: string;
   brand: string;
   emoji: string;
   title: string;
   blurb: string;
-  cta: string;
 }
 
 export const ADS: Ad[] = [
-  { id: 'ad-koufu', brand: 'Koufu · North Spine', emoji: '🧋', title: '1-for-1 bubble tea till 6pm', blurb: 'Verified students only', cta: 'Get deal' },
-  { id: 'ad-dbs', brand: 'DBS', emoji: '🏦', title: 'S$20 free with a student account', blurb: 'Open in 5 min · no fees', cta: 'Learn more' },
-  { id: 'ad-cleanpro', brand: 'CleanPro Laundromat', emoji: '🧼', title: '10% off wash & fold', blurb: 'Near campus · students only', cta: 'View offer' },
+  { id: 'ad-cafe', brand: 'North Spine Café · sample', emoji: '🧋', title: 'Student drink promotion could appear here', blurb: 'Illustrative partner card' },
+  { id: 'ad-bank', brand: 'Campus Bank · sample', emoji: '🏦', title: 'A student account campaign could fit here', blurb: 'Illustrative partner card' },
+  { id: 'ad-laundry', brand: 'Hall Laundromat · sample', emoji: '🧼', title: 'A laundry discount could appear here', blurb: 'Illustrative partner card' },
 ];
 
 /** Pick an ad deterministically (so SSR/CSR match). */

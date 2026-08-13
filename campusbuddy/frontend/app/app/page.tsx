@@ -35,7 +35,7 @@ const OFFER_CHIP: Record<string, { label: string; cls: string }> = {
 };
 
 export default function AppHome() {
-  const { me, myTasks, myOffers, savedTasks, cancelTask, unread } = useStore();
+  const { me, hydrating, myTasks, myOffers, savedTasks, cancelTask, unread } = useStore();
   const firstName = me?.name.split(' ')[0] ?? 'there';
 
   // Show live negotiations + deals in progress; hide old closed threads.
@@ -71,7 +71,15 @@ export default function AppHome() {
             <p className="mb-2 text-xs font-semibold uppercase text-muted">Your active tasks</p>
 
             <div className="grid gap-2 lg:grid-cols-2">
-              {myTasks.map((t) => {
+              {hydrating ? (
+                [0, 1].map((i) => (
+                  <div key={i} className="animate-pulse rounded-xl border bg-surface p-3" aria-hidden="true">
+                    <div className="h-4 w-2/3 rounded bg-surface-sunken" />
+                    <div className="mt-3 h-3 w-1/2 rounded bg-surface-sunken" />
+                    <div className="mt-2 h-3 w-1/3 rounded bg-surface-sunken" />
+                  </div>
+                ))
+              ) : myTasks.map((t) => {
                 const chip = STATUS_CHIP[t.status] ?? STATUS_CHIP.OPEN;
                 return (
                   <div key={t.id} className="rounded-xl border bg-surface p-3">
@@ -108,7 +116,7 @@ export default function AppHome() {
               })}
             </div>
 
-            {myTasks.length === 0 && (
+            {!hydrating && myTasks.length === 0 && (
               <div className="rounded-xl border border-dashed bg-surface p-6 text-center text-sm text-muted">
                 <p className="text-2xl">📭</p>
                 <p className="mt-1">Nothing active — post a task and offers roll in.</p>

@@ -1,13 +1,14 @@
 import { ADS, type Ad } from '../lib/ads';
 
-// Clearly-labelled sponsored card — the in-app ad surface (docs/13). Trust is the
-// product, so ads are always marked "Sponsored" and visually distinct.
+// Clearly-labelled sample inventory for the planned ad surface (docs/13). These
+// cards are deliberately non-interactive so a product demo never implies a real
+// commercial promotion, click-through or brand relationship.
 export function SponsoredCard({ ad = ADS[0] }: { ad?: Ad }) {
   return (
-    <div className="rounded-xl border border-dashed border-border-strong bg-surface p-3">
+    <div aria-label="Sample sponsored placement" className="rounded-xl border border-dashed border-border-strong bg-surface p-3">
       <div className="flex items-center justify-between">
         <span className="text-[10px] font-semibold uppercase tracking-wide text-subtle">
-          Sponsored
+          Sample sponsored placement
         </span>
         <span className="text-xs text-subtle">{ad.brand}</span>
       </div>
@@ -17,9 +18,9 @@ export function SponsoredCard({ ad = ADS[0] }: { ad?: Ad }) {
           <p className="text-sm font-medium">{ad.title}</p>
           <p className="text-xs text-muted">{ad.blurb}</p>
         </div>
-        <button className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white">
-          {ad.cta}
-        </button>
+        <span className="rounded-lg bg-surface-sunken px-3 py-1.5 text-xs font-medium text-subtle">
+          Demo only
+        </span>
       </div>
     </div>
   );
