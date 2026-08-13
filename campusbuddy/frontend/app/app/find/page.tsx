@@ -9,7 +9,8 @@ import { SponsoredCard } from '../../../components/Sponsored';
 import { adFor } from '../../../lib/ads';
 import { useStore } from '../../../lib/store';
 import { CategoryIcon } from '../../../components/CategoryIcon';
-import { Bookmark, BookOpen, Search as SearchIcon } from 'lucide-react';
+import { Bookmark, BookOpen, Search as SearchIcon, X } from 'lucide-react';
+import { facetsFor, facetValues, courseCodeOf } from '../../../lib/facets';
 
 // Marketplace / Explore — the live campus feed. Filters map to how students
 // actually choose: category, trust flags (verified / contactless / customer
@@ -68,6 +69,17 @@ function FindPageInner() {
   const [presentOnly, setPresentOnly] = useState(false);
   const [sort, setSort] = useState<SortKey>('recent');
   const [query, setQuery] = useState('');
+  // facet key -> chosen value. Reset whenever the category changes, since a
+  // course filter makes no sense once you've switched to Laundry.
+  const [facetSel, setFacetSel] = useState<Record<string, string>>({});
+
+  function chooseCategory(next: string) {
+    setCategory(next);
+    setFacetSel({});
+  }
+  function toggleFacet(key: string, value: string) {
+    setFacetSel((prev) => (prev[key] === value ? (({ [key]: _, ...rest }) => rest)(prev) : { ...prev, [key]: value }));
+  }
 
   const categories = useMemo(
     () => ['All', ...Array.from(new Set(feed.map((t) => t.category)))],
@@ -75,6 +87,15 @@ function FindPageInner() {
   );
 
   const q = query.trim().toLowerCase();
+
+  // Tasks in the chosen category, before facets apply — this is what the facet
+  // options and their counts are built from, so a filter never offers a value
+  // that would return nothing.
+  const inCategory = useMemo(
+    () => (category === 'All' ? [] : feed.filter((t) => t.category === category)),
+    [feed, category],
+  );
+
   const tasks = useMemo(() => {
     // Search matches what a student would type: title, details, module/topics,
     // poster, and location. Client-side over the fetched feed (≤100 tasks) —
@@ -83,14 +104,20 @@ function FindPageInner() {
       !q ||
       t.title.toLowerCase().includes(q) ||
       (t.description ?? '').toLowerCase().includes(q) ||
-      (t.study ? `${t.study.module} ${t.study.topics.join(' ')}`.toLowerCase().includes(q) : false) ||
+      (t.study
+        ? `${t.study.module} ${t.study.topics.join(' ')} ${courseCodeOf(t.study.module) ?? ''}`
+            .toLowerCase()
+            .includes(q)
+        : false) ||
       t.customerName.toLowerCase().includes(q) ||
       t.hall.toLowerCase().includes(q) ||
       t.category.toLowerCase().includes(q);
+    const activeFacets = facetsFor(category).filter((f) => facetSel[f.key]);
     const filtered = feed.filter(
       (t) =>
         matches(t) &&
         (category === 'All' || t.category === category) &&
+        activeFacets.every((f) => f.valueOf(t) === facetSel[f.key]) &&
         (!verifiedOnly || t.requiresMatricVerification) &&
         (!contactlessOnly || t.contactless) &&
         (!presentOnly || t.presenceRequired),
@@ -99,11 +126,12 @@ function FindPageInner() {
     if (sort === 'cheapest') return [...filtered].sort((a, b) => a.priceCents - b.priceCents);
     if (sort === 'priciest') return [...filtered].sort((a, b) => b.priceCents - a.priceCents);
     return filtered;
-  }, [feed, q, category, verifiedOnly, contactlessOnly, presentOnly, sort]);
+  }, [feed, q, category, facetSel, verifiedOnly, contactlessOnly, presentOnly, sort]);
 
   function clearFilters() {
     setQuery('');
     setCategory('All');
+    setFacetSel({});
     setVerifiedOnly(false);
     setContactlessOnly(false);
     setPresentOnly(false);
@@ -170,11 +198,32 @@ function FindPageInner() {
       <div className="space-y-2 border-b bg-surface px-4 py-3 lg:hidden">
         <div className="flex gap-2 overflow-x-auto pb-1">
           {categories.map((c) => (
-            <FilterChip key={c} active={category === c} onClick={() => setCategory(c)}>
+            <FilterChip key={c} active={category === c} onClick={() => chooseCategory(c)}>
               {c}
             </FilterChip>
           ))}
         </div>
+        {/* Facets for the chosen category (e.g. Course when you pick Study help) */}
+        {facetsFor(category).map((f) => {
+          const values = facetValues(inCategory, f);
+          if (values.length < 2) return null;
+          return (
+            <div key={f.key} className="flex gap-2 overflow-x-auto pb-1">
+              <span className="shrink-0 self-center text-xs font-semibold uppercase tracking-wide text-subtle">
+                {f.label}
+              </span>
+              {values.map((v) => (
+                <FilterChip
+                  key={v.value}
+                  active={facetSel[f.key] === v.value}
+                  onClick={() => toggleFacet(f.key, v.value)}
+                >
+                  {v.value} <span className="opacity-60">{v.count}</span>
+                </FilterChip>
+              ))}
+            </div>
+          );
+        })}
         <div className="flex gap-2 overflow-x-auto pb-1">
           <FilterChip active={verifiedOnly} onClick={() => setVerifiedOnly(!verifiedOnly)}>
             Verified
@@ -210,7 +259,7 @@ function FindPageInner() {
                 {categories.map((c) => (
                   <button
                     key={c}
-                    onClick={() => setCategory(c)}
+                    onClick={() => chooseCategory(c)}
                     className={`block w-full rounded-lg px-3 py-1.5 text-left text-sm ${
                       category === c ? 'bg-brand-soft font-medium text-brand' : 'text-muted hover:bg-surface-sunken'
                     }`}
@@ -220,6 +269,31 @@ function FindPageInner() {
                 ))}
               </div>
             </div>
+            {facetsFor(category).map((f) => {
+              const values = facetValues(inCategory, f);
+              if (values.length < 2) return null;
+              return (
+                <div key={f.key}>
+                  <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-subtle">{f.label}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {values.map((v) => (
+                      <button
+                        key={v.value}
+                        onClick={() => toggleFacet(f.key, v.value)}
+                        aria-pressed={facetSel[f.key] === v.value}
+                        className={`rounded-full border px-2.5 py-1 text-xs transition-colors duration-150 ${
+                          facetSel[f.key] === v.value
+                            ? 'border-brand bg-brand font-medium text-white'
+                            : 'border-border-strong bg-surface text-muted hover:border-brand/50'
+                        }`}
+                      >
+                        {v.value} <span className="opacity-60">{v.count}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
             <div>
               <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-subtle">Trust &amp; safety</p>
               <div className="space-y-2 text-sm text-muted">
