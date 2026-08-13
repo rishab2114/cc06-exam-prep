@@ -113,7 +113,7 @@ export default function ProfilePage() {
           </div>
           <div className="mt-3 flex flex-wrap gap-1">
             <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-success">
-              🎓 {me.campus} email verified
+              {me.campus} {me.verifiedAt ? 'email verified' : 'student'}
             </span>
             <span className="rounded-full bg-accent-soft px-2 py-0.5 text-xs text-accent-text">
               🪪 Matric scan — at first in-person task

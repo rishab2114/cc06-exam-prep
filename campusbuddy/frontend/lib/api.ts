@@ -158,6 +158,16 @@ export const api = {
       method: 'POST',
       json: { email, code, ...(name ? { name } : {}) },
     }),
+  register: (email: string, password: string, name: string) =>
+    call<{ user: { id: string; name: string; email: string; campus: string } }>('/auth/register', {
+      method: 'POST',
+      json: { email, password, name },
+    }),
+  login: (email: string, password: string) =>
+    call<{ user: { id: string; name: string; email: string; campus: string } }>('/auth/login', {
+      method: 'POST',
+      json: { email, password },
+    }),
   logout: () => call<{ ok: boolean }>('/auth/logout', { method: 'POST' }),
   me: () => call<{ user: Me | null }>('/me'),
 

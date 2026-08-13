@@ -153,6 +153,10 @@ model User {
   campus          Campus     @relation(fields: [campusId], references: [id])
   email           String     @unique
   emailVerifiedAt DateTime?
+  // scrypt hash of the account password ("<salt>:<derivedKey>", both hex).
+  // Nullable: accounts created by the email-code flow never set one, and the
+  // seeded demo personas sign in through the demo switcher instead.
+  passwordHash    String?
   fullName        String
   photoUrl        String?
   hall            String?

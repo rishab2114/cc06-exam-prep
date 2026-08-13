@@ -132,9 +132,13 @@ export function AppNav({ variant }: { variant: 'sidebar' | 'tabs' }) {
           </span>
           <span className="min-w-0">
             <span className="block truncate text-sm font-medium">{me.name}</span>
+            {/* Only claim "verified" when we actually confirmed the address. */}
             <span className="flex items-center gap-1 truncate text-xs text-subtle">
-              <ShieldCheck size={12} className="shrink-0 text-brand" aria-hidden="true" />
-              {me.campus} · verified
+              {me.verifiedAt && (
+                <ShieldCheck size={12} className="shrink-0 text-brand" aria-hidden="true" />
+              )}
+              {me.campus}
+              {me.verifiedAt ? ' · verified' : ''}
             </span>
           </span>
         </Link>
