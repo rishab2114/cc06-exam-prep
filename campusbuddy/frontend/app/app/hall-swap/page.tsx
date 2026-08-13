@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowLeftRight, Check, House, Pause, RefreshCw, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowLeftRight, BellRing, Check, House, Pause, RefreshCw, ShieldCheck, Sparkles } from 'lucide-react';
 import { api, ApiClientError } from '../../../lib/api';
+import { enablePush, getExistingSubscription, pushConfigured, pushSupported } from '../../../lib/push';
 import { useStore } from '../../../lib/store';
 import {
   AIRCON_PREFERENCES,
@@ -298,6 +299,10 @@ export default function HallSwapPage() {
   const [editing, setEditing] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [savedNotice, setSavedNotice] = useState<string | null>(null);
+  const [browserAlertsAvailable, setBrowserAlertsAvailable] = useState(false);
+  const [browserAlertsEnabled, setBrowserAlertsEnabled] = useState(false);
+  const [browserAlertsBusy, setBrowserAlertsBusy] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -315,6 +320,16 @@ export default function HallSwapPage() {
 
   useEffect(() => { void load(); }, [load]);
 
+  useEffect(() => {
+    const available = pushSupported() && pushConfigured();
+    setBrowserAlertsAvailable(available);
+    if (available) {
+      getExistingSubscription()
+        .then((subscription) => setBrowserAlertsEnabled(Boolean(subscription)))
+        .catch(() => setBrowserAlertsEnabled(false));
+    }
+  }, []);
+
   const initialDraft = useMemo<Draft>(() => profile ? {
     gender: profile.gender,
     term: profile.term,
@@ -329,6 +344,7 @@ export default function HallSwapPage() {
   async function save(draft: Draft) {
     setSaving(true);
     setError(null);
+    setSavedNotice(null);
     try {
       const result = await api.saveHallSwap(draft);
       setProfile(result.profile);
@@ -336,10 +352,28 @@ export default function HallSwapPage() {
       setConnections(result.connections);
       setActiveProfiles(result.activeProfiles);
       setEditing(false);
+      setSavedNotice(result.matches.length > 0
+        ? `Preferences saved. We found ${result.matches.length} reciprocal match${result.matches.length === 1 ? '' : 'es'} and added an alert to Activity.`
+        : 'Preferences saved. Matching stays active and we’ll notify you in Activity when a reciprocal swap is found.');
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : 'Could not save preferences.');
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function turnOnBrowserAlerts() {
+    if (browserAlertsBusy) return;
+    setBrowserAlertsBusy(true);
+    setError(null);
+    try {
+      await enablePush();
+      setBrowserAlertsEnabled(true);
+      setSavedNotice('Browser alerts are on. We’ll notify this device when a reciprocal swap is found.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not enable browser alerts.');
+    } finally {
+      setBrowserAlertsBusy(false);
     }
   }
 
@@ -429,11 +463,38 @@ export default function HallSwapPage() {
         </section>
 
         {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+        {savedNotice && <p aria-live="polite" className="rounded-xl border border-green-200 bg-green-50 p-3 text-sm font-medium text-green-800">{savedNotice}</p>}
 
         {(!profile || !profile.isActive || editing) ? (
           <PreferencesForm initial={initialDraft} saving={saving} onSave={save} onCancel={profile?.isActive ? () => setEditing(false) : undefined} />
         ) : (
           <>
+            <section className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
+              <div className="flex items-start gap-3">
+                <BellRing className="mt-0.5 shrink-0 text-blue-700" size={21} aria-hidden="true" />
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-blue-950">Match alerts are active</p>
+                  <p className="mt-0.5 text-sm text-blue-900">
+                    We’ll add an Activity notification when a new reciprocal swap is found, even if you have no matches today.
+                  </p>
+                  {browserAlertsAvailable && (
+                    browserAlertsEnabled ? (
+                      <p className="mt-2 text-xs font-medium text-green-700">✓ Browser alerts are enabled on this device</p>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => void turnOnBrowserAlerts()}
+                        disabled={browserAlertsBusy}
+                        className="mt-2 rounded-lg bg-blue-700 px-3 py-2 text-xs font-semibold text-white disabled:opacity-60"
+                      >
+                        {browserAlertsBusy ? 'Enabling…' : 'Also notify this device'}
+                      </button>
+                    )
+                  )}
+                </div>
+              </div>
+            </section>
+
             <section className="grid gap-3 sm:grid-cols-3">
               <div className="rounded-2xl border bg-white p-4">
                 <p className="text-xs font-semibold uppercase text-slate-400">Your room</p>

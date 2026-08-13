@@ -85,3 +85,8 @@ export function preferenceAcceptsRoom(
   if (airconPreference === 'ANY') return true;
   return actualAircon === (airconPreference === 'AIRCON');
 }
+
+/** Stable key used to ensure one match alert per reciprocal profile pair. */
+export function hallSwapAlertKey(firstProfileId: string, secondProfileId: string): string {
+  return [firstProfileId, secondProfileId].sort().join(':');
+}

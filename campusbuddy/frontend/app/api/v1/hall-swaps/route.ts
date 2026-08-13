@@ -8,6 +8,7 @@ import {
   HALL_SWAP_TERMS,
   NTU_HALLS,
   ROOM_TYPES,
+  hallSwapAlertKey,
   preferenceAcceptsRoom,
   type AirconPreference,
   type RoomType,
@@ -219,30 +220,40 @@ export const POST = handler(async (req, { session }) => {
   const result = await matchesFor(session.sub, session.campusId);
   const connectionState = await connectionStateFor(session.sub, session.campusId);
 
-  // Tell reciprocal matches, but suppress repeat alerts from the same saved
-  // profile for 24 hours so editing preferences does not create notification
-  // spam. The current user sees their results immediately on this page.
-  const since = new Date(Date.now() - 24 * 60 * 60_000);
+  // Alert both students once for each reciprocal pair. The stable pair key
+  // prevents preference edits or repeated saves from generating notification
+  // spam, while the href opens the live match and introduction controls.
   await Promise.all(
     result.matches.slice(0, 25).map(async (match) => {
-      const alreadyNotified = await db().notification.findFirst({
-        where: {
-          userId: match.userId,
-          type: 'hall_swap.match',
-          createdAt: { gte: since },
-          data: { path: ['swapProfileId'], equals: saved.id },
+      const pairKey = hallSwapAlertKey(saved.id, match.id);
+      await Promise.all([
+        {
+          userId: session.sub,
+          body: `${match.firstName} has a ${match.haveHall} room that fits your preferences — and yours fits theirs.`,
         },
-        select: { id: true },
-      });
-      if (alreadyNotified) return;
-      await notifyUser({
-        userId: match.userId,
-        type: 'hall_swap.match',
-        title: 'New reciprocal hall-swap match',
-        body: `A verified student with ${saved.haveHall} wants a room like yours.`,
-        href: '/app/hall-swap',
-        meta: { swapProfileId: saved.id },
-      });
+        {
+          userId: match.userId,
+          body: `A student with a ${saved.haveHall} room matches your preferences — and your room fits theirs.`,
+        },
+      ].map(async (recipient) => {
+        const alreadyNotified = await db().notification.findFirst({
+          where: {
+            userId: recipient.userId,
+            type: 'hall_swap.match',
+            data: { path: ['pairKey'], equals: pairKey },
+          },
+          select: { id: true },
+        });
+        if (alreadyNotified) return;
+        await notifyUser({
+          userId: recipient.userId,
+          type: 'hall_swap.match',
+          title: 'We found a reciprocal hall-swap match',
+          body: recipient.body,
+          href: '/app/hall-swap',
+          meta: { pairKey },
+        });
+      }));
     }),
   );
 

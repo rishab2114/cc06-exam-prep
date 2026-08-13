@@ -63,7 +63,7 @@ function PushToggle() {
         )}
       </div>
       <p className="mt-1 text-xs text-muted">
-        Get an alert on this device the moment someone offers, counters, messages, or accepts.
+        Get an alert on this device for new hall-swap matches, offers, counters, messages, or acceptances.
       </p>
       {error && <p className="mt-1 text-xs text-danger">{error}</p>}
     </div>

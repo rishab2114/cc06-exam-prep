@@ -18,6 +18,7 @@ It also includes a **free NTU Hall Swap Matcher**: residents enter the hall and 
 - Save tasks, receive notifications and view history.
 - Create a password-based account using a supported campus-email domain.
 - Find reciprocal NTU hall-swap matches and request a private introduction.
+- Receive one in-app alert per new reciprocal swap pair, with optional browser push notifications.
 
 The deployed sample people, tasks, completed job and service listings are synthetic. Demo access checks the email domain; it does **not** yet prove inbox ownership. Email OTP is a pre-pilot requirement.
 

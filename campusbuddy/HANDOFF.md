@@ -10,7 +10,9 @@ Last updated: 2026-08-13
 > reveals university email contact details only after acceptance. The feature
 > is free and explicitly routes students to NTU's official swap process; there
 > are no rent or cash-top-up fields. Canonical models are `HallSwapProfile` and
-> `HallSwapConnection`, with API routes under `/api/v1/hall-swaps`.
+> `HallSwapConnection`, with API routes under `/api/v1/hall-swaps`. Each newly
+> discovered reciprocal profile pair generates one in-app Activity alert for
+> both students, plus best-effort Web Push when that device has opted in.
 
 - GitHub: `rishab2114/cc06-exam-prep`
 - Working branch: `claude/campusbuddy-ntu-mvp-etaymm`

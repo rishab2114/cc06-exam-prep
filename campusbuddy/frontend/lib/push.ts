@@ -14,6 +14,10 @@ export function pushSupported(): boolean {
   return typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window;
 }
 
+export function pushConfigured(): boolean {
+  return Boolean(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY);
+}
+
 export async function getExistingSubscription(): Promise<PushSubscription | null> {
   if (!pushSupported()) return null;
   const reg = await navigator.serviceWorker.getRegistration('/sw.js');

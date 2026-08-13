@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { airconPreferenceLabel, preferenceAcceptsRoom, roomLabel } from './hallSwap.ts';
+import { airconPreferenceLabel, hallSwapAlertKey, preferenceAcceptsRoom, roomLabel } from './hallSwap.ts';
 
 test('matches room type and an exact air-con preference', () => {
   assert.equal(preferenceAcceptsRoom(['SINGLE'], 'AIRCON', 'SINGLE', true), true);
@@ -15,4 +15,9 @@ test('allows either air-con state without ignoring room type', () => {
 test('produces concise reader-facing labels', () => {
   assert.equal(roomLabel('DOUBLE', false), 'Double · Non-air-con');
   assert.equal(airconPreferenceLabel('ANY'), 'Either is fine');
+});
+
+test('uses the same alert key regardless of which student saves last', () => {
+  assert.equal(hallSwapAlertKey('profile-b', 'profile-a'), 'profile-a:profile-b');
+  assert.equal(hallSwapAlertKey('profile-a', 'profile-b'), 'profile-a:profile-b');
 });
