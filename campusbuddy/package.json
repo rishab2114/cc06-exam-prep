@@ -1,0 +1,12 @@
+{
+  "name": "campusbuddy",
+  "private": true,
+  "description": "CampusBuddy workspace root. Run `npm install` HERE once; it links @campusbuddy/shared into frontend and backend and builds it.",
+  "workspaces": ["shared", "frontend", "backend"],
+  "scripts": {
+    "build:shared": "npm run build -w @campusbuddy/shared",
+    "dev": "npm run dev -w campusbuddy-frontend",
+    "build": "npm run build:shared && npm run build -w campusbuddy-frontend",
+    "test": "npm test -w campusbuddy-backend"
+  }
+}

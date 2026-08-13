@@ -1,0 +1,16 @@
+{
+  "name": "@campusbuddy/shared",
+  "version": "0.1.0",
+  "description": "Single source of truth for CampusBuddy domain logic: money math, campus registry, offer state machine, domain types. Consumed by both frontend and backend — never duplicate these.",
+  "license": "UNLICENSED",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepare": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

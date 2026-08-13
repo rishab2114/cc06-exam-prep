@@ -1,0 +1,37 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# builds
+dist/
+.next/
+out/
+build/
+
+# env
+.env
+.env.local
+.env*.local
+
+# prisma
+backend/prisma/migrations/dev.db*
+
+# logs / os
+*.log
+.DS_Store
+coverage/
+
+# ts build info
+*.tsbuildinfo
+
+# next generated
+frontend/next-env.d.ts
+
+# generated docs pdf
+CampusBuddy-Docs.pdf
+CampusBuddy-Venture-Brief.pdf
+CampusBuddy-Million-Dollar-Plan.pdf
+
+# shared package build output
+shared/dist/

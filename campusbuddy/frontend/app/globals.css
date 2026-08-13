@@ -1,0 +1,105 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * Design tokens. Components reference semantic names (bg-surface, text-muted,
+ * bg-brand) rather than raw hex, so the palette moves in one place.
+ *
+ * Palette: deep teal carries trust and "service" without the generic SaaS blue;
+ * warm amber is reserved for accents and demo affordances so a CTA never
+ * competes with a badge. Neutrals are warm-tinted so long feed pages don't read
+ * cold and clinical.
+ *
+ * Contrast: --brand on white is ~5.3:1 and white on --brand is the same, so both
+ * directions clear WCAG AA for body text; --text-muted on --surface is ~4.6:1.
+ */
+@layer base {
+  :root {
+    /* Canvas */
+    --surface: 0 0% 100%;
+    --surface-sunken: 40 20% 97%;
+    --border: 220 13% 91%;
+    --border-strong: 220 9% 82%;
+
+    /* Text */
+    --text: 222 22% 14%;
+    --text-muted: 220 9% 42%;
+    --text-subtle: 220 9% 56%;
+
+    /* Brand */
+    --brand: 175 77% 26%;
+    --brand-hover: 175 79% 20%;
+    --brand-soft: 168 64% 95%;
+    --brand-ring: 175 60% 45%;
+
+    /* Accent — badges and demo affordances, never the primary CTA */
+    --accent: 38 92% 50%;
+    --accent-soft: 48 96% 94%;
+    --accent-text: 26 90% 31%;
+
+    /* Semantic */
+    --success: 158 64% 27%;
+    --success-soft: 152 76% 95%;
+    --danger: 0 72% 42%;
+    --danger-soft: 0 86% 97%;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Rule 6: 16px base, 1.5 line-height. */
+  body {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  /* Rule 1: never remove focus rings — replace them with a better one. */
+  :focus-visible {
+    outline: 2px solid hsl(var(--brand-ring));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Rule 7: honour reduced-motion. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Rule 2: 44×44 minimum touch target, visible feedback, never an instant swap. */
+  .btn {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-5
+           text-[15px] font-semibold transition-colors duration-150
+           disabled:cursor-not-allowed disabled:opacity-55;
+  }
+  .btn-primary {
+    @apply btn bg-brand text-white hover:bg-brand-hover;
+  }
+  .btn-secondary {
+    @apply btn border border-border-strong bg-surface text-text hover:bg-surface-sunken;
+  }
+
+  .card {
+    @apply rounded-2xl border border-border bg-surface;
+  }
+
+  .input {
+    @apply min-h-[44px] w-full rounded-xl border border-border-strong bg-surface px-4
+           text-[15px] text-text placeholder:text-subtle
+           focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-ring/40;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold;
+  }
+}

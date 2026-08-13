@@ -1,0 +1,613 @@
+// CampusBuddy NTU — Prisma schema (canonical source of truth for the data model).
+// See docs/02-database-schema.md for rationale and the equivalent SQL DDL.
+// Money is stored as integer minor units (SGD cents). Balances are derived from the ledger.
+
+generator client {
+  provider      = "prisma-client-js"
+  // "native" covers local dev/Docker; the rhel targets are the query-engine
+  // binaries for Vercel's serverless runtime (Amazon Linux — OpenSSL 3.0 on
+  // Node 20, 1.0.x on Node 18) so the deployed functions can reach Postgres.
+  binaryTargets = ["native", "rhel-openssl-3.0.x", "rhel-openssl-1.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Enums ----------
+enum UserRole {
+  CUSTOMER
+  PROVIDER
+  ADMIN
+}
+
+enum VerificationKind {
+  EMAIL
+  STUDENT_ID
+  HALL
+  PAYOUTS
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+enum TaskStatus {
+  DRAFT
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CLOSED
+  CANCELLED
+  DISPUTED
+}
+
+// REQUEST = the original "I need help" post (customer posts, buddies bid).
+// OFFER   = a freelance gig: a student advertises a service they'll do at a set
+// rate. Booking a gig spins up a REQUEST (the booker as customer) with a
+// pending offer from the gig owner, so the existing accept→chat→complete→review
+// machine handles it unchanged.
+enum TaskKind {
+  REQUEST
+  OFFER
+}
+
+// Negotiation: one Offer row per (task, provider) thread; `round` increments on
+// each counter and history is written to TaskEvent. State machine lives in
+// @campusbuddy/shared (offers.ts) — DB enum must mirror it exactly.
+enum OfferState {
+  PENDING
+  COUNTERED
+  ACCEPTED
+  DECLINED
+  WITHDRAWN
+  EXPIRED
+}
+
+enum OfferActor {
+  CUSTOMER
+  PROVIDER
+}
+
+enum MediaKind {
+  VERIFICATION
+  TASK_PHOTO
+  AVATAR
+  MESSAGE_ATTACHMENT
+}
+
+enum ScanStatus {
+  PENDING
+  CLEAN
+  INFECTED
+  SKIPPED
+}
+
+enum PaymentStatus {
+  REQUIRES_AUTH
+  AUTHORIZED
+  CAPTURED
+  RELEASED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  FAILED
+}
+
+enum PayoutStatus {
+  PENDING
+  PAID
+  FAILED
+  REVERSED
+}
+
+enum LedgerType {
+  CHARGE
+  PLATFORM_FEE
+  PROVIDER_EARNING
+  REFUND
+  PAYOUT
+  ADJUSTMENT
+}
+
+enum RiskTier {
+  T1
+  T2
+  T3
+}
+
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED_REFUND
+  RESOLVED_RELEASE
+  RESOLVED_SPLIT
+  REJECTED
+}
+
+enum HallSwapConnectionStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+// ---------- Tenancy ----------
+// Shared-schema multi-tenancy: every user and task belongs to exactly one campus
+// and ALL queries are campus-scoped (enforced in services; RLS optional later).
+model Campus {
+  id           String   @id @default(uuid())
+  code         String   @unique // e.g. NTU, NUS, SUTD
+  name         String
+  emailDomains String[] // verified sign-up domains for this campus
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  users               User[]
+  tasks               Task[]
+  hallSwapProfiles    HallSwapProfile[]
+  hallSwapConnections HallSwapConnection[]
+
+  @@map("campuses")
+}
+
+// ---------- Users & identity ----------
+model User {
+  id              String     @id @default(uuid())
+  campusId        String
+  campus          Campus     @relation(fields: [campusId], references: [id])
+  email           String     @unique
+  emailVerifiedAt DateTime?
+  // scrypt hash of the account password ("<salt>:<derivedKey>", both hex).
+  // Nullable: accounts created by the email-code flow never set one, and the
+  // seeded demo personas sign in through the demo switcher instead.
+  passwordHash    String?
+  fullName        String
+  photoUrl        String?
+  hall            String?
+  school          String?
+  yearOfStudy     Int?
+  phone           String?
+  roles           UserRole[] @default([CUSTOMER])
+  isSuspended     Boolean    @default(false)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  deletedAt       DateTime?
+
+  providerProfile          ProviderProfile?
+  verifications            Verification[]
+  tasksAsCustomer          Task[]               @relation("CustomerTasks")
+  tasksAsProvider          Task[]               @relation("ProviderTasks")
+  offers                   Offer[]
+  savedProviders           SavedProvider[]      @relation("Saver")
+  savedByOthers            SavedProvider[]      @relation("Saved")
+  savedTasks               SavedTask[]
+  media                    Media[]
+  reviewsWritten           Review[]             @relation("RaterReviews")
+  reviewsReceived          Review[]             @relation("RateeReviews")
+  payouts                  Payout[]
+  notifications            Notification[]
+  pushSubs                 PushSubscription[]
+  messages                 Message[]
+  disputesRaised           Dispute[]
+  safetyEvents             SafetyEvent[]
+  blocksMade               UserBlock[]          @relation("Blocker")
+  blocksAgainst            UserBlock[]          @relation("Blocked")
+  hallSwapProfile          HallSwapProfile?
+  hallSwapRequestsSent     HallSwapConnection[] @relation("HallSwapRequester")
+  hallSwapRequestsReceived HallSwapConnection[] @relation("HallSwapRecipient")
+
+  @@index([campusId])
+  @@map("users")
+}
+
+// ---------- Free hall-swap matcher ----------
+// CampusBuddy only discovers reciprocal preferences. Residents still submit
+// the actual mutual-swap request through NTU's official housing process.
+model HallSwapProfile {
+  id              String   @id @default(uuid())
+  campusId        String
+  campus          Campus   @relation(fields: [campusId], references: [id])
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gender          String
+  term            String
+  haveHall        String
+  haveRoomType    String
+  haveAircon      Boolean
+  wantedHalls     String[]
+  wantedRoomTypes String[]
+  wantedAircon    String
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([campusId, gender, term, isActive])
+  @@map("hall_swap_profiles")
+}
+
+model HallSwapConnection {
+  id          String                   @id @default(uuid())
+  campusId    String
+  campus      Campus                   @relation(fields: [campusId], references: [id])
+  requesterId String
+  requester   User                     @relation("HallSwapRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  recipientId String
+  recipient   User                     @relation("HallSwapRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  status      HallSwapConnectionStatus @default(PENDING)
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+
+  @@unique([requesterId, recipientId])
+  @@index([recipientId, status, createdAt])
+  @@map("hall_swap_connections")
+}
+
+model ProviderProfile {
+  userId             String   @id
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio                String?
+  categoriesOffered  String[] @default([])
+  isAvailable        Boolean  @default(false)
+  stripeAccountId    String?
+  payoutsEnabled     Boolean  @default(false)
+  workEligibilityAck Boolean  @default(false)
+  createdAt          DateTime @default(now())
+
+  availability AvailabilityWindow[]
+
+  @@map("provider_profiles")
+}
+
+// Weekly recurring availability (minutes from midnight, campus-local time).
+model AvailabilityWindow {
+  id        String          @id @default(uuid())
+  profileId String
+  profile   ProviderProfile @relation(fields: [profileId], references: [userId], onDelete: Cascade)
+  weekday   Int // 0=Sun .. 6=Sat
+  startMin  Int
+  endMin    Int
+
+  @@index([profileId])
+  @@map("availability_windows")
+}
+
+model Verification {
+  id          String             @id @default(uuid())
+  userId      String
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind        VerificationKind
+  status      VerificationStatus @default(PENDING)
+  evidenceKey String?
+  reviewedBy  String?
+  notes       String?
+  createdAt   DateTime           @default(now())
+  reviewedAt  DateTime?
+
+  @@unique([userId, kind])
+  @@map("verifications")
+}
+
+// ---------- Catalog ----------
+model ServiceCategory {
+  id                String   @id @default(uuid())
+  slug              String   @unique
+  groupName         String
+  name              String
+  description       String?
+  riskTier          RiskTier @default(T1)
+  suggestedMinPrice Int?
+  suggestedMaxPrice Int?
+  isActive          Boolean  @default(true)
+  sortOrder         Int      @default(0)
+
+  tasks Task[]
+
+  @@map("service_categories")
+}
+
+// ---------- Tasks / bookings ----------
+model Task {
+  id              String          @id @default(uuid())
+  campusId        String
+  campus          Campus          @relation(fields: [campusId], references: [id])
+  customerId      String
+  customer        User            @relation("CustomerTasks", fields: [customerId], references: [id])
+  providerId      String?
+  provider        User?           @relation("ProviderTasks", fields: [providerId], references: [id])
+  categoryId      String
+  category        ServiceCategory @relation(fields: [categoryId], references: [id])
+  kind            TaskKind        @default(REQUEST)
+  sourceGigId     String? // set on a REQUEST that was spun up by booking a gig
+  sourceGig       Task?           @relation("GigBookings", fields: [sourceGigId], references: [id])
+  bookings        Task[]          @relation("GigBookings")
+  title           String
+  description     String?
+  status          TaskStatus      @default(OPEN)
+  hall            String?
+  whenText        String? // human schedule text, e.g. "Today 6-8pm"
+  locationNote    String?
+  budgetCents     Int
+  finalPriceCents Int?
+  windowStart     DateTime?
+  windowEnd       DateTime?
+  createdAt       DateTime        @default(now())
+  assignedAt      DateTime?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  closedAt        DateTime?
+  cancelledAt     DateTime?
+  cancelReason    String?
+  study           Json? // structured study request (module/topics/level/goal/format)
+  deletedAt       DateTime?
+  repeatOfId      String?
+  repeatOf        Task?           @relation("TaskRepeats", fields: [repeatOfId], references: [id])
+  repeats         Task[]          @relation("TaskRepeats")
+
+  offers       Offer[]
+  events       TaskEvent[]
+  payment      Payment?
+  reviews      Review[]
+  messages     Message[]
+  disputes     Dispute[]
+  safetyEvents SafetyEvent[]
+  savedBy      SavedTask[]
+
+  @@index([campusId, status, createdAt]) // the Explore feed query
+  @@index([campusId, kind, status, createdAt]) // the Services (gig) browse
+  @@index([status, hall])
+  @@index([categoryId])
+  @@index([customerId])
+  @@index([providerId])
+  @@map("tasks")
+}
+
+model Offer {
+  id          String     @id @default(uuid())
+  taskId      String
+  task        Task       @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  providerId  String
+  provider    User       @relation(fields: [providerId], references: [id])
+  amountCents Int // the live number on the table
+  round       Int        @default(1) // increments on each counter
+  state       OfferState @default(PENDING)
+  lastActor   OfferActor @default(PROVIDER) // whose number is on the table
+  message     String?
+  expiresAt   DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // One negotiation thread per (task, provider); accepting is a serializable
+  // txn in offers.service that also assigns the task and declines siblings.
+  @@unique([taskId, providerId])
+  @@index([taskId, state])
+  @@index([providerId, state])
+  @@map("offers")
+}
+
+model TaskEvent {
+  id         String      @id @default(uuid())
+  taskId     String
+  task       Task        @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  actorId    String?
+  fromStatus TaskStatus?
+  toStatus   TaskStatus?
+  meta       Json?
+  createdAt  DateTime    @default(now())
+
+  @@map("task_events")
+}
+
+// ---------- Payments & ledger ----------
+model Payment {
+  id                    String        @id @default(uuid())
+  taskId                String        @unique
+  task                  Task          @relation(fields: [taskId], references: [id])
+  customerId            String
+  amountCents           Int
+  platformFeeCents      Int
+  providerAmountCents   Int
+  currency              String        @default("sgd")
+  status                PaymentStatus @default(REQUIRES_AUTH)
+  stripePaymentIntentId String?       @unique
+  stripeTransferId      String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  ledgerEntries LedgerEntry[]
+
+  @@map("payments")
+}
+
+model LedgerEntry {
+  id          String     @id @default(uuid())
+  paymentId   String?
+  payment     Payment?   @relation(fields: [paymentId], references: [id])
+  userId      String?
+  type        LedgerType
+  amountCents Int
+  currency    String     @default("sgd")
+  stripeRef   String?
+  meta        Json?
+  createdAt   DateTime   @default(now())
+
+  @@map("ledger_entries")
+}
+
+model Payout {
+  id             String       @id @default(uuid())
+  providerId     String
+  provider       User         @relation(fields: [providerId], references: [id])
+  amountCents    Int
+  status         PayoutStatus @default(PENDING)
+  stripePayoutId String?
+  createdAt      DateTime     @default(now())
+  paidAt         DateTime?
+
+  @@map("payouts")
+}
+
+// ---------- Reviews ----------
+model Review {
+  id          String    @id @default(uuid())
+  taskId      String
+  task        Task      @relation(fields: [taskId], references: [id])
+  raterId     String
+  rater       User      @relation("RaterReviews", fields: [raterId], references: [id])
+  rateeId     String
+  ratee       User      @relation("RateeReviews", fields: [rateeId], references: [id])
+  stars       Int
+  comment     String?
+  isPublished Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  deletedAt   DateTime?
+
+  @@unique([taskId, raterId])
+  @@map("reviews")
+}
+
+// ---------- Trust & safety ----------
+model Dispute {
+  id             String        @id @default(uuid())
+  taskId         String
+  task           Task          @relation(fields: [taskId], references: [id])
+  raisedBy       String
+  raisedByUser   User          @relation(fields: [raisedBy], references: [id])
+  reason         String
+  status         DisputeStatus @default(OPEN)
+  resolutionNote String?
+  resolvedBy     String?
+  createdAt      DateTime      @default(now())
+  resolvedAt     DateTime?
+
+  @@map("disputes")
+}
+
+model SafetyEvent {
+  id        String   @id @default(uuid())
+  taskId    String?
+  task      Task?    @relation(fields: [taskId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  kind      String // CHECK_IN | CHECK_OUT | SOS | REPORT | SHARE_LINK
+  payload   Json?
+  createdAt DateTime @default(now())
+
+  @@map("safety_events")
+}
+
+model UserBlock {
+  blockerId String
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id])
+  blockedId String
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@id([blockerId, blockedId])
+  @@map("user_blocks")
+}
+
+// ---------- Messaging ----------
+model Message {
+  id        String    @id @default(uuid())
+  taskId    String
+  task      Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User      @relation(fields: [senderId], references: [id])
+  body      String
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+  deletedAt DateTime?
+
+  @@index([taskId, createdAt])
+  @@map("messages")
+}
+
+// ---------- Notifications ----------
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String?
+  data      Json?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt]) // unread badge query
+  @@map("notifications")
+}
+
+// Email login codes (6-digit, single-use, 10-min TTL). Only the salted hash is
+// stored; a cleanup job can purge rows past expiresAt.
+model LoginCode {
+  id         String    @id @default(uuid())
+  email      String
+  codeHash   String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([email, expiresAt])
+  @@map("login_codes")
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String
+  keys      Json
+  createdAt DateTime @default(now())
+
+  @@unique([userId, endpoint])
+  @@map("push_subscriptions")
+}
+
+// ---------- Media ----------
+// Files live in S3, never the DB. Verification images get expiresAt (PDPA
+// retention: purge job deletes on schedule) and a private, KMS-encrypted bucket.
+model Media {
+  id         String     @id @default(uuid())
+  ownerId    String
+  owner      User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  kind       MediaKind
+  s3Key      String     @unique
+  mime       String
+  bytes      Int
+  scanStatus ScanStatus @default(PENDING)
+  expiresAt  DateTime?
+  createdAt  DateTime   @default(now())
+
+  @@index([ownerId, kind])
+  @@map("media")
+}
+
+// ---------- Retention primitives ----------
+model SavedProvider {
+  userId     String
+  user       User     @relation("Saver", fields: [userId], references: [id], onDelete: Cascade)
+  providerId String
+  provider   User     @relation("Saved", fields: [providerId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@id([userId, providerId])
+  @@map("saved_providers")
+}
+
+// Bookmarked tasks — "I might offer on this later." Cascades with the task so
+// a deleted post doesn't leave orphaned bookmarks.
+model SavedTask {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, taskId])
+  @@map("saved_tasks")
+}

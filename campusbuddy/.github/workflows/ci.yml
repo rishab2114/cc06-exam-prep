@@ -1,0 +1,45 @@
+name: CampusBuddy CI
+
+on:
+  push:
+    paths:
+      - "campusbuddy/**"
+  pull_request:
+    paths:
+      - "campusbuddy/**"
+
+# Workspace layout: campusbuddy/ is the npm-workspaces root (shared, frontend,
+# backend). Install once at the root; @campusbuddy/shared builds via its prepare
+# script during install.
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: campusbuddy
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm run build -w @campusbuddy/shared
+      - run: npx prisma generate
+        working-directory: campusbuddy/backend
+      - run: npm run lint --if-present -w campusbuddy-backend
+      - run: npm test -w campusbuddy-backend
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: campusbuddy
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm run build -w @campusbuddy/shared
+      - run: npm run lint --if-present -w campusbuddy-frontend
+      - run: npm run build -w campusbuddy-frontend

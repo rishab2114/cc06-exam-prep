@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CampusBuddy NTU — Preview</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background:#0f172a; }
+    .phone { width:375px; }
+    .screen { height:760px; }
+  </style>
+</head>
+<body class="text-slate-900">
+  <div class="mx-auto max-w-7xl px-6 py-10">
+    <header class="mb-8 text-center text-slate-100">
+      <h1 class="text-3xl font-bold text-blue-400">CampusBuddy NTU — UI Preview</h1>
+      <p class="mt-2 text-slate-400">Static mockup of the core screens (matches docs/05 wireframes). Not the live app — see README to run it.</p>
+    </header>
+
+    <div class="flex flex-wrap justify-center gap-8">
+
+      <!-- 1. Landing -->
+      <div class="phone screen overflow-hidden rounded-[2rem] border-8 border-slate-800 bg-slate-50 shadow-2xl">
+        <div class="flex h-full flex-col justify-center px-6">
+          <h2 class="text-xl font-bold text-blue-700">CampusBuddy NTU</h2>
+          <p class="mt-4 text-2xl font-semibold leading-tight">Campus chores, done by fellow NTU students.</p>
+          <p class="mt-3 text-sm text-slate-600">Post a task — cleaning, laundry, food runs, parcel pickup — and a verified NTU buddy gets it done. Secure escrow payments, rated both ways.</p>
+          <div class="mt-8 space-y-3">
+            <button class="block w-full rounded-xl bg-blue-700 px-4 py-3 font-medium text-white">Join with NTU email</button>
+            <button class="block w-full rounded-xl border border-slate-300 px-4 py-3 font-medium">I already have an account</button>
+          </div>
+          <ul class="mt-8 space-y-2 text-sm text-slate-600">
+            <li>✓ Verified NTU students only</li>
+            <li>✓ Secure escrow payments (15% platform fee)</li>
+            <li>✓ Two-way ratings &amp; in-app safety tools</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 2. Customer home -->
+      <div class="phone screen overflow-hidden rounded-[2rem] border-8 border-slate-800 bg-slate-50 shadow-2xl">
+        <div class="flex h-full flex-col">
+          <div class="flex items-center justify-between border-b bg-white px-4 py-3">
+            <span class="font-semibold">Hi Priya 👋</span>
+            <span class="text-slate-500">🔔 ⚙ 👤</span>
+          </div>
+          <div class="flex-1 space-y-4 overflow-auto p-4">
+            <input class="w-full rounded-xl border px-3 py-2 text-sm" placeholder="🔎 Search services..." />
+            <div>
+              <p class="mb-2 text-xs font-semibold uppercase text-slate-500">Quick post</p>
+              <div class="grid grid-cols-2 gap-2 text-sm">
+                <button class="rounded-xl border bg-white py-3">🧹 Clean</button>
+                <button class="rounded-xl border bg-white py-3">🧺 Laundry</button>
+                <button class="rounded-xl border bg-white py-3">🛒 Grocery</button>
+                <button class="rounded-xl border bg-white py-3">📦 Parcel</button>
+              </div>
+            </div>
+            <div>
+              <p class="mb-2 text-xs font-semibold uppercase text-slate-500">Your active tasks</p>
+              <div class="rounded-xl border bg-white p-3">
+                <div class="flex items-center justify-between">
+                  <span class="font-medium">Room clean</span>
+                  <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700">OPEN</span>
+                </div>
+                <p class="mt-1 text-sm text-blue-700">3 applicants ›</p>
+              </div>
+            </div>
+          </div>
+          <button class="mx-4 mb-3 rounded-xl bg-blue-700 py-3 font-medium text-white">+ New task</button>
+          <div class="flex justify-around border-t bg-white py-2 text-xs text-slate-500">
+            <span class="text-blue-700">🏠 Home</span><span>🧾 Tasks</span><span>💬</span><span>💰</span><span>👤</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Create task -->
+      <div class="phone screen overflow-hidden rounded-[2rem] border-8 border-slate-800 bg-slate-50 shadow-2xl">
+        <div class="flex h-full flex-col">
+          <div class="border-b bg-white px-4 py-3 font-semibold">‹ New task</div>
+          <div class="flex-1 space-y-4 p-4 text-sm">
+            <label class="block">
+              <span class="text-slate-500">Category</span>
+              <select class="mt-1 w-full rounded-xl border px-3 py-2"><option>Room cleaning</option><option>Laundry pickup</option><option>Parcel collection</option></select>
+            </label>
+            <label class="block">
+              <span class="text-slate-500">What do you need?</span>
+              <textarea class="mt-1 w-full rounded-xl border px-3 py-2" rows="3" placeholder="Clean my room before block inspection..."></textarea>
+            </label>
+            <label class="block">
+              <span class="text-slate-500">Where</span>
+              <input class="mt-1 w-full rounded-xl border px-3 py-2" value="Hall 9, Blk 51" />
+            </label>
+            <div class="flex gap-2">
+              <label class="block flex-1"><span class="text-slate-500">When</span><input class="mt-1 w-full rounded-xl border px-3 py-2" value="Today" /></label>
+              <label class="block flex-1"><span class="text-slate-500">Time</span><input class="mt-1 w-full rounded-xl border px-3 py-2" value="6–8pm" /></label>
+            </div>
+            <label class="block">
+              <span class="text-slate-500">Budget (SGD)</span>
+              <input class="mt-1 w-full rounded-xl border px-3 py-2" value="20" />
+            </label>
+            <div class="rounded-xl bg-blue-50 p-3 text-blue-800">You pay <b>S$20.00</b> · Buddy gets <b>S$17.00</b> <span class="text-blue-500">(15% fee)</span></div>
+          </div>
+          <button class="mx-4 mb-4 rounded-xl bg-blue-700 py-3 font-medium text-white">Continue to payment</button>
+        </div>
+      </div>
+
+      <!-- 4. Provider feed -->
+      <div class="phone screen overflow-hidden rounded-[2rem] border-8 border-slate-800 bg-slate-50 shadow-2xl">
+        <div class="flex h-full flex-col">
+          <div class="flex items-center justify-between border-b bg-white px-4 py-3">
+            <span class="font-semibold">Available <span class="text-green-500">●</span></span>
+            <span class="text-sm text-slate-500">Filters ▾</span>
+          </div>
+          <div class="flex-1 space-y-3 overflow-auto p-4">
+            <p class="text-xs text-slate-500">Laundry, Parcel · Halls 8–11</p>
+            <div class="rounded-xl border bg-white p-3">
+              <div class="flex justify-between"><span class="font-medium">📦 Parcel pickup</span><span class="text-green-700">S$6</span></div>
+              <p class="mt-1 text-sm text-slate-500">Hall 10 · now · 0.3km · cust ⭐4.8</p>
+              <button class="mt-2 w-full rounded-lg bg-blue-700 py-2 text-sm font-medium text-white">Apply</button>
+            </div>
+            <div class="rounded-xl border bg-white p-3">
+              <div class="flex justify-between"><span class="font-medium">🧺 Laundry pickup</span><span class="text-green-700">S$10</span></div>
+              <p class="mt-1 text-sm text-slate-500">Hall 9 · 5–7pm · 0.5km · cust ⭐5.0</p>
+              <button class="mt-2 w-full rounded-lg bg-blue-700 py-2 text-sm font-medium text-white">Apply</button>
+            </div>
+            <div class="rounded-xl border bg-white p-3">
+              <div class="flex justify-between"><span class="font-medium">🧹 Room cleaning</span><span class="text-green-700">S$20</span></div>
+              <p class="mt-1 text-sm text-slate-500">Hall 8 · today · 🪪 ID-verified required (T2)</p>
+              <button class="mt-2 w-full rounded-lg bg-blue-700 py-2 text-sm font-medium text-white">Apply</button>
+            </div>
+          </div>
+          <div class="flex justify-around border-t bg-white py-2 text-xs text-slate-500">
+            <span>🏠 Home</span><span class="text-blue-700">🔎 Find</span><span>💬</span><span>💰</span><span>👤</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Active task + safety -->
+      <div class="phone screen overflow-hidden rounded-[2rem] border-8 border-slate-800 bg-slate-50 shadow-2xl">
+        <div class="flex h-full flex-col">
+          <div class="border-b bg-white px-4 py-3">
+            <div class="flex items-center justify-between"><span class="font-semibold">‹ Parcel pickup</span><span class="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700">ASSIGNED</span></div>
+            <p class="mt-1 text-sm text-slate-500">with Wei ⭐4.9 · <span class="text-blue-700">Share ↗</span></p>
+          </div>
+          <div class="flex gap-2 border-b bg-amber-50 px-4 py-2 text-sm">
+            <button class="rounded-lg border border-amber-300 px-3 py-1">Check in</button>
+            <button class="rounded-lg bg-red-600 px-3 py-1 font-medium text-white">SOS</button>
+            <span class="self-center text-xs text-amber-700">T2 task</span>
+          </div>
+          <div class="flex-1 space-y-2 overflow-auto p-4 text-sm">
+            <div class="max-w-[70%] rounded-2xl bg-white px-3 py-2 shadow">Wei: omw, 5 min</div>
+            <div class="ml-auto max-w-[70%] rounded-2xl bg-blue-600 px-3 py-2 text-white shadow">You: thanks!</div>
+          </div>
+          <div class="flex gap-2 border-t bg-white p-3">
+            <input class="flex-1 rounded-full border px-3 py-2 text-sm" placeholder="type a message…" />
+            <button class="rounded-full bg-blue-700 px-4 text-sm font-medium text-white">Send</button>
+          </div>
+          <button class="mx-3 mb-3 rounded-xl bg-green-600 py-3 font-medium text-white">Mark complete</button>
+        </div>
+      </div>
+
+      <!-- 6. Wallet -->
+      <div class="phone screen overflow-hidden rounded-[2rem] border-8 border-slate-800 bg-slate-50 shadow-2xl">
+        <div class="flex h-full flex-col">
+          <div class="border-b bg-white px-4 py-3 font-semibold">Earnings</div>
+          <div class="flex-1 space-y-4 p-4">
+            <div class="rounded-xl bg-blue-700 p-4 text-white">
+              <p class="text-sm text-blue-100">Available</p>
+              <p class="text-3xl font-bold">S$84.00</p>
+              <p class="mt-1 text-sm text-blue-100">This month: S$210.00</p>
+            </div>
+            <button class="w-full rounded-xl border bg-white py-3 text-sm font-medium">Manage payouts (Stripe) ↗</button>
+            <div>
+              <p class="mb-2 text-xs font-semibold uppercase text-slate-500">History</p>
+              <div class="divide-y rounded-xl border bg-white text-sm">
+                <div class="flex justify-between p-3"><span>Room clean · Jun 18</span><span class="text-green-700">+S$17</span></div>
+                <div class="flex justify-between p-3"><span>Parcel · Jun 17</span><span class="text-green-700">+S$5</span></div>
+                <div class="flex justify-between p-3"><span>Payout · Jun 15</span><span class="text-slate-500">−S$84</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <p class="mt-10 text-center text-xs text-slate-500">Static preview · CampusBuddy NTU MVP · the running app is Next.js + NestJS (see campusbuddy/README.md)</p>
+  </div>
+</body>
+</html>
