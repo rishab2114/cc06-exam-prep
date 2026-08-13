@@ -10,7 +10,13 @@ import { adFor } from '../../../lib/ads';
 import { useStore } from '../../../lib/store';
 import { CategoryIcon } from '../../../components/CategoryIcon';
 import { Bookmark, BookOpen, Search as SearchIcon, X } from 'lucide-react';
-import { facetsFor, facetValues, courseCodeOf } from '../../../lib/facets';
+import {
+  facetsFor,
+  facetValues,
+  facetMatches,
+  facetNeedsInput,
+  courseCodeOf,
+} from '../../../lib/facets';
 
 // Marketplace / Explore — the live campus feed. Filters map to how students
 // actually choose: category, trust flags (verified / contactless / customer
@@ -77,8 +83,13 @@ function FindPageInner() {
     setCategory(next);
     setFacetSel({});
   }
+  // A chip and the text box drive the same value — clicking a chip just fills
+  // the box with an exact value; clicking the active one clears it.
   function toggleFacet(key: string, value: string) {
-    setFacetSel((prev) => (prev[key] === value ? (({ [key]: _, ...rest }) => rest)(prev) : { ...prev, [key]: value }));
+    setFacetSel((prev) => ({ ...prev, [key]: prev[key] === value ? '' : value }));
+  }
+  function setFacetText(key: string, value: string) {
+    setFacetSel((prev) => ({ ...prev, [key]: value }));
   }
 
   const categories = useMemo(
@@ -112,12 +123,12 @@ function FindPageInner() {
       t.customerName.toLowerCase().includes(q) ||
       t.hall.toLowerCase().includes(q) ||
       t.category.toLowerCase().includes(q);
-    const activeFacets = facetsFor(category).filter((f) => facetSel[f.key]);
+    const activeFacets = facetsFor(category).filter((f) => facetSel[f.key]?.trim());
     const filtered = feed.filter(
       (t) =>
         matches(t) &&
         (category === 'All' || t.category === category) &&
-        activeFacets.every((f) => f.valueOf(t) === facetSel[f.key]) &&
+        activeFacets.every((f) => facetMatches(f.valueOf(t), facetSel[f.key])) &&
         (!verifiedOnly || t.requiresMatricVerification) &&
         (!contactlessOnly || t.contactless) &&
         (!presentOnly || t.presenceRequired),
@@ -207,20 +218,40 @@ function FindPageInner() {
         {facetsFor(category).map((f) => {
           const values = facetValues(inCategory, f);
           if (values.length < 2) return null;
+          const typed = facetSel[f.key] ?? '';
+          const shown = values.filter((v) => facetMatches(v.value, typed));
           return (
-            <div key={f.key} className="flex gap-2 overflow-x-auto pb-1">
-              <span className="shrink-0 self-center text-xs font-semibold uppercase tracking-wide text-subtle">
-                {f.label}
-              </span>
-              {values.map((v) => (
-                <FilterChip
-                  key={v.value}
-                  active={facetSel[f.key] === v.value}
-                  onClick={() => toggleFacet(f.key, v.value)}
-                >
-                  {v.value} <span className="opacity-60">{v.count}</span>
-                </FilterChip>
-              ))}
+            <div key={f.key} className="space-y-2">
+              {facetNeedsInput(f, values.length) && (
+                <div className="relative">
+                  <input
+                    value={typed}
+                    onChange={(e) => setFacetText(f.key, e.target.value)}
+                    placeholder={f.key === 'course' ? 'Type a course, e.g. MH1810' : `Type a ${f.label.toLowerCase()}`}
+                    aria-label={`Filter by ${f.label.toLowerCase()}`}
+                    className="min-h-[40px] w-full rounded-lg border border-border-strong bg-surface px-3 pr-9 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-ring/30"
+                  />
+                  {typed && (
+                    <button
+                      onClick={() => setFacetText(f.key, '')}
+                      aria-label={`Clear ${f.label.toLowerCase()} filter`}
+                      className="absolute right-1 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-subtle"
+                    >
+                      <X size={15} aria-hidden="true" />
+                    </button>
+                  )}
+                </div>
+              )}
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                <span className="shrink-0 self-center text-xs font-semibold uppercase tracking-wide text-subtle">
+                  {f.label}
+                </span>
+                {shown.map((v) => (
+                  <FilterChip key={v.value} active={typed === v.value} onClick={() => toggleFacet(f.key, v.value)}>
+                    {v.value} <span className="opacity-60">{v.count}</span>
+                  </FilterChip>
+                ))}
+              </div>
             </div>
           );
         })}
@@ -272,17 +303,44 @@ function FindPageInner() {
             {facetsFor(category).map((f) => {
               const values = facetValues(inCategory, f);
               if (values.length < 2) return null;
+              const typed = facetSel[f.key] ?? '';
+              // Typing narrows the chips as well as the results, so a long
+              // course list stays usable.
+              const shown = values.filter((v) => facetMatches(v.value, typed));
               return (
                 <div key={f.key}>
                   <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-subtle">{f.label}</p>
+                  {facetNeedsInput(f, values.length) && (
+                    <div className="relative mb-2">
+                      <input
+                        value={typed}
+                        onChange={(e) => setFacetText(f.key, e.target.value)}
+                        placeholder={f.key === 'course' ? 'Type a course, e.g. MH1810' : `Type a ${f.label.toLowerCase()}`}
+                        aria-label={`Filter by ${f.label.toLowerCase()}`}
+                        className="min-h-[38px] w-full rounded-lg border border-border-strong bg-surface px-3 pr-8 text-sm transition-colors duration-150 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-ring/30"
+                      />
+                      {typed && (
+                        <button
+                          onClick={() => setFacetText(f.key, '')}
+                          aria-label={`Clear ${f.label.toLowerCase()} filter`}
+                          className="absolute right-1 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-subtle hover:text-text"
+                        >
+                          <X size={14} aria-hidden="true" />
+                        </button>
+                      )}
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-1.5">
-                    {values.map((v) => (
+                    {shown.length === 0 && (
+                      <span className="text-xs text-subtle">No {f.label.toLowerCase()} matches “{typed}”.</span>
+                    )}
+                    {shown.map((v) => (
                       <button
                         key={v.value}
                         onClick={() => toggleFacet(f.key, v.value)}
-                        aria-pressed={facetSel[f.key] === v.value}
+                        aria-pressed={typed === v.value}
                         className={`rounded-full border px-2.5 py-1 text-xs transition-colors duration-150 ${
-                          facetSel[f.key] === v.value
+                          typed === v.value
                             ? 'border-brand bg-brand font-medium text-white'
                             : 'border-border-strong bg-surface text-muted hover:border-brand/50'
                         }`}

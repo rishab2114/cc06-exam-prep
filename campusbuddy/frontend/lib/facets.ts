@@ -70,6 +70,27 @@ export function facetsFor(category: string): FacetDef[] {
   return (BY_CATEGORY[category] ?? ['hall']).map((k) => FACETS[k]);
 }
 
+/**
+ * Whether a facet is worth giving a text box. Courses grow without bound (a
+ * campus has hundreds), so they always get one; other facets only once the chip
+ * list stops being scannable.
+ */
+export function facetNeedsInput(facet: FacetDef, valueCount: number): boolean {
+  return facet.key === 'course' || valueCount >= 5;
+}
+
+/**
+ * Does a task match what's typed for a facet? Substring, case-insensitive and
+ * space-insensitive, so "cz1003", "CZ 1003" and "cz" all find CZ1003 — clicking
+ * a chip just fills the same box with an exact value.
+ */
+export function facetMatches(taskValue: string | null, typed: string): boolean {
+  if (!typed.trim()) return true;
+  if (!taskValue) return false;
+  const norm = (v: string) => v.toLowerCase().replace(/\s+/g, '');
+  return norm(taskValue).includes(norm(typed));
+}
+
 /** Distinct values for a facet across the given tasks, most common first. */
 export function facetValues(tasks: ApiTask[], facet: FacetDef): { value: string; count: number }[] {
   const counts = new Map<string, number>();
