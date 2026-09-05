@@ -213,11 +213,13 @@
       "</li>";
   }
 
-  function tabButton(s, i) {
+  /* `group` keeps the two app previews (medication user / caregiver) as
+     separate tablists with their own ids, panels and roving tabindex. */
+  function tabButton(s, i, group) {
     return '' +
-      '<button class="tab" type="button" role="tab" id="app-tab-' + esc(s.id) + '" ' +
-        'aria-controls="app-panel" aria-selected="' + (i === 0 ? "true" : "false") + '" ' +
-        'tabindex="' + (i === 0 ? "0" : "-1") + '" data-app-tab="' + i + '">' + esc(s.tab) + "</button>";
+      '<button class="tab" type="button" role="tab" id="app-tab-' + group + "-" + esc(s.id) + '" ' +
+        'aria-controls="app-panel-' + group + '" aria-selected="' + (i === 0 ? "true" : "false") + '" ' +
+        'tabindex="' + (i === 0 ? "0" : "-1") + '" data-app-tab="' + group + '">' + esc(s.tab) + "</button>";
   }
 
   function faqItem(f, i) {

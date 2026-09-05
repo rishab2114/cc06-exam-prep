@@ -5,19 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>MediDose — Medication routines, made simpler</title>
-<meta name="description" content="MediDose is a concept medication dispenser and companion app that organises scheduled doses, gives timely reminders, and keeps caregivers informed with the user's permission. Join the early-access list.">
+<meta name="description" content="MediDose is a concept medication dispenser and app for families who no longer live in the same house. Your parent presses one screen at home; you see it on your phone. Join the early-access list.">
 <link rel="canonical" href="https://medidose-landing.vercel.app/">
 <meta name="theme-color" content="#0B5D8C">
 <meta name="robots" content="index, follow">
 
 <meta property="og:type" content="website">
 <meta property="og:title" content="MediDose — Medication routines, made simpler">
-<meta property="og:description" content="One connected dispenser and app for scheduled doses, timely reminders, and optional caregiver visibility. An early-stage concept, not a certified medical device.">
+<meta property="og:description" content="Your parent presses one screen at home. You see it on your phone, wherever you are. An early-stage concept, not a certified medical device.">
 <meta property="og:url" content="https://medidose-landing.vercel.app/">
 <meta property="og:site_name" content="MediDose">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="MediDose — Medication routines, made simpler">
-<meta name="twitter:description" content="One connected dispenser and app for scheduled doses, timely reminders, and optional caregiver visibility. An early-stage concept.">
+<meta name="twitter:description" content="Your parent presses one screen at home. You see it on your phone, wherever you are. An early-stage concept.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,21 +28,98 @@
 <script>document.documentElement.classList.add('js');</script>
 
 <!--
-  Structured data mirrors the visible FAQ copy in assets/js/data.js.
-  If you edit an answer there, edit it here too — they must not diverge.
+  Generated from the faqs array in assets/js/data.js — do not hand-edit.
+  After changing an answer there, regenerate with:
+    node -e "global.window={};require('./assets/js/data.js');
+      var f=window.MediDose.data.faqs;console.log(JSON.stringify({'@context':'https://schema.org',
+      '@type':'FAQPage',mainEntity:f.map(q=>({'@type':'Question',name:q.q,
+      acceptedAnswer:{'@type':'Answer',text:q.a}}))},null,2))"
 -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
-    {"@type":"Question","name":"Who is MediDose designed for?","acceptedAnswer":{"@type":"Answer","text":"People who take one or more medicines on a recurring schedule — particularly older adults and anyone managing several prescriptions at once — plus the family members who support them. We are also talking to clinics, pharmacies and assisted-living providers about whether it would be useful in their settings."}},
-    {"@type":"Question","name":"What types of medication can it hold?","acceptedAnswer":{"@type":"Answer","text":"The concept is built around solid oral medication such as tablets and capsules that a person already sorts by hand. It is not designed for liquids, injectables, refrigerated medicines, inhalers, or anything requiring special handling. Compartment size and capacity are still being worked out, and some medicines will not be suitable."}},
-    {"@type":"Question","name":"Does it work without internet access?","acceptedAnswer":{"@type":"Answer","text":"The intent is that the schedule stays on the device, so reminders and compartment identification continue to work while the dispenser is offline. Anything that depends on the connection — syncing to the app, and caregiver notifications — would resume once it reconnects. This behaviour is proposed and has not been built or tested yet."}},
-    {"@type":"Question","name":"Can caregivers see every medication event?","acceptedAnswer":{"@type":"Answer","text":"No, not unless the person taking the medication chooses that. Sharing is off until they invite someone, and permissions are itemised: today's schedule, missed-dose notifications and full history are separate switches. Any of them can be turned off again at any time."}},
-    {"@type":"Question","name":"What happens if a dose is missed?","acceptedAnswer":{"@type":"Answer","text":"If the dose window closes without an acknowledgement, the app records it as missed and, where that permission has been granted, can notify a caregiver. That is the whole of it — MediDose does not escalate, does not contact emergency services, and should not be relied on as a safety net."}},
-    {"@type":"Question","name":"Is MediDose a certified medical device?","acceptedAnswer":{"@type":"Answer","text":"No. MediDose is an early-stage concept. It is not certified, approved or cleared by any regulator, it has not been clinically evaluated, and we are not claiming otherwise. It does not diagnose, prescribe or treat, and it is not a substitute for advice from a doctor or pharmacist."}},
-    {"@type":"Question","name":"When will early access begin?","acceptedAnswer":{"@type":"Answer","text":"We do not have a date yet. We are at the stage of validating the idea and understanding what people actually need, which is what this early-access list is for. If you join it, we will contact you when there is something concrete to show — and we will not use your details for anything else."}}
+    {
+      "@type": "Question",
+      "name": "Who is MediDose designed for?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Households, first and foremost — an older parent living independently at home, and the family who worry about them from somewhere else. It is built for the adult child who moved away for work, and particularly for the only child with no sibling to share the asking with. Home-care teams supporting people in their own homes may find it useful too, but this is not built for care-home wards."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I really check on my parent from another city?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "That is the point of it. With their permission your app shows today’s doses, which have been acknowledged, and whether the dispenser is powered and online. You get a notification when a dose is acknowledged or when a window closes without one. What you cannot do is see anything they have not chosen to share, and none of it is health monitoring — it is a record of button presses on a box."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can a caregiver dispense medication remotely?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The proposal is that an invited caregiver can release a compartment from their phone, if the person taking the medication has granted that specific permission. It is deliberately separate from permission to view the schedule, so seeing the day never implies control of the device. Be clear about what it does: it opens a drawer in a house you are not standing in. It does not hand anyone a tablet."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What if nobody is there when a compartment is released?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Then an open compartment sits there until someone comes to it. The dispenser cannot tell whether anyone is in the room, and medication left accessible is a real risk if there are children, visitors or pets in the house. This is exactly why remote release is off by default, is its own permission, and is described here as opening a drawer rather than giving a dose. If someone needs a person present to take their medication safely, remote release is not a substitute for that person."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What types of medication can it hold?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The concept is built around solid oral medication — tablets and capsules that someone already sorts by hand into a pill box. It is not designed for liquids, injectables, refrigerated medicines, inhalers, or anything needing special handling. Compartment size and capacity are still being worked out, and some medicines will not be suitable."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does it work without internet access?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The intent is that the schedule lives on the device, so the reminder, the screen and the compartment opening all keep working while it is offline. What stops is anything that crosses the internet: syncing to the apps, your notifications, and remote release — you cannot open a compartment in a house whose dispenser is offline. Those resume when it reconnects. This behaviour is proposed and has not been built or tested yet."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can caregivers see every medication event?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Only what they have been given. Sharing is off until someone is invited, and permissions are itemised: today’s schedule, missed-dose notifications, full history and remote release are four separate switches. Any of them can be turned off again at any time, and turning one off does not delete the user’s own record."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What happens if a dose is missed?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "If the window closes without an acknowledgement, the app records it as missed and, where that permission has been granted, notifies the caregiver. That is the whole of it. MediDose does not escalate, does not contact emergency services, and should not be relied on as a safety net for someone who needs one."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is MediDose a certified medical device?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. MediDose is an early-stage concept. It is not certified, approved or cleared by any regulator, it has not been clinically evaluated, and we are not claiming otherwise. It does not diagnose, prescribe or treat, and it is not a substitute for advice from a doctor or pharmacist."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "When will early access begin?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "We do not have a date. We are validating the idea and working out what families actually need, which is what this list is for. If you join it we will contact you when there is something concrete to show — and we will not use your details for anything else."
+      }
+    }
   ]
 }
 </script>
@@ -100,6 +177,10 @@
           informed — through one connected dispenser and app.
         </p>
 
+        <p class="hero__lead">
+          Your parent presses one screen at home. You see it on your phone, in another city.
+        </p>
+
         <div class="cta-row">
           <a class="btn btn--primary btn--lg" href="#early-access" data-analytics="cta_hero_primary">Join the Early Access List</a>
           <a class="btn btn--secondary btn--lg" href="#how-it-works" data-analytics="cta_hero_secondary">See How It Works</a>
@@ -125,10 +206,11 @@
     <div class="container">
       <div class="section-head">
         <p class="eyebrow"><span class="dot"></span> The problem</p>
-        <h2 id="problem-title">Managing several medicines is a daily coordination job</h2>
+        <h2 id="problem-title">A pill box works right up until you move away</h2>
         <p class="lead">
-          Most people manage it with a pill box, a phone alarm and memory. That works until the
-          day does something unexpected — and it leaves no record of what actually happened.
+          Most families manage with a plastic organiser, a phone alarm and memory. That holds until
+          the day changes shape — and it leaves no record at all for the person who no longer lives
+          down the road.
         </p>
       </div>
       <div class="grid grid--3" data-mount="problems"></div>
@@ -140,9 +222,10 @@
     <div class="container">
       <div class="section-head">
         <p class="eyebrow"><span class="dot"></span> How it works</p>
-        <h2 id="how-title">Five steps, from loading the dispenser to a caregiver update</h2>
+        <h2 id="how-title">From the box on the counter to the phone in your pocket</h2>
         <p class="lead">
-          Select a step to see what the dispenser and the app would each be doing at that moment.
+          Six steps. Select one to see what the dispenser at home and the app in your hand would
+          each be doing at that moment.
         </p>
       </div>
 
@@ -184,23 +267,42 @@
     <div class="container">
       <div class="section-head">
         <p class="eyebrow"><span class="dot"></span> The companion app</p>
-        <h2 id="app-title">One app for the schedule, the record and the sharing settings</h2>
-        <p class="lead">Choose a screen to preview it.</p>
+        <h2 id="app-title">One system, two apps, two different jobs</h2>
+        <p class="lead">
+          Your parent's app is about today. Yours is about knowing, from wherever you are, that
+          today went fine — and stepping in only when they have asked you to be able to.
+        </p>
       </div>
 
-      <div class="tabs" role="tablist" aria-label="App screens" data-mount="app-tabs"></div>
-
-      <div class="app-preview" id="app-panel" role="tabpanel" tabindex="0" aria-label="Selected app screen">
-        <div class="app-preview__stage" data-mount="app-phone"></div>
-        <div class="app-preview__copy">
-          <h3 data-app-heading></h3>
-          <p data-app-body></p>
-          <ul class="feature-list" data-app-points></ul>
-          <p class="note">
-            Screens are design mockups with placeholder content, not screenshots of a released app.
-          </p>
+      <div class="app-role">
+        <h3 class="app-role__title">For the person taking the medication</h3>
+        <div class="tabs" role="tablist" aria-label="App screens for the person taking medication" data-mount="app-tabs-user"></div>
+        <div class="app-preview" id="app-panel-user" role="tabpanel" tabindex="0" aria-label="Selected screen in the medication user's app">
+          <div class="app-preview__stage" data-mount="app-phone-user"></div>
+          <div class="app-preview__copy">
+            <h4 data-app-heading="user"></h4>
+            <p data-app-body="user"></p>
+            <ul class="feature-list" data-app-points="user"></ul>
+          </div>
         </div>
       </div>
+
+      <div class="app-role">
+        <h3 class="app-role__title">For an invited caregiver, on their own phone</h3>
+        <div class="tabs" role="tablist" aria-label="App screens for an invited caregiver" data-mount="app-tabs-caregiver"></div>
+        <div class="app-preview" id="app-panel-caregiver" role="tabpanel" tabindex="0" aria-label="Selected screen in the caregiver's app">
+          <div class="app-preview__stage" data-mount="app-phone-caregiver"></div>
+          <div class="app-preview__copy">
+            <h4 data-app-heading="caregiver"></h4>
+            <p data-app-body="caregiver"></p>
+            <ul class="feature-list" data-app-points="caregiver"></ul>
+          </div>
+        </div>
+      </div>
+
+      <p class="note" style="margin-top:2rem">
+        Screens are design mockups with placeholder content, not screenshots of a released app.
+      </p>
     </div>
   </section>
 
@@ -209,11 +311,12 @@
     <div class="container split split--reverse">
       <div>
         <div class="section-head">
-          <p class="eyebrow"><span class="dot"></span> For families and caregivers</p>
-          <h2 id="caregivers-title">Support that the user switches on, not something done to them</h2>
+          <p class="eyebrow"><span class="dot"></span> When you live somewhere else</p>
+          <h2 id="caregivers-title">Close enough to help, far enough to stay out of the way</h2>
           <p class="lead">
-            The person taking the medication decides whether anyone else is involved, who that is,
-            and exactly what they can see.
+            Being the one who moved away should not mean phoning every evening to ask about tablets.
+            Your parent decides whether you are involved at all, what you can see, and — separately —
+            whether you can open a compartment from your phone.
           </p>
         </div>
 
@@ -222,9 +325,10 @@
         <div class="disclaimer" style="margin-top:2rem">
           <span data-icon="alert" data-icon-size="20"></span>
           <p>
-            Caregiver notifications report what the system recorded — an acknowledgement, or a dose
-            window that closed without one. MediDose does not monitor health, does not respond to
-            emergencies, and cannot guarantee that a medicine was taken.
+            Notifications report what the device recorded — an acknowledgement, or a window that
+            closed without one. Remote release opens a drawer in a house you are not standing in:
+            it cannot tell whether anyone is there or whether the medicine was taken. MediDose does
+            not monitor health, does not respond to emergencies, and is not a safety net.
           </p>
         </div>
       </div>
@@ -241,8 +345,9 @@
             <span data-icon="image" data-icon-size="40"></span>
             <p class="photo-slot__title">Photography placeholder</p>
             <p class="photo-slot__hint">
-              Reserved for a licensed photograph of an adult managing their own routine alongside a
-              family member. No stock imagery has been shipped with this page.
+              Reserved for a licensed photograph of an older adult managing their own routine at
+              home, with a family member present by phone rather than hovering. No stock imagery
+              has been shipped with this page.
             </p>
           </div>
         </figure>
@@ -255,7 +360,7 @@
     <div class="container">
       <div class="section-head">
         <p class="eyebrow"><span class="dot"></span> What we are aiming for</p>
-        <h2 id="benefits-title">The outcomes we are designing toward</h2>
+        <h2 id="benefits-title">What we are designing toward, for both of you</h2>
         <p class="lead">
           These are design goals for the concept, not measured results. We have not run a study,
           and we will not claim outcomes we have not tested.

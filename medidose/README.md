@@ -1,12 +1,28 @@
 # MediDose — concept landing page
 
 A static, dependency-free landing page introducing **MediDose**, a concept for a connected
-medication dispenser and companion app. Its job is to explain the idea, be honest about its
-limits, and collect early-access interest.
+medication dispenser and companion app built around families who no longer live in the same
+house: an older parent presses one screen at home, and an invited family member sees it on
+their phone wherever they are. Its job is to explain the idea, be honest about its limits, and
+collect early-access interest.
+
+The app has two roles, and the page presents them separately because they are two people on two
+phones: the **medication user** (today's schedule, reminders, history, refills, and control over
+what is shared) and an **invited caregiver** (permission-based check-in, notifications, and
+remote release of a compartment).
 
 **MediDose is an early-stage concept.** It is not a certified medical device, has not been
 clinically evaluated, and does not diagnose, prescribe, verify that medication was swallowed,
 or guarantee adherence. It is not an emergency-monitoring system.
+
+**On remote release.** The riskiest capability described here is a caregiver opening a
+compartment from their phone. The page describes it as *releasing a compartment*, never as
+giving a dose, because that is all it can do: the device cannot tell whether anyone is in the
+room, whether the medicine was picked up, or whether it was taken, and an open compartment in
+an empty house is a hazard in a home with children or pets. It is modelled as a permission
+separate from viewing, off by default, granted and revocable by the medication user. Keep that
+framing if you edit the copy — softening it into "dispense remotely" would overstate what the
+system does and move the product further into regulated-device territory.
 
 ## Running it
 
@@ -48,8 +64,9 @@ place — including by someone who does not read CSS.
 5. **Add an OG image.** There is currently none, so shared links render without a preview image.
    The canonical and `og:url` tags point at the live Vercel deployment; update them if the site
    moves to its own domain.
-6. **Keep the FAQ in sync.** The `FAQPage` JSON-LD in `index.html` mirrors the answers in
-   `data.js`. Edit one and you must edit the other.
+6. **Regenerate the FAQ structured data** after editing `faqs` in `data.js` — the `FAQPage`
+   JSON-LD in `index.html` is generated from it, and the exact command is in the HTML comment
+   directly above that script tag. Do not hand-edit the JSON.
 
 ## Analytics
 
