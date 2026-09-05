@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>MediDose — Medication routines, made simpler</title>
+<meta name="description" content="MediDose is a concept medication dispenser and companion app that organises scheduled doses, gives timely reminders, and keeps caregivers informed with the user's permission. Join the early-access list.">
+<link rel="canonical" href="https://example.com/medidose/">
+<meta name="theme-color" content="#0B5D8C">
+<meta name="robots" content="index, follow">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="MediDose — Medication routines, made simpler">
+<meta property="og:description" content="One connected dispenser and app for scheduled doses, timely reminders, and optional caregiver visibility. An early-stage concept, not a certified medical device.">
+<meta property="og:url" content="https://example.com/medidose/">
+<meta property="og:site_name" content="MediDose">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MediDose — Medication routines, made simpler">
+<meta name="twitter:description" content="One connected dispenser and app for scheduled doses, timely reminders, and optional caregiver visibility. An early-stage concept.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap">
+<link rel="stylesheet" href="assets/css/styles.css">
+
+<!-- Set before paint so scroll-reveal never hides content when JS is off. -->
+<script>document.documentElement.classList.add('js');</script>
+
+<!--
+  Structured data mirrors the visible FAQ copy in assets/js/data.js.
+  If you edit an answer there, edit it here too — they must not diverge.
+-->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type":"Question","name":"Who is MediDose designed for?","acceptedAnswer":{"@type":"Answer","text":"People who take one or more medicines on a recurring schedule — particularly older adults and anyone managing several prescriptions at once — plus the family members who support them. We are also talking to clinics, pharmacies and assisted-living providers about whether it would be useful in their settings."}},
+    {"@type":"Question","name":"What types of medication can it hold?","acceptedAnswer":{"@type":"Answer","text":"The concept is built around solid oral medication such as tablets and capsules that a person already sorts by hand. It is not designed for liquids, injectables, refrigerated medicines, inhalers, or anything requiring special handling. Compartment size and capacity are still being worked out, and some medicines will not be suitable."}},
+    {"@type":"Question","name":"Does it work without internet access?","acceptedAnswer":{"@type":"Answer","text":"The intent is that the schedule stays on the device, so reminders and compartment identification continue to work while the dispenser is offline. Anything that depends on the connection — syncing to the app, and caregiver notifications — would resume once it reconnects. This behaviour is proposed and has not been built or tested yet."}},
+    {"@type":"Question","name":"Can caregivers see every medication event?","acceptedAnswer":{"@type":"Answer","text":"No, not unless the person taking the medication chooses that. Sharing is off until they invite someone, and permissions are itemised: today's schedule, missed-dose notifications and full history are separate switches. Any of them can be turned off again at any time."}},
+    {"@type":"Question","name":"What happens if a dose is missed?","acceptedAnswer":{"@type":"Answer","text":"If the dose window closes without an acknowledgement, the app records it as missed and, where that permission has been granted, can notify a caregiver. That is the whole of it — MediDose does not escalate, does not contact emergency services, and should not be relied on as a safety net."}},
+    {"@type":"Question","name":"Is MediDose a certified medical device?","acceptedAnswer":{"@type":"Answer","text":"No. MediDose is an early-stage concept. It is not certified, approved or cleared by any regulator, it has not been clinically evaluated, and we are not claiming otherwise. It does not diagnose, prescribe or treat, and it is not a substitute for advice from a doctor or pharmacist."}},
+    {"@type":"Question","name":"When will early access begin?","acceptedAnswer":{"@type":"Answer","text":"We do not have a date yet. We are at the stage of validating the idea and understanding what people actually need, which is what this early-access list is for. If you join it, we will contact you when there is something concrete to show — and we will not use your details for anything else."}}
+  ]
+}
+</script>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<!-- ============ Header ============ -->
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="brand" href="#main">
+      <span class="brand__mark" aria-hidden="true">
+        <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+          <rect width="34" height="34" rx="10" fill="#0B5D8C"/>
+          <circle cx="17" cy="17" r="9.5" stroke="#8FD3E8" stroke-width="2.5"/>
+          <path d="M17 11.5v11M11.5 17h11" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </span>
+      MediDose
+    </a>
+
+    <nav class="nav" aria-label="Main">
+      <ul class="nav__list" data-mount="nav"></ul>
+    </nav>
+
+    <a class="btn btn--primary header-cta" href="#early-access" data-analytics="cta_header">Join early access</a>
+
+    <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
+      <span data-nav-toggle-icon aria-hidden="true"></span>
+      <span data-nav-toggle-text>Menu</span>
+    </button>
+  </div>
+
+  <div class="mobile-nav container" id="mobile-nav" data-mobile-nav hidden>
+    <nav aria-label="Main, mobile">
+      <ul class="mobile-nav__list" data-mount="mobile-nav"></ul>
+    </nav>
+    <a class="btn btn--primary btn--block" href="#early-access" data-analytics="cta_mobile_nav">Join the Early Access List</a>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ============ 1. Hero ============ -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <p class="eyebrow"><span class="dot"></span> Early-stage concept · in development</p>
+
+        <h1 id="hero-title">Medication routines, made simpler.</h1>
+
+        <p class="hero__lead">
+          MediDose organises scheduled doses, provides timely reminders, and keeps caregivers
+          informed — through one connected dispenser and app.
+        </p>
+
+        <div class="cta-row">
+          <a class="btn btn--primary btn--lg" href="#early-access" data-analytics="cta_hero_primary">Join the Early Access List</a>
+          <a class="btn btn--secondary btn--lg" href="#how-it-works" data-analytics="cta_hero_secondary">See How It Works</a>
+        </div>
+
+        <ul class="hero__audience" data-mount="audience" aria-label="Who MediDose is being designed for"></ul>
+
+        <div class="disclaimer">
+          <span data-icon="info" data-icon-size="20"></span>
+          <p><strong>Concept product.</strong> Not intended to replace professional medical advice.</p>
+        </div>
+      </div>
+
+      <div class="hero__stage">
+        <div data-mount="hero-dispenser"></div>
+        <div data-mount="hero-phone"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 2. Problem ============ -->
+  <section class="section" id="problem" aria-labelledby="problem-title">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow"><span class="dot"></span> The problem</p>
+        <h2 id="problem-title">Managing several medicines is a daily coordination job</h2>
+        <p class="lead">
+          Most people manage it with a pill box, a phone alarm and memory. That works until the
+          day does something unexpected — and it leaves no record of what actually happened.
+        </p>
+      </div>
+      <div class="grid grid--3" data-mount="problems"></div>
+    </div>
+  </section>
+
+  <!-- ============ 3. How it works ============ -->
+  <section class="section section--tint" id="how-it-works" aria-labelledby="how-title">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow"><span class="dot"></span> How it works</p>
+        <h2 id="how-title">Five steps, from loading the dispenser to a caregiver update</h2>
+        <p class="lead">
+          Select a step to see what the dispenser and the app would each be doing at that moment.
+        </p>
+      </div>
+
+      <div class="steps">
+        <ol class="timeline" role="tablist" aria-label="How MediDose works, step by step" data-mount="timeline"></ol>
+
+        <div class="step-stage" id="step-panel" role="tabpanel" tabindex="0" aria-label="Dispenser and app at the selected step">
+          <div data-mount="step-dispenser"></div>
+          <div data-mount="step-phone"></div>
+          <p class="visually-hidden" role="status" data-step-live></p>
+        </div>
+      </div>
+
+      <p class="note" style="margin-top:2rem">
+        Mockups are illustrative renderings of a concept. Industrial design, compartment count and
+        app layout are all still in development.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ 4. Dispenser features ============ -->
+  <section class="section" id="dispenser" aria-labelledby="dispenser-title">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow"><span class="dot"></span> The dispenser</p>
+        <h2 id="dispenser-title">What we are designing the device to do</h2>
+        <p class="lead">
+          Everything below is a proposed capability for a first version. None of it is finished
+          hardware, and the list will change as we learn more.
+        </p>
+        <p><span class="status-chip"><span data-icon="alert" data-icon-size="16"></span> Proposed MVP capabilities</span></p>
+      </div>
+      <div class="grid grid--3" data-mount="dispenser-features"></div>
+    </div>
+  </section>
+
+  <!-- ============ 5. Mobile app preview ============ -->
+  <section class="section section--tint" id="app" aria-labelledby="app-title">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow"><span class="dot"></span> The companion app</p>
+        <h2 id="app-title">One app for the schedule, the record and the sharing settings</h2>
+        <p class="lead">Choose a screen to preview it.</p>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="App screens" data-mount="app-tabs"></div>
+
+      <div class="app-preview" id="app-panel" role="tabpanel" tabindex="0" aria-label="Selected app screen">
+        <div class="app-preview__stage" data-mount="app-phone"></div>
+        <div class="app-preview__copy">
+          <h3 data-app-heading></h3>
+          <p data-app-body></p>
+          <ul class="feature-list" data-app-points></ul>
+          <p class="note">
+            Screens are design mockups with placeholder content, not screenshots of a released app.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 6. Caregiver experience ============ -->
+  <section class="section" id="caregivers" aria-labelledby="caregivers-title">
+    <div class="container split split--reverse">
+      <div>
+        <div class="section-head">
+          <p class="eyebrow"><span class="dot"></span> For families and caregivers</p>
+          <h2 id="caregivers-title">Support that the user switches on, not something done to them</h2>
+          <p class="lead">
+            The person taking the medication decides whether anyone else is involved, who that is,
+            and exactly what they can see.
+          </p>
+        </div>
+
+        <ul class="grid" style="list-style:none;padding:0" data-mount="caregiver-points"></ul>
+
+        <div class="disclaimer" style="margin-top:2rem">
+          <span data-icon="alert" data-icon-size="20"></span>
+          <p>
+            Caregiver notifications report what the system recorded — an acknowledgement, or a dose
+            window that closed without one. MediDose does not monitor health, does not respond to
+            emergencies, and cannot guarantee that a medicine was taken.
+          </p>
+        </div>
+      </div>
+
+      <div class="split__media">
+        <!--
+          Photography slot. Replace with a licensed image of an independent adult
+          and a family member, shot as two people talking as equals. Avoid framing
+          the medication user as a patient, and avoid clinical settings.
+          Keep the alt text descriptive when you swap the <figure> for an <img>.
+        -->
+        <figure class="photo-slot">
+          <div class="photo-slot__inner">
+            <span data-icon="image" data-icon-size="40"></span>
+            <p class="photo-slot__title">Photography placeholder</p>
+            <p class="photo-slot__hint">
+              Reserved for a licensed photograph of an adult managing their own routine alongside a
+              family member. No stock imagery has been shipped with this page.
+            </p>
+          </div>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 7. Benefits ============ -->
+  <section class="section section--brand" id="benefits" aria-labelledby="benefits-title">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow"><span class="dot"></span> What we are aiming for</p>
+        <h2 id="benefits-title">The outcomes we are designing toward</h2>
+        <p class="lead">
+          These are design goals for the concept, not measured results. We have not run a study,
+          and we will not claim outcomes we have not tested.
+        </p>
+      </div>
+      <div class="grid grid--2" data-mount="benefits"></div>
+    </div>
+  </section>
+
+  <!-- ============ 8. Trust and safety ============ -->
+  <section class="section" id="trust" aria-labelledby="trust-title">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow"><span class="dot"></span> Trust &amp; safety</p>
+        <h2 id="trust-title">What MediDose is, and what it is not</h2>
+        <p class="lead">
+          A medication product should be straightforward about its limits. Here are ours,
+          stated plainly.
+        </p>
+      </div>
+      <div class="trust-grid" data-mount="trust"></div>
+    </div>
+  </section>
+
+  <!-- ============ 9. Early-access form ============ -->
+  <section class="section section--tint" id="early-access" aria-labelledby="early-title">
+    <div class="container form-wrap">
+      <div class="section-head" style="margin-bottom:0">
+        <p class="eyebrow"><span class="dot"></span> Early access</p>
+        <h2 id="early-title">Help Shape MediDose</h2>
+        <p class="lead">
+          We are still deciding what the first version should do. Tell us how you manage medication
+          today and what would genuinely help — that is what the early-access list is for.
+        </p>
+        <p class="note">
+          We will only contact you about MediDose early access. No newsletter, no sharing your
+          details with anyone else, and you can ask us to delete them at any time.
+        </p>
+      </div>
+
+      <div>
+        <form class="form-card" data-form novalidate>
+          <div class="form-summary" data-form-summary role="alert" tabindex="-1" hidden>
+            <h3>Please check the following before sending</h3>
+            <ul data-form-summary-list></ul>
+          </div>
+
+          <div class="field">
+            <label for="field-name">Name <span class="req" aria-hidden="true">*</span><span class="visually-hidden">(required)</span></label>
+            <input id="field-name" name="name" type="text" autocomplete="name" aria-describedby="hint-name">
+            <p class="field__hint" id="hint-name">What should we call you?</p>
+            <p class="field__error" data-error-for="name"></p>
+          </div>
+
+          <div class="field">
+            <label for="field-email">Email <span class="req" aria-hidden="true">*</span><span class="visually-hidden">(required)</span></label>
+            <input id="field-email" name="email" type="email" autocomplete="email" inputmode="email" aria-describedby="hint-email">
+            <p class="field__hint" id="hint-email">Used only to contact you about early access.</p>
+            <p class="field__error" data-error-for="email"></p>
+          </div>
+
+          <div class="field">
+            <label for="field-role">Which describes you best? <span class="req" aria-hidden="true">*</span><span class="visually-hidden">(required)</span></label>
+            <select id="field-role" name="role" data-mount="role-options"></select>
+            <p class="field__error" data-error-for="role"></p>
+          </div>
+
+          <div class="field">
+            <label for="field-meds">How many medications are taken each day? <span class="req" aria-hidden="true">*</span><span class="visually-hidden">(required)</span></label>
+            <select id="field-meds" name="meds" data-mount="meds-options" aria-describedby="hint-meds"></select>
+            <p class="field__hint" id="hint-meds">A rough range is fine. Do not list medicine names.</p>
+            <p class="field__error" data-error-for="meds"></p>
+          </div>
+
+          <div class="field">
+            <label for="field-feedback">Anything else you would want MediDose to do? <span class="field__hint" style="font-weight:400">(optional)</span></label>
+            <textarea id="field-feedback" name="feedback" rows="4" aria-describedby="hint-feedback"></textarea>
+            <p class="field__hint" id="hint-feedback">Please do not include health details or medicine names.</p>
+            <p class="field__error" data-error-for="feedback"></p>
+          </div>
+
+          <div class="consent">
+            <input id="field-consent" name="consent" type="checkbox">
+            <label for="field-consent">
+              I am happy for MediDose to contact me about early access, and I have read the
+              <a href="privacy.html">privacy policy</a> (placeholder).
+            </label>
+          </div>
+          <p class="field__error" data-error-for="consent"></p>
+
+          <button class="btn btn--primary btn--lg btn--block" type="submit" data-submit data-analytics="cta_form_submit">
+            Help Shape MediDose
+          </button>
+
+          <!-- Remove this line once a real submission endpoint is wired up. -->
+          <p class="note" style="margin-top:1rem">
+            This is a concept preview: the form validates and confirms, but nothing you type is
+            sent or stored anywhere yet.
+          </p>
+        </form>
+
+        <div class="confirmation" data-confirmation tabindex="-1" hidden>
+          <span class="confirmation__icon" data-icon="check" data-icon-size="44"></span>
+          <h3>Thank you, <span data-confirmation-name></span>.</h3>
+          <p>
+            That is exactly the kind of input we need at this stage. When there is something
+            concrete to show, people on the early-access list hear about it first.
+          </p>
+          <p class="note">
+            Because this is a preview, your answers were not transmitted or saved. Once the list is
+            live, this form will submit to a real endpoint and this message will say so.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 10. FAQ ============ -->
+  <section class="section" id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow"><span class="dot"></span> Questions</p>
+        <h2 id="faq-title">Frequently asked questions</h2>
+      </div>
+      <div class="faq" data-mount="faq"></div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ 11. Footer ============ -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-about">
+        <a class="brand" href="#main">
+          <span class="brand__mark" aria-hidden="true">
+            <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+              <rect width="34" height="34" rx="10" fill="#0F6FA3"/>
+              <circle cx="17" cy="17" r="9.5" stroke="#8FD3E8" stroke-width="2.5"/>
+              <path d="M17 11.5v11M11.5 17h11" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </span>
+          MediDose
+        </a>
+        <p>
+          A concept for a connected medication dispenser and companion app, designed to make
+          recurring medication routines easier to follow and easier to share — on the user's terms.
+        </p>
+      </div>
+
+      <div>
+        <h2>Product</h2>
+        <ul data-mount="footer-product"></ul>
+      </div>
+
+      <div>
+        <h2>How it works</h2>
+        <ul data-mount="footer-learn"></ul>
+      </div>
+
+      <div>
+        <h2>Company</h2>
+        <ul data-mount="footer-company"></ul>
+      </div>
+    </div>
+
+    <div class="footer-legal">
+      <p>
+        <strong>Medical and regulatory disclaimer.</strong>
+        MediDose is an early-stage concept presented for the purpose of gathering interest and
+        feedback. It is not a certified, approved or cleared medical device in any jurisdiction, and
+        no regulatory status is claimed. It does not diagnose conditions, prescribe or recommend
+        medication, verify that medication was swallowed, or guarantee adherence, and it is not an
+        emergency-monitoring or emergency-response system. It is not a substitute for advice from a
+        doctor, pharmacist or other qualified professional. Any medication schedule entered into the
+        app should be checked against professional instructions. Features described on this page are
+        proposed and subject to change. Never change how you take a prescribed medicine on the basis
+        of this website.
+      </p>
+      <p>
+        <strong>About this page.</strong> All content, imagery and figures shown are placeholders for
+        a concept product. No testimonials, clinical evidence, certifications, partnerships or
+        performance statistics are presented, because none exist.
+      </p>
+      <p>© <span id="year">2026</span> MediDose (concept). <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="mailto:hello@medidose.example">Contact</a></p>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/components.js"></script>
+<script src="assets/js/app.js"></script>
+<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
