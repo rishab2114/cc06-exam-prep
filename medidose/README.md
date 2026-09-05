@@ -24,6 +24,13 @@ separate from viewing, off by default, granted and revocable by the medication u
 framing if you edit the copy — softening it into "dispense remotely" would overstate what the
 system does and move the product further into regulated-device territory.
 
+## Open concerns
+
+`POTENTIAL-FLAGS.md` is the working register of unresolved concerns about the concept —
+licensing constraints on auto-ordering, safety questions on remote release and hospital-prepared
+cassettes, and three claims on the live site that the market/regulatory assessment contradicts.
+Read it before extending the product copy.
+
 ## Running it
 
 No build step and no package manager. Open `index.html`, or serve the folder:
