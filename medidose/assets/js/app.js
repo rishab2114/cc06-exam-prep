@@ -58,8 +58,11 @@
     mount("[data-mount=step-phone]", C.phone(D.steps[0].screen, "Mockup of the MediDose app for the selected step"));
 
     mount("[data-mount=dispenser-features]", D.dispenserFeatures.map(C.featureCard).join(""));
-    mount("[data-mount=app-tabs]", D.appScreens.map(C.tabButton).join(""));
-    mount("[data-mount=app-phone]", C.phone(D.appScreens[0].screen, "Mockup of the MediDose app"));
+    mount("[data-mount=app-tabs-user]", D.appScreens.map(function (s, i) { return C.tabButton(s, i, "user"); }).join(""));
+    mount("[data-mount=app-phone-user]", C.phone(D.appScreens[0].screen, "Mockup of the MediDose app for the person taking medication"));
+
+    mount("[data-mount=app-tabs-caregiver]", D.caregiverScreens.map(function (s, i) { return C.tabButton(s, i, "caregiver"); }).join(""));
+    mount("[data-mount=app-phone-caregiver]", C.phone(D.caregiverScreens[0].screen, "Mockup of the MediDose app as an invited caregiver sees it"));
 
     mount("[data-mount=caregiver-points]", D.caregiverPoints.map(C.caregiverPoint).join(""));
     mount("[data-mount=benefits]", D.benefits.map(C.benefitCard).join(""));
@@ -212,16 +215,16 @@
   /* -----------------------------------------------------------
      Mobile app preview
      ----------------------------------------------------------- */
-  function initAppPreview() {
-    var tabs = $$("[data-app-tab]");
-    var phoneScreen = $("[data-mount=app-phone] [data-phone-screen]");
-    var heading = $("[data-app-heading]");
-    var body = $("[data-app-body]");
-    var points = $("[data-app-points]");
+  function initAppPreview(group, screens) {
+    var tabs = $$('[data-app-tab="' + group + '"]');
+    var phoneScreen = $("[data-mount=app-phone-" + group + "] [data-phone-screen]");
+    var heading = $('[data-app-heading="' + group + '"]');
+    var body = $('[data-app-body="' + group + '"]');
+    var points = $('[data-app-points="' + group + '"]');
     if (!tabs.length) return;
 
     initTablist(tabs, function (i) {
-      var s = D.appScreens[i];
+      var s = screens[i];
       if (phoneScreen) phoneScreen.innerHTML = C.phoneScreen(s.screen);
       if (heading) heading.textContent = s.heading;
       if (body) body.textContent = s.body;
@@ -230,7 +233,7 @@
           return "<li>" + C.icon("check", 22) + "<span>" + C.esc(p) + "</span></li>";
         }).join("");
       }
-      track("app_preview_view", { screen: s.id });
+      track("app_preview_view", { group: group, screen: s.id });
     });
   }
 
@@ -408,7 +411,8 @@
     mountAll();
     initNav();
     initSteps();
-    initAppPreview();
+    initAppPreview("user", D.appScreens);
+    initAppPreview("caregiver", D.caregiverScreens);
     initFaq();
     initForm();
     initReveal();
