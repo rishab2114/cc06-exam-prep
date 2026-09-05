@@ -45,8 +45,9 @@ place — including by someone who does not read CSS.
    ships with this page. Give the replacement real, descriptive alt text.
 4. **Decide about the web fonts.** They load from Google Fonts, which means Google sees each
    visitor's IP. Either disclose that in the privacy policy or self-host the two families.
-5. **Update the URLs.** `<link rel="canonical">` and the Open Graph tags point at `example.com`.
-   Add an OG image; there is currently none.
+5. **Add an OG image.** There is currently none, so shared links render without a preview image.
+   The canonical and `og:url` tags point at the live Vercel deployment; update them if the site
+   moves to its own domain.
 6. **Keep the FAQ in sync.** The `FAQPage` JSON-LD in `index.html` mirrors the answers in
    `data.js`. Edit one and you must edit the other.
 
